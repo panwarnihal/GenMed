@@ -49,17 +49,42 @@ GenMed solves these challenges by moving away from guesswork and enforcing **abs
 
 ### 3.1 System Data Flow Diagram
 
-```text
-[React.js Client] 
-       │ 
-       │ (REST / JSON)
-       ▼
-[Node.js / Express API Gateway] ──(CRUD / Spatial Queries)──► [MongoDB Atlas Cluster]
-       │
-       │ (RPC / JSON Payload)
-       ▼
-[Python / FastAPI Computational Backend]
-  (NER Parsing | SHA-256 Hashing | OpenFDA Matrix | CDSCO OSINT)
+```mermaid
+graph TD
+    subgraph Client [Client Layer - React.js / Vite]
+        UI[Minimalist Search & Autocomplete UI]
+        Gauge[Split-Screen Comparison & Savings Gauge]
+        SafetyCard[Equivalency Trust & Alert Cards]
+    end
+
+    subgraph Gateway [API Gateway Layer - Node.js / Express]
+        Auth[Session & Auth Handler]
+        Router[API Traffic Controller & Spatial Engine]
+    end
+
+    subgraph Microservice [Algorithmic & Safety Backend - Python / FastAPI]
+        NER[NLP - Named Entity Recognition]
+        Hasher[SHA-256 Chemical Salt Hashing]
+        SafetyEngine[Contraindication & Price Anomaly Heuristics]
+    end
+
+    subgraph Data [Database Cluster - MongoDB Atlas]
+        BD[(Branded_Drugs)]
+        GI[(Generic_Inventory - PMBJP)]
+        BB[(Blacklisted_Batches - CDSCO)]
+        JS[(Janaushadhi_Stores - 2dsphere)]
+    end
+
+    UI -->|REST / JSON| Auth
+    Auth --> Router
+    Router -->|RPC / Payload| NER
+    NER --> Hasher
+    Hasher -->|Exact Hash Match| GI
+    SafetyEngine -->|Batch / OSINT Lookup| BB
+    SafetyEngine -->|Salt Interaction Check| BD
+    Router -->|"$near Geospatial Query"| JS
+    GI -->|Returns Subsidized Match| Gauge
+    BB -->|Returns Alerts| SafetyCard
 ```
 
 ---
@@ -79,6 +104,27 @@ GenMed solves these challenges by moving away from guesswork and enforcing **abs
 * **FR-10: Last-Mile Kendra Geospatial Locator:** Using GPS coordinates, the Node.js gateway must execute a MongoDB `$near` query on a `2dsphere` index to return the 3 nearest verified Jan Aushadhi pharmacies.
 * **FR-11: Epidemiological Surveillance Heatmap (Admin Scope):** The system must aggregate search queries by chemical salt and region over 48-hour windows using MongoDB Aggregation Pipelines to detect localized public health spikes.
 
+```mermaid
+flowchart LR
+    User((Patient / Consumer))
+    Admin((System Admin))
+
+    subgraph GenMed Platform
+        UC1[Search Drug via Autocomplete]
+        UC2[View Generic Savings & Price Gauge]
+        UC3[Verify Drug Batch against CDSCO Blacklist]
+        UC4[Check Multi-Drug Interactions]
+        UC5[Locate Nearest Jan Aushadhi Kendra]
+        UC6[Monitor Epidemiological Heatmap]
+    end
+
+    User --> UC1
+    User --> UC2
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    Admin --> UC6
+```
 ---
 
 ## SECTION 5: NON-FUNCTIONAL REQUIREMENTS (NFR)
