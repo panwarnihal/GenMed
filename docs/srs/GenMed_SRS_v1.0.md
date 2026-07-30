@@ -100,7 +100,7 @@ graph TD
 * **FR-6: Side-Effect & "Equivalency Trust" Profiling:** The platform must dynamically display side-effect data bound to the SHA-256 salt hash, visually proving identical safety profiles between the branded drug and generic alternative.
 * **FR-7: Multi-Drug Contraindication Validation:** The system must accept >= 2 active medications simultaneously and cross-reference their salts against clinical contraindication matrices (OpenFDA/Kaggle datasets) to output severity-ranked drug-drug interaction alerts.
 * **FR-8: CDSCO Regulatory Batch Verification:** Users must be able to submit a 5–10 character alphanumeric Batch Number. The system queries the `Blacklisted_Batches` collection for known "Not of Standard Quality" (NSQ) or Spurious recalls published by the CDSCO.
-* **FR-9: Statistical Price-Anomaly Heuristic:** Users can log their purchase price. If $\text{Purchase\_Price} < (\text{Official\_MRP} \times 0.40)$, the system triggers an automated alert for suspected market dumping or counterfeit distribution.
+* **FR-9: Statistical Price-Anomaly Heuristic:** Users can log their purchase price. If $\text{Purchase Price} < (\text{Official MRP} \times 0.40)$, the system triggers an automated alert for suspected market dumping or counterfeit distribution.
 * **FR-10: Last-Mile Kendra Geospatial Locator:** Using GPS coordinates, the Node.js gateway must execute a MongoDB `$near` query on a `2dsphere` index to return the 3 nearest verified Jan Aushadhi pharmacies.
 * **FR-11: Epidemiological Surveillance Heatmap (Admin Scope):** The system must aggregate search queries by chemical salt and region over 48-hour windows using MongoDB Aggregation Pipelines to detect localized public health spikes.
 
