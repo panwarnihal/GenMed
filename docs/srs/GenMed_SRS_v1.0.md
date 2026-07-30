@@ -60,6 +60,7 @@ GenMed solves these challenges by moving away from guesswork and enforcing **abs
        ▼
 [Python / FastAPI Computational Backend]
   (NER Parsing | SHA-256 Hashing | OpenFDA Matrix | CDSCO OSINT)
+```
 
 ---
 
