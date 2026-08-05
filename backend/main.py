@@ -146,7 +146,6 @@ def verify_batch_safety(batch_number: str):
     }
 
 
-@app.get("/api/v1/check-interactions", tags=["Clinical Safety"])
 @app.post("/api/v1/check-interactions", tags=["Clinical Safety"])
 def check_drug_interactions(payload: InteractionCheckRequest):
     """
