@@ -34,9 +34,40 @@ generic_collection = db["Generic_Inventory"]
 blacklisted_collection = db["Blacklisted_Batches"]
 
 
+import re
+
 # --- Pydantic Models ---
 class InteractionCheckRequest(BaseModel):
     salts: List[str]
+
+
+class MappingMatchRequest(BaseModel):
+    query: str
+    extracted_salt: Optional[str] = None
+
+
+def generate_canonical_salt_key(text: str) -> str:
+    """
+    Normalizes drug composition text into a standardized canonical key.
+    """
+    if not text or not isinstance(text, str):
+        return ""
+
+    text = text.lower()
+    noise_patterns = [
+        r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
+        r'\bmaleate\b', r'\bsodium\b', r'\bpotassium\b', r'\btablet\b', r'\btablets\b',
+        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b'
+    ]
+    for pattern in noise_patterns:
+        text = re.sub(pattern, '', text)
+
+    text = re.sub(r'(\d+)\s*(mg|gm|g|ml|mcg|iu)', r'\1\2', text)
+    components = re.split(r'\s*\+\s*|\s+and\s+', text)
+    clean_tokens = [re.sub(r'[^a-z0-9]', '', c) for c in components if c.strip()]
+    clean_tokens.sort()
+
+    return "|".join(clean_tokens)
 
 
 @app.get("/", tags=["Health"])
@@ -199,3 +230,93 @@ def check_drug_interactions(payload: InteractionCheckRequest):
         "message": "No major clinical drug-drug interactions detected among the provided salts.",
         "salts_checked": payload.salts
     }
+
+
+@app.post("/api/v1/mapping/match", tags=["Mapping Engine"])
+def match_generic_alternative(payload: MappingMatchRequest):
+    """
+    Atlas Search Mapping Engine Endpoint:
+    Ingests drug query & extracted composition salt text, performs Lucene compound search,
+    and returns top Jan Aushadhi generic alternative with relevance score.
+    """
+    target_salt = payload.extracted_salt if payload.extracted_salt else payload.query
+    canonical_key = generate_canonical_salt_key(target_salt)
+
+    pipeline = [
+        {
+            "$search": {
+                "index": "default",
+                "compound": {
+                    "should": [
+                        {
+                            "text": {
+                                "query": canonical_key,
+                                "path": "canonical_salt_key",
+                                "score": {"boost": {"value": 5.0}}
+                            }
+                        },
+                        {
+                            "text": {
+                                "query": payload.query,
+                                "path": "generic_name",
+                                "fuzzy": {
+                                    "maxEdits": 1,
+                                    "prefixLength": 3
+                                }
+                            }
+                        }
+                    ],
+                    "minimumShouldMatch": 1
+                }
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "drug_code": 1,
+                "generic_name": 1,
+                "jan_aushadhi_price": 1,
+                "canonical_salt_key": 1,
+                "search_score": {"$meta": "searchScore"}
+            }
+        },
+        {"$limit": 1}
+    ]
+
+    try:
+        results = list(generic_collection.aggregate(pipeline))
+        if results:
+            match = results[0]
+            return {
+                "match_found": True,
+                "top_alternative": {
+                    "drug_code": match.get("drug_code"),
+                    "generic_name": match.get("generic_name"),
+                    "jan_aushadhi_price": float(match.get("jan_aushadhi_price", 0.0)),
+                    "search_score": round(float(match.get("search_score", 0.0)), 2)
+                }
+            }
+        return {
+            "match_found": False,
+            "top_alternative": None
+        }
+    except Exception as e:
+        # Fallback query if Atlas Search index is not yet indexed on Atlas UI
+        fallback_match = generic_collection.find_one(
+            {"canonical_salt_key": canonical_key},
+            {"_id": 0}
+        )
+        if fallback_match:
+            return {
+                "match_found": True,
+                "top_alternative": {
+                    "drug_code": fallback_match.get("drug_code"),
+                    "generic_name": fallback_match.get("generic_name"),
+                    "jan_aushadhi_price": float(fallback_match.get("jan_aushadhi_price", 0.0)),
+                    "search_score": 1.0
+                }
+            }
+        return {
+            "match_found": False,
+            "top_alternative": None
+        }

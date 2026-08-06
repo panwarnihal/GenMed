@@ -91,6 +91,26 @@ app.post("/api/v1/check-interactions", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/v1/mapping/match
+ * Forwards extracted OCR/NER line item to FastAPI Atlas Search engine.
+ */
+app.post("/api/v1/mapping/match", async (req, res) => {
+  try {
+    console.log(`[Gateway] Routing mapping match for query: "${req.body.query}" to FastAPI`);
+    const response = await axios.post(
+      `${FASTAPI_URL}/api/v1/mapping/match`,
+      req.body
+    );
+
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    const statusCode = error.response?.status || 500;
+    const errorData = error.response?.data || { detail: "FastAPI microservice unreachable." };
+    return res.status(statusCode).json(errorData);
+  }
+});
+
 // Start Gateway Server
 app.listen(PORT, () => {
   console.log(`[Gateway] Express API Gateway running on http://localhost:${PORT}`);
