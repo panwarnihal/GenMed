@@ -11,7 +11,7 @@ db_name = os.getenv("DB_NAME", "genmed_db")
 client = MongoClient(mongo_uri)
 db = client[db_name]
 
-print(f"⏳ Seeding data into database: '{db_name}'...")
+print(f"Seeding data into database: '{db_name}'...")
 
 # -------------------------------------------------------------------------
 # 2. DEFINE BRANDED DRUGS INVENTORY
@@ -127,8 +127,8 @@ db["Branded_Drugs"].create_index("salt_composition_hash")
 db["Generic_Inventory"].create_index("salt_composition_hash")
 db["Blacklisted_Batches"].create_index("batch_number")
 
-print("✅ SEEDING COMPLETE!")
+print("SEEDING COMPLETE!")
 print(f"   • Inserted {len(branded_drugs_data)} Branded Drugs")
 print(f"   • Inserted {len(generic_inventory_data)} PMBJP Generic Equivalent Drugs")
 print(f"   • Inserted {len(blacklisted_batches_data)} CDSCO Blacklisted Batches")
-print("✅ Created SHA-256 Hash Indexes successfully!")
+print("Created SHA-256 Hash Indexes successfully!")
