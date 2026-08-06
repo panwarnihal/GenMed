@@ -39,6 +39,7 @@ def generate_canonical_salt_key(text: str) -> str:
     """
     Normalizes drug composition text into a standardized canonical key:
     - Lowercase & strip pharmacopeial tags (IP/BP/USP)
+    - Normalize common salt spelling synonyms (amoxycillin -> amoxicillin, clavulanic acid -> clavulanate)
     - Standardize dosage units (500 mg -> 500mg)
     - Alphabetically sort components
     """
@@ -51,10 +52,16 @@ def generate_canonical_salt_key(text: str) -> str:
     noise_patterns = [
         r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
         r'\bmaleate\b', r'\bsodium\b', r'\bpotassium\b', r'\btablet\b', r'\btablets\b',
-        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b'
+        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b',
+        r'\bacid\b'
     ]
     for pattern in noise_patterns:
         text = re.sub(pattern, '', text)
+
+    # Normalize salt spelling synonyms (Indian Pharmacopeia variations)
+    text = re.sub(r'\bamoxycillin\b', 'amoxicillin', text)
+    text = re.sub(r'\bclavulanic\b', 'clavulanate', text)
+    text = re.sub(r'\bacetaminophen\b', 'paracetamol', text)
 
     # Standardize unit spacing
     text = re.sub(r'(\d+)\s*(mg|gm|g|ml|mcg|iu)', r'\1\2', text)
