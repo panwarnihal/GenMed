@@ -95,6 +95,21 @@ graph TD
     Router -->|Batch of Drugs| SafetyEngine
 ```
 
+### 3.2 Deterministic Hash Mapping Engine Logic
+
+```mermaid
+flowchart TD
+    A[User Searches Branded Drug] --> B[Extract Active Salt Ingredients]
+    B --> C[Normalize & Alphabetize Strings]
+    C -->|e.g. caffeine+paracetamol| D[Generate SHA-256 Cryptographic Hash]
+    D -->|e3b0c44298fc...| E{Query Generic_Inventory Database}
+    E -- Match Found --> F[Return Subsidized PMBJP Generic Equivalent]
+    E -- No Match --> G[Trigger Zero-Risk Clinical Failsafe Warning]
+    
+    style F fill:#d4edda,stroke:#28a745,color:#155724
+    style G fill:#f8d7da,stroke:#dc3545,color:#721c24
+```
+
 ---
 
 ## SECTION 4: FUNCTIONAL REQUIREMENTS (FR)
@@ -111,6 +126,39 @@ graph TD
 * **FR-10: Last-Mile Kendra Geospatial Locator:** The gateway must execute a MongoDB `$near` query on a `2dsphere` index to return the nearest verified Jan Aushadhi pharmacies based on GPS coordinates.
 * **FR-11: Epidemiological Surveillance Heatmap (Admin):** Aggregate search queries by chemical salt and region over 48-hour windows to detect localized public health spikes.
 
+### 4.1 Sequence Diagram: Invoice Auditing & Safety Checks
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Gateway as API Gateway (Node.js)
+    participant OCR as OCR & Vision Pipeline
+    participant NER as Medical NLP (NER)
+    participant Audit as NPPA Audit & Safety Engine
+    participant DB as MongoDB/PostgreSQL
+
+    User->>Gateway: Uploads Pharmacy Bill Image
+    Gateway->>OCR: Sends image for text extraction
+    OCR-->>Gateway: Returns raw unstructured text
+    Gateway->>NER: Forwards text for entity extraction
+    NER-->>Audit: Returns structured JSON (Brand, MRP, Price)
+    
+    par NPPA Pricing Audit
+        Audit->>DB: Fetch DPCO Schedule-I Ceiling Prices
+        DB-->>Audit: Return Price Limits
+        Audit->>Audit: Calculate overcharge mathematical formula
+    and DDI Safety Check
+        Audit->>DB: Fetch RxNorm Interaction Matrix
+        DB-->>Audit: Return severity flags & disclaimers
+    and CDSCO Regulatory Check
+        Audit->>DB: Fetch Banned FDC & NSQ Batch lists
+        DB-->>Audit: Return legal formulation status
+    end
+
+    Audit-->>Gateway: Returns unified Audit & Safety Report payload
+    Gateway-->>User: Displays Dashboard (Overcharge alerts, DDI flags)
+```
+
 ---
 
 ## SECTION 5: NON-FUNCTIONAL REQUIREMENTS (NFR)
@@ -125,7 +173,51 @@ graph TD
 
 ## SECTION 6: SYSTEM DESIGN & DATABASE SCHEMA (MONGODB/JSON SPECIFICATIONS)
 
-### 6.1 Branded_Drugs Collection
+### 6.1 Database Entity Relationship Diagram (ERD)
+
+```mermaid
+erDiagram
+    BRANDED_DRUGS {
+        ObjectId _id PK
+        string brand_name
+        string manufacturer
+        string salt_composition_hash
+        decimal mrp_price
+    }
+    GENERIC_INVENTORY {
+        ObjectId _id PK
+        string drug_code
+        string generic_name
+        string salt_composition_hash
+        decimal jan_aushadhi_price
+    }
+    BLACKLISTED_BATCHES {
+        ObjectId _id PK
+        string drug_name
+        string batch_number
+        string reason_for_recall
+    }
+    JANAUSHADHI_STORES {
+        ObjectId _id PK
+        string store_id
+        point location
+    }
+    EXTRACTED_INVOICE {
+        string invoice_id PK
+        decimal total_overcharge
+    }
+    INVOICE_LINE_ITEMS {
+        string brand_name
+        decimal printed_mrp
+        decimal paid_price
+    }
+    
+    BRANDED_DRUGS ||--o| GENERIC_INVENTORY : "mapped by exact salt_composition_hash"
+    EXTRACTED_INVOICE ||--|{ INVOICE_LINE_ITEMS : "contains"
+    INVOICE_LINE_ITEMS }|--|| BRANDED_DRUGS : "validated against"
+```
+
+### 6.2 Branded_Drugs Collection
 ```json
 {
   "_id": "ObjectID",
@@ -139,7 +231,7 @@ graph TD
 }
 ```
 
-### 6.2 Extracted NLP Line Items (Internal Payload Structure)
+### 6.3 Extracted NLP Line Items (Internal Payload Structure)
 ```json
 {
   "invoice_id": "String",
@@ -160,7 +252,7 @@ graph TD
 }
 ```
 
-### 6.3 Blacklisted_Batches Collection (CDSCO OSINT)
+### 6.4 Blacklisted_Batches Collection (CDSCO OSINT)
 ```json
 {
   "_id": "ObjectID",
@@ -171,7 +263,7 @@ graph TD
 }
 ```
 
-### 6.4 Janaushadhi_Stores Collection (Geospatial)
+### 6.5 Janaushadhi_Stores Collection (Geospatial)
 ```json
 {
   "_id": "ObjectID",
