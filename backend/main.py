@@ -23,6 +23,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Include Modular Routers
+from app.routes import mapping
+app.include_router(mapping.router)
+
 # Establish connection to MongoDB Atlas database
 MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME", "genmed_db")
