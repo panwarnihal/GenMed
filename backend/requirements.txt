@@ -1,0 +1,21 @@
+# GenMed Backend — Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+fastapi>=0.111.0
+uvicorn[standard]>=0.29.0
+
+# Data Validation
+pydantic>=2.7.0
+
+# Database
+pymongo[srv]>=4.7.0
+
+# Data Processing (used by seed_generic_inventory.py)
+pandas>=2.2.0
+
+# HTTP Client (used by test_invoice_scanner.py)
+requests>=2.32.0
+
+# Environment Variables
+python-dotenv>=1.0.0

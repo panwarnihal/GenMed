@@ -163,7 +163,11 @@ cd backend
 python -m venv venv
 venv\Scripts\activate          # Windows
 pip install -r requirements.txt
+```
 
+> `requirements.txt` includes: `fastapi`, `uvicorn[standard]`, `pydantic`, `pymongo[srv]`, `pandas`, `requests`, `python-dotenv`
+
+```bash
 # Gateway
 cd ../gateway
 npm install
