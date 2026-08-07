@@ -123,3 +123,107 @@ graph TD
 * **Audit Precision:** Mathematical engine operates with zero calculation drift on statutory GST adjustments. Zero false overcharges.
 * **Performance:** Invoice scanner operating under peak concurrency with a target SLA of under 3 seconds.
 * **Compliance:** Architecture ensures all geolocated searches exclude personally identifiable identifiers (PII). Medico-legal disclaimers are actively provided for clinical rules.
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+| Tool | Version | Purpose |
+|---|---|---|
+| Python | 3.10+ | Backend (FastAPI) |
+| Node.js | 18+ | Gateway & Frontend |
+| npm | 9+ | Package management |
+| MongoDB Atlas | — | Cloud database (URI required in `.env`) |
+
+---
+
+### 1. Environment Setup
+
+**Backend** — create `backend/.env`:
+```env
+MONGO_URI=mongodb+srv://<user>:<password>@<cluster>.mongodb.net/
+DB_NAME=genmed_db
+```
+
+**Gateway** — `gateway/.env` is already configured:
+```env
+PORT=5000
+FASTAPI_BASE_URL=http://127.0.0.1:8000
+```
+
+---
+
+### 2. Install Dependencies
+
+```bash
+# Backend — create & activate virtual environment
+cd backend
+python -m venv venv
+venv\Scripts\activate          # Windows
+pip install -r requirements.txt
+
+# Gateway
+cd ../gateway
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+```
+
+---
+
+### 3. Run the Project
+
+#### ⚡ One-Command Launch (Recommended)
+
+From the project root, simply double-click **`start-all.bat`** or run in PowerShell:
+
+```powershell
+.\start-all.ps1
+```
+
+This opens **3 separate terminal windows** simultaneously:
+
+| Service | URL |
+|---|---|
+| 🟢 Backend (FastAPI) | http://localhost:8000 |
+| 🟡 Gateway (Express) | http://localhost:5000 |
+| 🟣 Frontend (Vite) | http://localhost:5173 |
+
+> **Note:** If PowerShell blocks the script, run once: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+
+---
+
+#### Manual Launch (per service)
+
+Open three separate terminals and run each command:
+
+**Terminal 1 — Backend**
+```bash
+cd backend
+venv\Scripts\activate
+uvicorn main:app --reload --port 8000
+```
+
+**Terminal 2 — Gateway**
+```bash
+cd gateway
+npm run dev
+```
+
+**Terminal 3 — Frontend**
+```bash
+cd frontend
+npm run dev
+```
+
+---
+
+### 4. Verify Everything is Running
+
+- **API Docs (Swagger):** http://localhost:8000/docs
+- **Health Check:** http://localhost:8000/
+- **Frontend UI:** http://localhost:5173
