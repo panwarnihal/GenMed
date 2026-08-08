@@ -19,3 +19,7 @@ requests>=2.32.0
 
 # Environment Variables
 python-dotenv>=1.0.0
+
+# Vision AI — OCR & NER Invoice Scanner
+google-genai>=0.3.0
+python-multipart>=0.0.9   # required by FastAPI for UploadFile / multipart forms
