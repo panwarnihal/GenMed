@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { NavLink, Link } from 'react-router-dom';
 import { Activity, Wifi, WifiOff, Pill, Menu, X } from 'lucide-react';
 
 /**
- * Top navigation bar with GenMed logo, backend connectivity indicator,
- * tool tabs and About / Contact navigation links.
- *
+ * Sticky top nav using react-router NavLink for all links.
  * @param {'online'|'offline'|'checking'} status
- * @param {string} activeTab
- * @param {function} onTabChange
  */
-export default function Navbar({ status, activeTab, onTabChange }) {
+export default function Navbar({ status }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -26,26 +23,31 @@ export default function Navbar({ status, activeTab, onTabChange }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const scrollTo = (id) => {
-    setMenuOpen(false);
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
+  const tabClass = ({ isActive }) =>
+    `px-5 py-3 text-sm font-medium transition-all duration-200 ${
+      isActive ? 'tab-active' : 'tab-inactive'
+    }`;
+
+  const mobileNavClass = ({ isActive }) =>
+    `w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
+      isActive
+        ? 'text-emerald-400 bg-emerald-500/10'
+        : 'text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/8'
+    }`;
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'glass-card border-b border-slate-800/80 shadow-xl shadow-black/30'
-          : 'glass-card border-b border-slate-800/80'
+      className={`sticky top-0 z-50 transition-all duration-300 glass-card border-b border-slate-800/80 ${
+        scrolled ? 'shadow-xl shadow-black/30' : ''
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         {/* ── Top row ── */}
         <div className="flex items-center justify-between h-16 gap-4">
 
-          {/* Logo */}
-          <div className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40">
+          {/* Logo → home */}
+          <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
               <Pill className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
             <div>
@@ -54,36 +56,43 @@ export default function Navbar({ status, activeTab, onTabChange }) {
                 Indian Pharmaceutical Verification Platform
               </p>
             </div>
-          </div>
+          </Link>
 
           {/* Desktop nav links */}
           <nav className="hidden md:flex items-center gap-1">
-            <button
+            <NavLink
+              to="/about"
               id="nav-about"
-              onClick={() => scrollTo('about-us')}
-              className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors duration-200 rounded-lg hover:bg-emerald-500/8"
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isActive ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/8'
+                }`
+              }
             >
               About Us
-            </button>
-            <button
+            </NavLink>
+            <NavLink
+              to="/contact"
               id="nav-contact"
-              onClick={() => scrollTo('contact-us')}
-              className="px-4 py-2 text-sm font-medium text-slate-400 hover:text-emerald-400 transition-colors duration-200 rounded-lg hover:bg-emerald-500/8"
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isActive ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/8'
+                }`
+              }
             >
               Contact
-            </button>
-            <button
+            </NavLink>
+            <Link
+              to="/contact"
               id="nav-review"
-              onClick={() => scrollTo('contact-us')}
               className="ml-2 px-4 py-2 text-sm font-semibold text-white rounded-lg nav-review-btn"
             >
               Leave a Review ✨
-            </button>
+            </Link>
           </nav>
 
           {/* Status + hamburger */}
           <div className="flex items-center gap-3">
-            {/* Connectivity Indicator */}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50">
               <span className="relative flex h-2 w-2">
                 <span className={`ping absolute inline-flex h-full w-full rounded-full ${bg} opacity-75`} />
@@ -93,7 +102,6 @@ export default function Navbar({ status, activeTab, onTabChange }) {
               <span className={`text-xs font-medium ${color} hidden sm:inline`}>{label}</span>
             </div>
 
-            {/* Hamburger (mobile) */}
             <button
               id="nav-hamburger"
               onClick={() => setMenuOpen((v) => !v)}
@@ -105,23 +113,10 @@ export default function Navbar({ status, activeTab, onTabChange }) {
           </div>
         </div>
 
-        {/* ── Tool Tabs ── */}
+        {/* ── Tool tabs ── */}
         <nav className="flex gap-0 -mb-px">
-          {[
-            { id: 'finder',  label: '💊 Generic Medicine Finder' },
-            { id: 'auditor', label: '🧾 Smart Bill Auditor' },
-          ].map(({ id, label: tabLabel }) => (
-            <button
-              key={id}
-              id={`tab-${id}`}
-              onClick={() => onTabChange(id)}
-              className={`px-5 py-3 text-sm font-medium transition-all duration-200 ${
-                activeTab === id ? 'tab-active' : 'tab-inactive'
-              }`}
-            >
-              {tabLabel}
-            </button>
-          ))}
+          <NavLink to="/"        end id="tab-finder"  className={tabClass}>💊 Generic Medicine Finder</NavLink>
+          <NavLink to="/auditor"     id="tab-auditor" className={tabClass}>🧾 Smart Bill Auditor</NavLink>
         </nav>
       </div>
 
@@ -132,24 +127,9 @@ export default function Navbar({ status, activeTab, onTabChange }) {
         }`}
       >
         <div className="border-t border-slate-800/60 px-4 py-3 flex flex-col gap-1">
-          <button
-            onClick={() => scrollTo('about-us')}
-            className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/8 rounded-lg transition-colors"
-          >
-            About Us
-          </button>
-          <button
-            onClick={() => scrollTo('contact-us')}
-            className="w-full text-left px-4 py-2.5 text-sm font-medium text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/8 rounded-lg transition-colors"
-          >
-            Contact
-          </button>
-          <button
-            onClick={() => scrollTo('contact-us')}
-            className="w-full text-left px-4 py-2.5 text-sm font-semibold text-emerald-400 rounded-lg transition-colors"
-          >
-            Leave a Review ✨
-          </button>
+          <NavLink to="/about"   className={mobileNavClass} onClick={() => setMenuOpen(false)}>About Us</NavLink>
+          <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Contact</NavLink>
+          <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Leave a Review ✨</NavLink>
         </div>
       </div>
     </header>
