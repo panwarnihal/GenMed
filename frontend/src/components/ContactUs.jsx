@@ -192,12 +192,10 @@ export default function ContactUs() {
   const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
 
   return (
-    <section id="contact-us" className="relative py-24 overflow-hidden">
+    <section id="contact-us" className="relative overflow-hidden">
       {/* Background glow */}
       <div className="pointer-events-none absolute top-1/4 -right-32 w-96 h-96 rounded-full bg-blue-600/8 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-purple-600/8 blur-3xl" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* ── Section header ── */}
         <div className="text-center mb-16">
@@ -405,9 +403,6 @@ export default function ContactUs() {
               </button>
             )}
           </div>
-        </div>
-      </div>
-
       <Toast show={toast} onHide={() => setToast(false)} />
     </section>
   );

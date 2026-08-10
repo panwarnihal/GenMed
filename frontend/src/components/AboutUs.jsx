@@ -61,12 +61,10 @@ const features = [
 
 export default function AboutUs() {
   return (
-    <section id="about-us" className="relative py-24 overflow-hidden">
+    <section id="about-us" className="relative overflow-hidden">
       {/* Background glow blobs */}
       <div className="pointer-events-none absolute -top-40 left-1/4 w-96 h-96 rounded-full bg-emerald-600/10 blur-3xl" />
       <div className="pointer-events-none absolute bottom-0 right-1/4 w-80 h-80 rounded-full bg-teal-600/8 blur-3xl" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* ── Section header ── */}
         <div className="text-center mb-16">
@@ -130,7 +128,6 @@ export default function AboutUs() {
             </p>
           </div>
         </div>
-      </div>
     </section>
   );
 }
