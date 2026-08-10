@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Star, Send, MessageSquare, Mail, Github, Twitter,
+  Star, Send, MessageSquare, Mail, GitBranch, Globe,
   CheckCircle2, Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
 
@@ -335,7 +335,7 @@ export default function ContactUs() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-emerald-400 transition-colors"
               >
-                <Github className="w-4 h-4" /> GitHub
+                <GitBranch className="w-4 h-4" /> GitHub
               </a>
               <a
                 href="https://twitter.com"
@@ -343,7 +343,7 @@ export default function ContactUs() {
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-emerald-400 transition-colors"
               >
-                <Twitter className="w-4 h-4" /> Twitter
+                <Globe className="w-4 h-4" /> Twitter / X
               </a>
             </div>
           </div>
