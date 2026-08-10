@@ -403,6 +403,7 @@ export default function ContactUs() {
               </button>
             )}
           </div>
+        </div>
       <Toast show={toast} onHide={() => setToast(false)} />
     </section>
   );
