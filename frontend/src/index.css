@@ -49,6 +49,13 @@ body {
   background-clip: text;
 }
 
+.gradient-text-blue {
+  background: linear-gradient(135deg, #3b82f6 0%, #818cf8 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 /* ─── Animated gradient border ─── */
 .border-gradient {
   position: relative;
@@ -72,6 +79,30 @@ body {
   75%, 100% { transform: scale(2); opacity: 0; }
 }
 .ping { animation: ping-ring 1.5s cubic-bezier(0,0,0.2,1) infinite; }
+
+/* ─── Slide-up entrance ─── */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Fade-in entrance ─── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ─── Navbar review button ─── */
+.nav-review-btn {
+  background: linear-gradient(135deg, #059669, #10b981);
+  box-shadow: 0 2px 12px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+.nav-review-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.5);
+}
+.nav-review-btn:active { transform: translateY(0); }
 
 /* ─── Skeleton shimmer ─── */
 @keyframes shimmer {
