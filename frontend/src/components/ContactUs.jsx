@@ -3,6 +3,7 @@ import {
   Star, Send, MessageSquare, Mail, GitBranch, Globe,
   CheckCircle2, Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
+import Galaxy from './ui/Galaxy';
 
 /* ── Star rating widget ── */
 function StarRating({ value, onChange }) {
@@ -192,11 +193,25 @@ export default function ContactUs() {
   const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
 
   return (
-    <section id="contact-us" className="relative overflow-hidden">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute top-1/4 -right-32 w-96 h-96 rounded-full bg-blue-600/8 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 w-80 h-80 rounded-full bg-purple-600/8 blur-3xl" />
+    <section id="contact-us" className="relative overflow-hidden min-h-screen">
+      {/* Galaxy Background */}
+      <div className="absolute inset-0 z-0 pointer-events-auto">
+        <Galaxy
+          starSpeed={0.5}
+          density={1}
+          hueShift={140}
+          speed={1}
+          glowIntensity={0.3}
+          saturation={0}
+          mouseRepulsion
+          repulsionStrength={2}
+          twinkleIntensity={0.3}
+          rotationSpeed={0.1}
+          transparent
+        />
+      </div>
 
+      <div className="relative z-10 container mx-auto px-4 py-20">
         {/* ── Section header ── */}
         <div className="text-center mb-16">
           <span className="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 border border-blue-500/20 text-blue-400 mb-4 tracking-wider uppercase">
@@ -404,6 +419,7 @@ export default function ContactUs() {
             )}
           </div>
         </div>
+      </div>
       <Toast show={toast} onHide={() => setToast(false)} />
     </section>
   );
