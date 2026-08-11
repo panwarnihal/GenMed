@@ -5,6 +5,7 @@ import GenericFinder from './components/GenericFinder';
 import BillAuditor from './components/BillAuditor';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
+import Galaxy from './components/Galaxy';
 import { checkHealth } from './api';
 
 /* Scroll to top whenever the route changes */
@@ -17,12 +18,22 @@ function ScrollToTop() {
 /* Page shell: Navbar + content + footer */
 function Layout({ status, children }) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white relative">
+      <div className="fixed inset-0 z-[-1] pointer-events-auto">
+        <Galaxy 
+          mouseRepulsion={true}
+          mouseInteraction={true}
+          density={1.5}
+          glowIntensity={0.5}
+          saturation={0.8}
+          hueShift={280}
+        />
+      </div>
       <Navbar status={status} />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-10 relative z-10">
         {children}
       </main>
-      <footer className="border-t border-slate-800/80 bg-slate-900/40 py-8">
+      <footer className="border-t border-slate-800/80 bg-slate-900/40 py-8 relative z-10 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="space-y-1 text-center sm:text-left">
             <p>
