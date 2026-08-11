@@ -23,10 +23,7 @@ export default function Navbar({ status }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  const tabClass = ({ isActive }) =>
-    `px-5 py-3 text-sm font-medium transition-all duration-200 ${
-      isActive ? 'tab-active' : 'tab-inactive'
-    }`;
+
 
   const mobileNavClass = ({ isActive }) =>
     `w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
@@ -60,6 +57,29 @@ export default function Navbar({ status }) {
 
           {/* Desktop nav links */}
           <nav className="hidden md:flex items-center gap-1">
+            <NavLink
+              to="/"
+              end
+              id="nav-finder"
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isActive ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/8'
+                }`
+              }
+            >
+              MediMatch
+            </NavLink>
+            <NavLink
+              to="/auditor"
+              id="nav-auditor"
+              className={({ isActive }) =>
+                `px-4 py-2 text-sm font-medium rounded-lg transition-colors duration-200 ${
+                  isActive ? 'text-emerald-400 bg-emerald-500/10' : 'text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/8'
+                }`
+              }
+            >
+              BillSense
+            </NavLink>
             <NavLink
               to="/about"
               id="nav-about"
@@ -113,11 +133,7 @@ export default function Navbar({ status }) {
           </div>
         </div>
 
-        {/* ── Tool tabs ── */}
-        <nav className="flex gap-0 -mb-px">
-          <NavLink to="/"        end id="tab-finder"  className={tabClass}>💊 Generic Medicine Finder</NavLink>
-          <NavLink to="/auditor"     id="tab-auditor" className={tabClass}>🧾 Smart Bill Auditor</NavLink>
-        </nav>
+
       </div>
 
       {/* ── Mobile slide-down menu ── */}
@@ -127,6 +143,8 @@ export default function Navbar({ status }) {
         }`}
       >
         <div className="border-t border-slate-800/60 px-4 py-3 flex flex-col gap-1">
+          <NavLink to="/" end className={mobileNavClass} onClick={() => setMenuOpen(false)}>MediMatch</NavLink>
+          <NavLink to="/auditor" className={mobileNavClass} onClick={() => setMenuOpen(false)}>BillSense</NavLink>
           <NavLink to="/about"   className={mobileNavClass} onClick={() => setMenuOpen(false)}>About Us</NavLink>
           <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Contact</NavLink>
           <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Leave a Review ✨</NavLink>
