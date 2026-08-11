@@ -5,7 +5,7 @@ import GenericFinder from './components/GenericFinder';
 import BillAuditor from './components/BillAuditor';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
-import Galaxy from './components/Galaxy';
+import Galaxy from './components/ui/Galaxy';
 import { checkHealth } from './api';
 
 /* Scroll to top whenever the route changes */
