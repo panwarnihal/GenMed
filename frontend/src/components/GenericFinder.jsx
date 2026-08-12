@@ -298,29 +298,32 @@ export default function GenericFinder() {
     <section className="space-y-8" id="generic-finder">
 
       {/* ── Hero heading ── */}
-      <div className="relative rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-teal-900/10 to-transparent pointer-events-none" />
-        <div className="relative glass-card rounded-2xl border border-emerald-500/20 p-7 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40">
-              <Pill className="w-5 h-5 text-white" strokeWidth={2} />
+      <div className="space-y-4">
+        {/* Title Box */}
+        <div className="relative glass-card rounded-2xl border border-emerald-500/20 p-7 overflow-hidden bg-slate-900/50 backdrop-blur-xl">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-teal-900/10 to-transparent pointer-events-none" />
+          <div className="relative flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 flex-shrink-0">
+              <Pill className="w-6 h-6 text-white" strokeWidth={2} />
             </div>
             <div>
-              <h1 className="text-2xl font-extrabold text-white">Generic Medicine Finder</h1>
-              <p className="text-slate-400 text-sm">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Generic Medicine Finder</h1>
+              <p className="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
                 Find affordable Jan Aushadhi government-approved generics for any branded drug — instantly.
               </p>
             </div>
           </div>
+        </div>
 
-          {/* How it works strip */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
+        {/* How it works strip */}
+        <div className="glass-card rounded-2xl border border-slate-700/50 p-6 bg-slate-900/40 backdrop-blur-md">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
             {HOW_IT_WORKS.map((step, i) => (
-              <div key={i} className="flex items-start gap-2.5">
-                <span className="text-xl flex-shrink-0 mt-0.5">{step.icon}</span>
+              <div key={i} className="flex items-start gap-3">
+                <span className="text-2xl flex-shrink-0 mt-0.5 drop-shadow-md">{step.icon}</span>
                 <div>
-                  <p className="text-xs font-semibold text-slate-300">{step.title}</p>
-                  <p className="text-[11px] text-slate-500 leading-relaxed hidden sm:block">{step.desc}</p>
+                  <p className="text-sm font-semibold text-slate-200">{step.title}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed hidden sm:block mt-0.5">{step.desc}</p>
                 </div>
               </div>
             ))}
