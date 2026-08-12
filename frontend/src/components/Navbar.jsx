@@ -1,21 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { Activity, Wifi, WifiOff, Pill, Menu, X } from 'lucide-react';
+import { Pill, Menu, X } from 'lucide-react';
 
 /**
  * Sticky top nav using react-router NavLink for all links.
- * @param {'online'|'offline'|'checking'} status
  */
-export default function Navbar({ status }) {
+export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const statusConfig = {
-    online:   { color: 'text-emerald-400', bg: 'bg-emerald-400', label: 'Backend Online',  Icon: Wifi },
-    offline:  { color: 'text-red-400',     bg: 'bg-red-400',     label: 'Backend Offline', Icon: WifiOff },
-    checking: { color: 'text-amber-400',   bg: 'bg-amber-400',   label: 'Connecting…',    Icon: Activity },
-  };
-  const { color, bg, label, Icon } = statusConfig[status] ?? statusConfig.checking;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -102,35 +94,17 @@ export default function Navbar({ status }) {
             >
               Contact
             </NavLink>
-            <Link
-              to="/contact"
-              id="nav-review"
-              className="ml-2 px-4 py-2 text-sm font-semibold text-white rounded-lg nav-review-btn"
-            >
-              Leave a Review ✨
-            </Link>
           </nav>
 
-          {/* Status + hamburger */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700/50">
-              <span className="relative flex h-2 w-2">
-                <span className={`ping absolute inline-flex h-full w-full rounded-full ${bg} opacity-75`} />
-                <span className={`relative inline-flex rounded-full h-2 w-2 ${bg}`} />
-              </span>
-              <Icon className={`w-3.5 h-3.5 ${color}`} />
-              <span className={`text-xs font-medium ${color} hidden sm:inline`}>{label}</span>
-            </div>
-
-            <button
-              id="nav-hamburger"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-              aria-label="Toggle menu"
-            >
-              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
+          {/* Hamburger */}
+          <button
+            id="nav-hamburger"
+            onClick={() => setMenuOpen((v) => !v)}
+            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
 
 
@@ -147,7 +121,6 @@ export default function Navbar({ status }) {
           <NavLink to="/auditor" className={mobileNavClass} onClick={() => setMenuOpen(false)}>BillSense</NavLink>
           <NavLink to="/about"   className={mobileNavClass} onClick={() => setMenuOpen(false)}>About Us</NavLink>
           <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Contact</NavLink>
-          <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Leave a Review ✨</NavLink>
         </div>
       </div>
     </header>
