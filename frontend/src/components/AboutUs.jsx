@@ -3,7 +3,6 @@ import { ShieldCheck, TrendingDown, Users, Globe, Heart, Zap } from 'lucide-reac
 
 const stats = [
   { value: '8,000+', label: 'Generic Medicines', icon: '💊' },
-  { value: '90%',    label: 'Avg. Cost Savings',  icon: '💰' },
   { value: '7,500+', label: 'Jan Aushadhi Stores', icon: '🏪' },
   { value: '100%',   label: 'Free to Use',         icon: '🎉' },
 ];
@@ -82,11 +81,11 @@ export default function AboutUs() {
         </div>
 
         {/* ── Stats bar ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-20">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-20">
           {stats.map(({ value, label, icon }) => (
             <div
               key={label}
-              className="glass-card rounded-2xl p-6 text-center border border-slate-700/40 hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-900/20"
+              className="glass-card rounded-2xl p-6 text-center border border-slate-700/50 bg-slate-900/40 backdrop-blur-md hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-900/20"
             >
               <div className="text-3xl mb-2">{icon}</div>
               <div className="text-3xl font-extrabold gradient-text mb-1">{value}</div>
