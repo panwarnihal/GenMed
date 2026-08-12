@@ -295,68 +295,33 @@ export default function GenericFinder() {
   };
 
   return (
-    <section className="space-y-8" id="generic-finder">
-
-      {/* ── Hero heading ── */}
-      <div className="space-y-4">
+    <section className="grid lg:grid-cols-12 gap-6 items-start" id="generic-finder">
+      
+      {/* ── LEFT COLUMN (Search & Context) ── */}
+      <div className="lg:col-span-5 space-y-6">
+        
         {/* Title Box */}
-        <div className="relative glass-card rounded-2xl border border-emerald-500/20 p-7 overflow-hidden bg-slate-900/50 backdrop-blur-xl">
+        <div className="relative glass-card rounded-2xl border border-emerald-500/20 p-5 overflow-hidden bg-slate-900/50 backdrop-blur-xl">
           <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-teal-900/10 to-transparent pointer-events-none" />
           <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 flex-shrink-0">
-              <Pill className="w-6 h-6 text-white" strokeWidth={2} />
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 flex-shrink-0">
+              <Pill className="w-5 h-5 text-white" strokeWidth={2} />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Generic Medicine Finder</h1>
-              <p className="text-slate-400 text-sm sm:text-base mt-1 max-w-2xl">
-                Find affordable Jan Aushadhi government-approved generics for any branded drug — instantly.
+              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Generic Medicine Finder</h1>
+              <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
+                Find affordable Jan Aushadhi generics — instantly.
               </p>
             </div>
           </div>
         </div>
 
-        {/* How it works strip */}
-        <div className="glass-card rounded-2xl border border-slate-700/50 p-6 bg-slate-900/40 backdrop-blur-md">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-            {HOW_IT_WORKS.map((step, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="text-2xl flex-shrink-0 mt-0.5 drop-shadow-md">{step.icon}</span>
-                <div>
-                  <p className="text-sm font-semibold text-slate-200">{step.title}</p>
-                  <p className="text-xs text-slate-400 leading-relaxed hidden sm:block mt-0.5">{step.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Demo pills ── */}
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs text-slate-500 flex items-center gap-1.5">
-          <FlaskConical className="w-3.5 h-3.5 text-slate-600" /> Try a demo:
-        </span>
-        {DEMO_CASES.map((d) => (
-          <button
-            key={d.query}
-            id={`demo-${d.query.replace(/\s+/g, '-').toLowerCase()}`}
-            onClick={() => loadDemo(d)}
-            className="text-xs font-medium px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700/60
-                       text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300 hover:bg-emerald-500/8 transition-all duration-150 flex items-center gap-1.5"
-          >
-            <Sparkles className="w-3 h-3 text-emerald-500/60" />
-            {d.query}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Search form ── */}
-      <form
-        onSubmit={handleSearch}
-        className="glass-card rounded-2xl p-6 border border-slate-700/50 space-y-5"
-        id="search-form"
-      >
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* Search form */}
+        <form
+          onSubmit={handleSearch}
+          className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-4"
+          id="search-form"
+        >
           {/* Brand query */}
           <div className="space-y-1.5">
             <label htmlFor="brand-query" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -369,7 +334,7 @@ export default function GenericFinder() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. Augmentin 625 Duo Tab"
-              className="gm-input w-full px-4 py-3 rounded-xl text-sm"
+              className="gm-input w-full px-4 py-2.5 rounded-xl text-sm"
               required
             />
           </div>
@@ -377,24 +342,22 @@ export default function GenericFinder() {
           {/* Salt */}
           <div className="space-y-1.5">
             <label htmlFor="salt-composition" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <FlaskConical className="w-3.5 h-3.5" /> Chemical Salt / Composition
+              <FlaskConical className="w-3.5 h-3.5" /> Chemical Salt (Optional)
             </label>
             <input
               id="salt-composition"
               type="text"
               value={salt}
               onChange={(e) => setSalt(e.target.value)}
-              placeholder="e.g. Amoxicillin 500mg + Clavulanic Acid 125mg"
-              className="gm-input w-full px-4 py-3 rounded-xl text-sm"
+              placeholder="e.g. Amoxicillin 500mg"
+              className="gm-input w-full px-4 py-2.5 rounded-xl text-sm"
             />
           </div>
-        </div>
 
-        {/* Price + submit */}
-        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          {/* Price */}
           <div className="space-y-1.5 flex-1">
             <label htmlFor="billed-price" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <IndianRupee className="w-3.5 h-3.5" /> Billed / Retail Price (optional)
+              <IndianRupee className="w-3.5 h-3.5" /> Billed Price (Optional)
             </label>
             <div className="relative">
               <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -406,7 +369,7 @@ export default function GenericFinder() {
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="gm-input w-full pl-9 pr-4 py-3 rounded-xl text-sm"
+                className="gm-input w-full pl-9 pr-4 py-2.5 rounded-xl text-sm"
               />
             </div>
           </div>
@@ -415,7 +378,7 @@ export default function GenericFinder() {
             id="find-generic-btn"
             type="submit"
             disabled={loading}
-            className="btn-primary w-full sm:w-auto px-8 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 whitespace-nowrap"
+            className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 mt-2"
           >
             {loading ? (
               <><Loader2 className="w-4 h-4 animate-spin" /> Searching…</>
@@ -423,25 +386,71 @@ export default function GenericFinder() {
               <><Zap className="w-4 h-4" /> Find Generic <ArrowRight className="w-4 h-4" /></>
             )}
           </button>
+        </form>
+
+        {/* Demo pills */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] text-slate-500 flex items-center gap-1">
+            <FlaskConical className="w-3 h-3 text-slate-600" /> Demo:
+          </span>
+          {DEMO_CASES.map((d) => (
+            <button
+              key={d.query}
+              id={`demo-${d.query.replace(/\s+/g, '-').toLowerCase()}`}
+              onClick={() => loadDemo(d)}
+              className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300 hover:bg-emerald-500/8 transition-all duration-150"
+            >
+              {d.query}
+            </button>
+          ))}
         </div>
-      </form>
+      </div>
 
-      {/* ── Result area ── */}
-      {loading && <LoadingSkeleton />}
+      {/* ── RIGHT COLUMN (Results / How it works) ── */}
+      <div className="lg:col-span-7">
+        
+        {loading && <LoadingSkeleton />}
 
-      {error && (
-        <div className="glass-card rounded-2xl p-5 border border-red-500/30 flex items-start gap-3 animate-[fadeIn_0.3s_ease-out]">
-          <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
+        {error && (
+          <div className="glass-card rounded-2xl p-5 border border-red-500/30 flex items-start gap-3 animate-[fadeIn_0.3s_ease-out]">
+            <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-red-300">Connection Error</p>
+              <p className="text-sm text-slate-400 mt-0.5">{error}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold text-red-300">Connection Error</p>
-            <p className="text-sm text-slate-400 mt-0.5">{error}</p>
-          </div>
-        </div>
-      )}
+        )}
 
-      {!loading && result && <ResultCard result={result} billedPrice={price} query={query} />}
+        {!loading && result && (
+          <ResultCard result={result} billedPrice={price} query={query} />
+        )}
+
+        {/* Initial state: How it works (shown when no result, no loading, no error) */}
+        {!loading && !result && !error && (
+          <div className="glass-card rounded-2xl border border-slate-700/50 p-6 bg-slate-900/40 backdrop-blur-md h-full">
+            <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-400" />
+              How it works
+            </h2>
+            <div className="grid sm:grid-cols-2 gap-6">
+              {HOW_IT_WORKS.map((step, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
+                    {step.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-200">{step.title}</p>
+                    <p className="text-xs text-slate-400 leading-relaxed mt-1">{step.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+      </div>
     </section>
   );
 }

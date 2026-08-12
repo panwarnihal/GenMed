@@ -3,7 +3,6 @@ import {
   Star, Send, MessageSquare, Mail, GitBranch, Globe,
   CheckCircle2, Loader2, ChevronDown, ChevronUp,
 } from 'lucide-react';
-import Galaxy from './ui/Galaxy';
 
 /* ── Star rating widget ── */
 function StarRating({ value, onChange }) {
@@ -194,22 +193,6 @@ export default function ContactUs() {
 
   return (
     <section id="contact-us" className="relative overflow-hidden min-h-screen">
-      {/* Galaxy Background */}
-      <div className="absolute inset-0 z-0 pointer-events-auto">
-        <Galaxy
-          starSpeed={0.5}
-          density={1}
-          hueShift={140}
-          speed={1}
-          glowIntensity={0.3}
-          saturation={0}
-          mouseRepulsion
-          repulsionStrength={2}
-          twinkleIntensity={0.3}
-          rotationSpeed={0.1}
-          transparent
-        />
-      </div>
 
       <div className="relative z-10 container mx-auto px-4 py-20">
         {/* ── Section header ── */}

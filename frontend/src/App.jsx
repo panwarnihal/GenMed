@@ -5,7 +5,6 @@ import GenericFinder from './components/GenericFinder';
 import BillAuditor from './components/BillAuditor';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
-import Galaxy from './components/ui/Galaxy';
 import { checkHealth } from './api';
 
 /* Scroll to top whenever the route changes */
@@ -18,17 +17,7 @@ function ScrollToTop() {
 /* Page shell: Navbar + content + footer */
 function Layout({ status, children }) {
   return (
-    <div className="min-h-screen text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white relative">
-      <div className="fixed inset-0 z-[-1] pointer-events-auto">
-        <Galaxy 
-          mouseRepulsion={true}
-          mouseInteraction={true}
-          density={1.5}
-          glowIntensity={0.5}
-          saturation={0.8}
-          hueShift={280}
-        />
-      </div>
+    <div className="min-h-screen text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0c] to-black">
       <Navbar status={status} />
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-10 relative z-10">
         {children}
