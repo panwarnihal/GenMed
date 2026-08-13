@@ -34,6 +34,8 @@ from typing import List, Optional
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field, field_validator
 
+from app.routes.mapping import match_generic_alternative, MappingRequest
+
 # ─────────────────────────────────────────────────────────────────────────────
 # LOGGER
 # ─────────────────────────────────────────────────────────────────────────────
@@ -149,6 +151,30 @@ class InvoiceScanResult(BaseModel):
         if not cleaned:
             raise ValueError("invoice_id must not be empty")
         return cleaned
+
+
+class AuditResult(BaseModel):
+    is_overcharged: bool
+    overcharge_amount: float
+    jan_aushadhi_alternative: Optional[str] = None
+    jan_aushadhi_price: Optional[float] = None
+    potential_savings: float
+
+
+class AuditedLineItem(BaseModel):
+    brand_name: str
+    quantity_units: int
+    printed_mrp: float
+    paid_price: float
+    audit_summary: AuditResult
+
+
+class FinalAuditReport(BaseModel):
+    invoice_id: str
+    total_paid: float
+    total_overcharge: float
+    total_potential_savings: float
+    audited_items: List[AuditedLineItem]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -327,17 +353,17 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 @router.post(
     "/upload",
-    response_model=InvoiceScanResult,
+    response_model=FinalAuditReport,
     status_code=status.HTTP_200_OK,
-    summary="Upload & Scan a Pharmacy Invoice",
+    summary="Upload & Scan a Pharmacy Invoice, Return Audit Report",
     description=(
         "Accepts a JPEG / PNG / WEBP image of an Indian pharmacy bill. "
-        "Passes it through Google Gemini Vision for OCR and Medical NER, "
-        "then returns a strictly-typed JSON array of extracted line items "
-        "ready for the GenMed Mapping Engine and CDSCO Batch Safety Check."
+        "Passes it through Google Gemini Vision for OCR and Medical NER. "
+        "Then queries the internal Mapping Engine for generic alternatives "
+        "and calculates potential savings, returning a complete FinalAuditReport."
     ),
     responses={
-        200: {"description": "Extraction succeeded — structured invoice returned."},
+        200: {"description": "Extraction and mapping succeeded — audit report returned."},
         400: {"description": "Invalid file type or oversized image."},
         422: {"description": "Vision AI returned unparseable or schema-invalid output."},
         502: {"description": "Upstream Gemini Vision API call failed."},
@@ -349,7 +375,7 @@ async def upload_invoice_image(
         ...,
         description="Pharmacy bill image (JPG, PNG, WEBP, BMP — max 10 MB).",
     ),
-) -> InvoiceScanResult:
+) -> FinalAuditReport:
     """
     **OCR & NER Invoice Scanner — Full Pipeline**
 
@@ -357,9 +383,8 @@ async def upload_invoice_image(
     2. Sends the raw bytes inline to **Google Gemini 1.5 Flash** Vision model
        with a deterministic extraction prompt.
     3. Parses and validates the model's JSON output through Pydantic schemas.
-    4. Returns a fully-typed `InvoiceScanResult` ready for downstream engines:
-       - `POST /api/v1/mapping/match`  — Jan Aushadhi generic lookup
-       - `GET  /api/v1/verify-batch/{batch_number}` — CDSCO safety check
+    4. Iterates over line items, querying the mapping engine for alternatives.
+    5. Calculates overcharges and returns a fully-typed `FinalAuditReport`.
     """
 
     # ── 1. MIME-type guard ────────────────────────────────────────────────────
@@ -414,7 +439,7 @@ async def upload_invoice_image(
 
     # ── 5. Pydantic schema validation ─────────────────────────────────────────
     try:
-        result = InvoiceScanResult.model_validate(raw_data)
+        scan_result = InvoiceScanResult.model_validate(raw_data)
     except Exception as exc:
         logger.error(
             "Pydantic validation failed on Gemini output: %s | data=%s",
@@ -431,7 +456,67 @@ async def upload_invoice_image(
 
     logger.info(
         "Scan complete | invoice_id=%s | line_items=%d",
-        result.invoice_id,
-        len(result.line_items),
+        scan_result.invoice_id,
+        len(scan_result.line_items),
     )
-    return result
+
+    # ── 6. Mapping & Audit Engine ─────────────────────────────────────────────
+    audited_items = []
+    total_paid = 0.0
+    total_overcharge = 0.0
+    total_potential_savings = 0.0
+
+    for item in scan_result.line_items:
+        # Call mapping engine
+        req = MappingRequest(
+            query=item.brand_name,
+            extracted_salt=item.extracted_salt
+        )
+        # match_generic_alternative returns a MappingResponse
+        map_resp = await match_generic_alternative(req)
+
+        is_overcharged = False
+        overcharge_amount = 0.0
+        potential_savings = 0.0
+        ja_alternative = None
+        ja_price = None
+
+        if map_resp.match_found and map_resp.top_alternative:
+            ja_alternative = map_resp.top_alternative.generic_name
+            ja_price = map_resp.top_alternative.jan_aushadhi_price
+            
+            generic_total_cost = ja_price * item.quantity_units
+            
+            if item.paid_price > generic_total_cost:
+                is_overcharged = True
+                potential_savings = round(item.paid_price - generic_total_cost, 2)
+                overcharge_amount = potential_savings
+
+        audit_result = AuditResult(
+            is_overcharged=is_overcharged,
+            overcharge_amount=overcharge_amount,
+            jan_aushadhi_alternative=ja_alternative,
+            jan_aushadhi_price=ja_price,
+            potential_savings=potential_savings
+        )
+
+        audited_line = AuditedLineItem(
+            brand_name=item.brand_name,
+            quantity_units=item.quantity_units,
+            printed_mrp=item.printed_mrp,
+            paid_price=item.paid_price,
+            audit_summary=audit_result
+        )
+
+        audited_items.append(audited_line)
+        total_paid += item.paid_price
+        total_overcharge += overcharge_amount
+        total_potential_savings += potential_savings
+
+    return FinalAuditReport(
+        invoice_id=scan_result.invoice_id,
+        total_paid=round(total_paid, 2),
+        total_overcharge=round(total_overcharge, 2),
+        total_potential_savings=round(total_potential_savings, 2),
+        audited_items=audited_items
+    )
