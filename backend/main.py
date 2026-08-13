@@ -40,6 +40,7 @@ blacklisted_collection = db["Blacklisted_Batches"]
 
 
 import re
+from utils_hasher import generate_canonical_salt_key
 
 # --- Pydantic Models ---
 class InteractionCheckRequest(BaseModel):
@@ -49,30 +50,6 @@ class InteractionCheckRequest(BaseModel):
 class MappingMatchRequest(BaseModel):
     query: str
     extracted_salt: Optional[str] = None
-
-
-def generate_canonical_salt_key(text: str) -> str:
-    """
-    Normalizes drug composition text into a standardized canonical key.
-    """
-    if not text or not isinstance(text, str):
-        return ""
-
-    text = text.lower()
-    noise_patterns = [
-        r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
-        r'\bmaleate\b', r'\bsodium\b', r'\bpotassium\b', r'\btablet\b', r'\btablets\b',
-        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b'
-    ]
-    for pattern in noise_patterns:
-        text = re.sub(pattern, '', text)
-
-    text = re.sub(r'(\d+)\s*(mg|gm|g|ml|mcg|iu)', r'\1\2', text)
-    components = re.split(r'\s*\+\s*|\s+and\s+', text)
-    clean_tokens = [re.sub(r'[^a-z0-9]', '', c) for c in components if c.strip()]
-    clean_tokens.sort()
-
-    return "|".join(clean_tokens)
 
 
 @app.get("/", tags=["Health"])

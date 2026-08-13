@@ -4,30 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient, UpdateOne
 
-load_dotenv()
-
-def generate_canonical_salt_key(text: str) -> str:
-    if not text or not isinstance(text, str):
-        return ""
-    text = text.lower()
-    noise_patterns = [
-        r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
-        r'\bmaleate\b', r'\bsodium\b', r'\bpotassium\b', r'\btablet\b', r'\btablets\b',
-        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b',
-        r'\bacid\b'
-    ]
-    for pattern in noise_patterns:
-        text = re.sub(pattern, '', text)
-
-    text = re.sub(r'\bamoxycillin\b', 'amoxicillin', text)
-    text = re.sub(r'\bclavulanic\b', 'clavulanate', text)
-    text = re.sub(r'\bacetaminophen\b', 'paracetamol', text)
-
-    text = re.sub(r'(\d+)\s*(mg|gm|g|ml|mcg|iu)', r'\1\2', text)
-    components = re.split(r'\s*\+\s*|\s+and\s+', text)
-    clean_tokens = [re.sub(r'[^a-z0-9]', '', c) for c in components if c.strip()]
-    clean_tokens.sort()
-    return "|".join(clean_tokens)
+from utils_hasher import generate_canonical_salt_key
 
 def seed_database(csv_path: str, mongo_uri: str):
     client = MongoClient(mongo_uri)

@@ -1,5 +1,6 @@
 import hashlib
 import json
+import re
 from typing import List, Dict
 
 def generate_salt_hash(active_ingredients: List[Dict[str, str]]) -> str:
@@ -33,6 +34,45 @@ def generate_salt_hash(active_ingredients: List[Dict[str, str]]) -> str:
     salt_hash = hashlib.sha256(canonical_string.encode('utf-8')).hexdigest()
     
     return salt_hash, canonical_string
+
+
+def generate_canonical_salt_key(text: str) -> str:
+    """
+    Normalizes drug composition text into a standardized canonical key:
+    - Lowercase & strip pharmacopeial tags (IP/BP/USP)
+    - Normalize common salt spelling synonyms (amoxycillin -> amoxicillin, clavulanic acid -> clavulanate)
+    - Standardize dosage units (500 mg -> 500mg)
+    - Alphabetically sort components
+    """
+    if not text or not isinstance(text, str):
+        return ""
+
+    text = text.lower()
+    
+    # Strip pharmacopeial & dosage form noise
+    noise_patterns = [
+        r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
+        r'\bmaleate\b', r'\bsodium\b', r'\bpotassium\b', r'\btablet\b', r'\btablets\b',
+        r'\bcapsule\b', r'\bcapsules\b', r'\bdispersible\b', r'\bsr\b', r'\ber\b',
+        r'\bacid\b'
+    ]
+    for pattern in noise_patterns:
+        text = re.sub(pattern, '', text)
+
+    # Normalize salt spelling synonyms (Indian Pharmacopeia variations)
+    text = re.sub(r'\bamoxycillin\b', 'amoxicillin', text)
+    text = re.sub(r'\bclavulanic\b', 'clavulanate', text)
+    text = re.sub(r'\bacetaminophen\b', 'paracetamol', text)
+
+    # Standardize unit spacing
+    text = re.sub(r'(\d+)\s*(mg|gm|g|ml|mcg|iu)', r'\1\2', text)
+
+    # Tokenize multi-salt compositions separated by '+' or 'and'
+    components = re.split(r'\s*\+\s*|\s+and\s+', text)
+    clean_tokens = [re.sub(r'[^a-z0-9]', '', c) for c in components if c.strip()]
+    clean_tokens.sort()
+
+    return "|".join(clean_tokens)
 
 
 # --- QUICK LOCAL TEST (Run this file directly via `python utils_hasher.py`) ---
