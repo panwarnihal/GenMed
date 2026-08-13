@@ -35,6 +35,8 @@ from fastapi import APIRouter, File, HTTPException, UploadFile, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.routes.mapping import match_generic_alternative, MappingRequest
+from app.services.regulatory_service import check_regulatory_status
+from utils_hasher import generate_canonical_salt_key
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOGGER
@@ -161,12 +163,19 @@ class AuditResult(BaseModel):
     potential_savings: float
 
 
+class RegulatoryStatus(BaseModel):
+    status: str
+    is_banned: bool
+    warning_message: Optional[str] = None
+
+
 class AuditedLineItem(BaseModel):
     brand_name: str
     quantity_units: int
     printed_mrp: float
     paid_price: float
     audit_summary: AuditResult
+    regulatory_summary: RegulatoryStatus
 
 
 class FinalAuditReport(BaseModel):
@@ -500,12 +509,18 @@ async def upload_invoice_image(
             potential_savings=potential_savings
         )
 
+        # Regulatory Check
+        canonical_salt = generate_canonical_salt_key(item.extracted_salt if item.extracted_salt else item.brand_name)
+        reg_status_dict = check_regulatory_status(canonical_salt)
+        reg_status = RegulatoryStatus(**reg_status_dict)
+
         audited_line = AuditedLineItem(
             brand_name=item.brand_name,
             quantity_units=item.quantity_units,
             printed_mrp=item.printed_mrp,
             paid_price=item.paid_price,
-            audit_summary=audit_result
+            audit_summary=audit_result,
+            regulatory_summary=reg_status
         )
 
         audited_items.append(audited_line)
