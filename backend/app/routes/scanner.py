@@ -36,6 +36,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.routes.mapping import match_generic_alternative, MappingRequest
 from app.services.regulatory_service import check_regulatory_status
+from app.services.ddi_service import check_batch_interactions, build_ddi_summary
 from utils_hasher import generate_canonical_salt_key
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -184,6 +185,8 @@ class FinalAuditReport(BaseModel):
     total_overcharge: float
     total_potential_savings: float
     audited_items: List[AuditedLineItem]
+    ddi_summary: dict
+    """Drug-Drug Interaction summary for all salts present in this invoice."""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -471,6 +474,7 @@ async def upload_invoice_image(
 
     # ── 6. Mapping & Audit Engine ─────────────────────────────────────────────
     audited_items = []
+    all_canonical_salts: List[str] = []   # collected for batch DDI analysis
     total_paid = 0.0
     total_overcharge = 0.0
     total_potential_savings = 0.0
@@ -528,10 +532,32 @@ async def upload_invoice_image(
         total_overcharge += overcharge_amount
         total_potential_savings += potential_savings
 
+        # Accumulate canonical salts for batch DDI analysis
+        if canonical_salt:
+            all_canonical_salts.append(canonical_salt)
+
+    # ── 7. Drug-Drug Interaction check across entire invoice ──────────────────
+    ddi_alerts = check_batch_interactions(all_canonical_salts)
+    ddi_result = build_ddi_summary(ddi_alerts)
+
+    if ddi_alerts:
+        logger.warning(
+            "DDI check | invoice_id=%s | %d interaction(s) detected (%d HIGH severity)",
+            scan_result.invoice_id,
+            ddi_result["interaction_count"],
+            ddi_result["severity_breakdown"]["HIGH"],
+        )
+    else:
+        logger.info(
+            "DDI check | invoice_id=%s | No interactions detected.",
+            scan_result.invoice_id,
+        )
+
     return FinalAuditReport(
         invoice_id=scan_result.invoice_id,
         total_paid=round(total_paid, 2),
         total_overcharge=round(total_overcharge, 2),
         total_potential_savings=round(total_potential_savings, 2),
-        audited_items=audited_items
+        audited_items=audited_items,
+        ddi_summary=ddi_result,
     )
