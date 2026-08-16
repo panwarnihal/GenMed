@@ -1,6 +1,8 @@
 # PROJECT_CONTEXT.md — GenMed: Single Source of Truth
 
 > **Purpose:** This file is the definitive context anchor for any AI coding assistant or developer joining the GenMed project. It describes the full project scope, the exact repository layout, the live database infrastructure, every existing file and its role, the phased implementation roadmap, and strict engineering guardrails. Read this file before writing any code.
+>
+> **Last Updated:** 2026-08-16
 
 ---
 
@@ -14,10 +16,10 @@ GenMed is a deterministic, exact-match generic medicine mapping and healthcare s
 
 | # | Feature | Status | Description |
 |---|---------|--------|-------------|
-| 1 | **Generic Medicine Mapping** | 🟡 In Progress (Day 1 Focus) | Maps branded drug prescriptions to affordable Jan Aushadhi (PMBJP) government generics (~2,500 products) via SHA-256 exact-match salt hashing and MongoDB Atlas Search. |
-| 2 | **CDSCO Regulatory Compliance** | 🔴 Not Started (Phase 3) | Verifies formulations against CDSCO registries; flags banned Fixed Dose Combinations (FDCs) and Schedule H/H1/X restrictions. |
-| 3 | **OCR + NLP Invoice Scanner & Price Auditor** | 🔴 Not Started (Phase 4) | Ingests messy Indian pharmacy tax bills / strip foil photos via OCR (Vision API/Textract), extracts structured JSON via fine-tuned medical NER, audits prices against legal MRPs and NPPA/DPCO Schedule-I ceiling prices. |
-| 4 | **Drug-Drug Interaction (DDI) Checker** | 🟡 Stub Exists (Phase 5) | Cross-references multi-item prescriptions against RxNorm/OpenFDA matrices for severity-stratified clinical alerting. Currently uses a hardcoded rule base of 3 known interactions. |
+| 1 | **Generic Medicine Mapping** | ✅ Working | Maps branded drug prescriptions to affordable Jan Aushadhi (PMBJP) government generics via `canonical_salt_key` normalization + MongoDB Atlas Search (`$search` aggregation). Frontend has full search form (brand + salt + price), live demo presets, animated score ring, savings bar, and no-match fallback card. |
+| 2 | **CDSCO Regulatory Compliance** | 🟡 Seeded + Service Live | `regulatory_service.py` checks every line item against a MongoDB `cdsco_regulations` collection (1h TTL cache + LRU). `seed_cdsco.py` seeds 6 banned FDCs and 7 Schedule H1 drugs. Called automatically by the invoice scanner pipeline. |
+| 3 | **OCR + NLP Invoice Scanner & Price Auditor** | ✅ Backend Complete, Frontend UI Live | `POST /api/v1/scanner/upload` accepts JPG/PNG/WEBP (≤10 MB), calls **Google Gemini 1.5 Flash** Vision with a strict medical NER extraction prompt, validates output through Pydantic, runs mapping engine per line item, calculates MRP overcharges, and runs a batch DDI check. Returns a fully typed `FinalAuditReport`. Frontend `BillAuditor.jsx` has drag-and-drop upload zone, sample bill simulator, animated progress bar, three metric cards (total billed / overcharges / generic savings), a stacked savings bar, and an itemized audit table with per-row generic alternatives. |
+| 4 | **Drug-Drug Interaction (DDI) Checker** | ✅ Production-Grade (In-Memory) | `ddi_service.py` has a comprehensive bidirectional `DDI_MATRIX` covering 20+ clinically documented pairs across 8 drug categories (antiplatelets, anticoagulants, antibiotics, statins, cardiac, ACE inhibitors, diabetes, antidepressants, seizure). Fully pairwise exhaustive O(n²), severity-ranked (HIGH→MODERATE→LOW), and auto-called at the end of every invoice scan. |
 
 ### 1.2 Secondary Features (Future Phases)
 
@@ -34,63 +36,121 @@ Every file and directory in the repo is documented below so any AI can immediate
 ```
 D:\GenMed\
 │
-├── PROJECT_CONTEXT.md          ← THIS FILE. Read first.
-├── README.md                   ← Public-facing project overview with architecture mermaid diagram.
+├── README.md                      ← Public-facing project overview with architecture mermaid diagram.
+├── start-all.bat                  ← Windows batch script to start all 3 services in separate windows.
+├── start-all.ps1                  ← PowerShell equivalent startup script.
 │
-├── backend/                    ← Python / FastAPI microservice (the core engine)
-│   ├── .env                    ← MONGO_URI and DB_NAME for MongoDB Atlas connection.
-│   ├── main.py                 ← FastAPI app with 3 API endpoints:
-│   │                              GET  /api/v1/substitute?brand=<name>
-│   │                              GET  /api/v1/verify-batch/<batch_number>
-│   │                              POST /api/v1/check-interactions  {salts: [...]}
-│   ├── utils_hasher.py         ← generate_salt_hash() — normalizes ingredient lists,
-│   │                              alphabetizes, and returns SHA-256 hash + canonical string.
-│   ├── seed_db.py              ← Seeds MongoDB with 3 branded drugs, 3 generics, 2
-│   │                              blacklisted batches. Creates indexes on salt_composition_hash
-│   │                              and batch_number.
-│   ├── test_db.py              ← Quick MongoDB Atlas connectivity test (ping).
-│   └── venv/                   ← Python virtual environment (do NOT commit).
+├── backend/                       ← Python / FastAPI microservice (the core engine)
+│   ├── .env                       ← MONGO_URI, DB_NAME, GEMINI_API_KEY
+│   ├── main.py                    ← FastAPI app entry point. Registers CORS, includes routers (mapping, scanner),
+│   │                                 and also hosts legacy endpoints directly:
+│   │                                   GET  /                         → health check
+│   │                                   GET  /api/v1/substitute        → SHA-256 hash-based brand→generic lookup
+│   │                                   GET  /api/v1/verify-batch/:id  → CDSCO blacklist check
+│   │                                   POST /api/v1/check-interactions → DDI rule stub (3 rules, legacy)
+│   │                                   POST /api/v1/mapping/match     → Atlas Search endpoint (DUPLICATE — also in router)
+│   ├── utils_hasher.py            ← Two core functions:
+│   │                                   generate_salt_hash(active_ingredients)  → (sha256_hex, canonical_string)
+│   │                                   generate_canonical_salt_key(text)       → pipe-delimited canonical string
+│   ├── requirements.txt           ← fastapi, uvicorn, pydantic>=2.7, pymongo[srv], pandas, requests,
+│   │                                 python-dotenv, google-genai>=0.3.0, python-multipart
+│   ├── seed_db.py                 ← Seeds 3 branded drugs + 3 Jan Aushadhi generics + 2 blacklisted batches.
+│   │                                 Computes SHA-256 hashes and creates field indexes.
+│   ├── seed_generic_inventory.py  ← Bulk CSV→MongoDB upsert script. Reads data/raw/janaushadhi_master.csv,
+│   │                                 computes canonical_salt_key per row, bulk-upserts into Generic_Inventory.
+│   ├── seed_cdsco.py              ← Seeds cdsco_regulations collection: 6 banned FDCs + 7 Schedule H1 drugs.
+│   │                                 Uses upserts; creates indexes on rule_type, canonical_salt_key, drug_name.
+│   ├── test_db.py                 ← Quick MongoDB Atlas connectivity test (ping).
+│   ├── test_atlasscript.py        ← Atlas Search query testing script.
+│   ├── test_invoice_scanner.py    ← Integration test for the scanner endpoint using the requests library.
+│   ├── utils_hasher.py            ← Core hashing + canonicalization module (see above).
+│   └── app/
+│       ├── __init__.py
+│       ├── routes/
+│       │   ├── __init__.py
+│       │   ├── mapping.py         ← APIRouter at /api/v1/mapping/match (POST)
+│       │   │                         Accepts { query, extracted_salt }. Runs Lucene compound $search
+│       │   │                         on canonical_salt_key (5x boosted) + fuzzy generic_name match.
+│       │   │                         Falls back to regex find if Atlas Search index is compiling.
+│       │   └── scanner.py         ← APIRouter at /api/v1/scanner/upload (POST multipart/form-data)
+│       │                             Full OCR→NER→Mapping→Audit→DDI pipeline. See Section 5.3.
+│       └── services/
+│           ├── regulatory_service.py ← check_regulatory_status(canonical_salt_key):
+│           │                            Checks banned FDCs and Schedule H1 drugs from MongoDB
+│           │                            cdsco_regulations with 1h TTL + LRU(1024) caching.
+│           └── ddi_service.py        ← check_batch_interactions(canonical_salts) + build_ddi_summary():
+│                                        Bidirectional DDI_MATRIX with 20+ pairs across 8 drug categories.
+│                                        Pairwise O(n²), severity-sorted (HIGH→MODERATE→LOW).
 │
-├── gateway/                    ← Node.js / Express API Gateway (proxy layer)
-│   ├── .env                    ← PORT=5000, FASTAPI_BASE_URL=http://127.0.0.1:8000
-│   ├── server.js               ← Express server that proxies 3 routes to FastAPI backend:
-│   │                              GET  /api/v1/substitute
-│   │                              GET  /api/v1/verify-batch/:batchNumber
-│   │                              POST /api/v1/check-interactions
-│   ├── package.json            ← Dependencies: express@5, axios, cors, dotenv, nodemon.
-│   └── node_modules/           ← (do NOT commit)
+├── gateway/                       ← Node.js / Express API Gateway (proxy layer)
+│   ├── .env                       ← PORT=5000, FASTAPI_BASE_URL=http://127.0.0.1:8000
+│   ├── server.js                  ← Express server proxying 4 routes to FastAPI:
+│   │                                   GET  /api/v1/substitute
+│   │                                   GET  /api/v1/verify-batch/:batchNumber
+│   │                                   POST /api/v1/check-interactions
+│   │                                   POST /api/v1/mapping/match
+│   └── package.json               ← express@5, axios, cors, dotenv, nodemon
 │
-├── frontend/                   ← React.js + Vite client application
-│   ├── index.html              ← Vite HTML entry point.
-│   ├── vite.config.js          ← Vite config with React plugin.
-│   ├── package.json            ← Dependencies: react@19, react-dom@19, axios. Dev: vite@8.
-│   ├── src/
-│   │   ├── main.jsx            ← React DOM root mount (StrictMode).
-│   │   ├── App.jsx             ← Main app component. Contains:
-│   │   │                          - Search bar with text input (not yet autocomplete-constrained)
-│   │   │                          - Quick-select demo buttons: Brilinta 90mg, Augmentin 625 Duo, Lipitor 10mg
-│   │   │                          - Split-card comparison view (branded vs generic)
-│   │   │                          - Savings banner with percentage + annual estimate
-│   │   │                          - Failsafe box when no SHA-256 match exists
-│   │   │                          - Calls GET http://localhost:5000/api/v1/substitute?brand=<name>
-│   │   ├── App.css             ← Component styles (dark theme, split-card, savings banner, failsafe).
-│   │   ├── index.css           ← Global/reset styles (Vite scaffold, light/dark scheme support).
-│   │   └── assets/             ← Static assets (currently empty).
-│   └── node_modules/           ← (do NOT commit)
+├── frontend/                      ← React 19 + Vite 8 + Tailwind CSS client application
+│   ├── index.html                 ← Vite HTML entry point.
+│   ├── vite.config.js             ← Vite config with React plugin.
+│   ├── tailwind.config.js         ← Custom Tailwind config with galaxy-dark design tokens.
+│   ├── package.json               ← react@19, react-dom@19, react-router-dom, lucide-react, tailwindcss
+│   └── src/
+│       ├── main.jsx               ← React DOM root mount (StrictMode).
+│       ├── App.jsx                ← BrowserRouter + 4 routes:
+│       │                              /          → GenericFinder
+│       │                              /auditor   → BillAuditor
+│       │                              /about     → AboutUs
+│       │                              /contact   → ContactUs
+│       │                             Shared Layout wraps each: Navbar + main + footer.
+│       │                             Health-polls FastAPI every 15s to track backend status.
+│       ├── api.js                 ← Two exported functions:
+│       │                              matchGenericAlternative(query, extractedSalt)
+│       │                                → POST /api/v1/mapping/match directly to FastAPI :8000
+│       │                              checkHealth() → GET / on FastAPI :8000
+│       ├── index.css              ← Global styles + design tokens (glass-card, gm-input, btn-primary,
+│       │                             gradient-text, skeleton, audit-row, drop-zone, animations).
+│       └── components/
+│           ├── Navbar.jsx         ← Sticky glassmorphic navbar. Desktop: GooeyNav (purple/violet palette,
+│           │                         boxy 3px border-radius highlight). Mobile: slide-down menu.
+│           │                         4 routes: MediMatch (/), BillSense (/auditor), About Us, Contact.
+│           ├── GooeyNav.jsx       ← React Bits animated gooey navigation component.
+│           ├── GooeyNav.css       ← Gooey SVG filter + particle animation styles.
+│           ├── GenericFinder.jsx  ← Route: /  (brand name "MediMatch")
+│           │                         Left column: title glass-card, search form (brand + salt + price),
+│           │                           demo pill buttons (4 presets including Crocin Advance 500mg).
+│           │                         Right column: LoadingSkeleton, ResultCard (split brand vs JA card,
+│           │                           ScoreRing SVG, SavingsBar), NoMatchCard, "How it works" grid.
+│           │                         Calls matchGenericAlternative() via api.js.
+│           ├── BillAuditor.jsx    ← Route: /auditor  (brand name "BillSense")
+│           │                         Drag-and-drop zone + sample bill simulator (4 hardcoded line items).
+│           │                         Runs parallel matchGenericAlternative() per line item with progress %.
+│           │                         Renders: 3 MetricCards (total billed / overcharges / generic savings),
+│           │                           DonutRing SVG, stacked savings bar, itemized audit table
+│           │                           with per-row: overcharge badge, Jan Aushadhi alt + price, savings.
+│           │                         ⚠️ Note: file upload currently triggers sample bill (OCR backend
+│           │                            not yet wired to frontend — scanner endpoint exists in backend only).
+│           ├── AboutUs.jsx        ← About page with 3-column stats grid (glassy styling).
+│           └── ContactUs.jsx      ← Contact page.
 │
-├── data-scripts/               ← EMPTY. Intended for CSV cleaning and Atlas seeding scripts.
+├── data/
+│   └── raw/
+│       └── janaushadhi_master.csv ← PMBJP Jan Aushadhi product catalog CSV (raw source data,
+│                                     249 KB). Used by seed_generic_inventory.py.
 │
 └── docs/
     ├── srs/
-    │   └── GenMed_SRS_v1.0.md  ← Full Software Requirements Specification (315 lines).
-    │                              Contains FR-1 through FR-11, NFR-1 through NFR-5,
-    │                              sequence diagrams, ERD, and database JSON schemas.
+    │   └── GenMed_SRS_v1.0.md     ← Full Software Requirements Specification (FR-1 through FR-11,
+    │                                  NFR-1 through NFR-5, sequence diagrams, ERD, DB JSON schemas).
+    ├── status_updates/
+    │   ├── PROJECT_CONTEXT.md     ← THIS FILE. Read first.
+    │   ├── Status(12 aug).md      ← Status snapshot at Aug 12 (Phase 1 baseline + UI polish log).
+    │   └── Status(16 aug).md      ← Status snapshot at Aug 16 (Phase 2–3 feature completion log).
     ├── presentation/
-    │   └── GenMed_Presentation.pptx  ← Capstone presentation slides.
+    │   └── GenMed_Presentation.pptx ← Capstone presentation slides.
     └── temp_docs/
-        └── pharma_implementation_plan.md  ← Master implementation plan for Phases 3–6
-                                              (CDSCO, OCR/NLP, NPPA Audit, DDI Engine).
-                                              Contains sprint timeline (12 weeks / 6 sprints).
+        └── pharma_implementation_plan.md ← Master implementation plan for Phases 3–6.
 ```
 
 ---
@@ -103,11 +163,13 @@ D:\GenMed\
 |------|--------|
 | **Runtime** | Python 3.14 (system-installed at `C:\Python314\`) |
 | **Virtual Env** | `backend/venv/` (activate via `backend\venv\Scripts\activate`) |
-| **Framework** | FastAPI |
-| **Database Driver** | PyMongo (direct MongoDB driver) |
-| **Key Packages** | `fastapi`, `pymongo`, `python-dotenv`, `pydantic` |
+| **Framework** | FastAPI with Uvicorn ASGI server |
+| **Database Driver** | PyMongo (direct MongoDB driver, `pymongo[srv]`) |
+| **Vision AI** | `google-genai >= 0.3.0` (Google Gemini 1.5 Flash) |
+| **Key Packages** | `fastapi`, `uvicorn[standard]`, `pymongo[srv]`, `pydantic>=2.7`, `pandas`, `python-dotenv`, `google-genai`, `python-multipart` |
 | **Start Command** | `cd backend && venv\Scripts\uvicorn main:app --reload` |
 | **Runs On** | `http://127.0.0.1:8000` |
+| **API Docs** | `http://127.0.0.1:8000/docs` (Swagger UI auto-generated) |
 
 ### 3.2 Gateway — Node.js / Express
 
@@ -119,19 +181,22 @@ D:\GenMed\
 | **Runs On** | `http://localhost:5000` |
 | **Role** | Proxies all `/api/v1/*` requests to FastAPI at `http://127.0.0.1:8000` |
 
-### 3.3 Frontend — React / Vite
+### 3.3 Frontend — React / Vite / Tailwind
 
 | Item | Detail |
 |------|--------|
 | **Framework** | React 19 + Vite 8 |
-| **Key Packages** | `react`, `react-dom`, `axios` |
+| **Styling** | Tailwind CSS with custom galaxy-dark design system |
+| **UI Library** | Lucide React (icons), React Bits GooeyNav |
+| **Routing** | `react-router-dom` (BrowserRouter, 4 routes) |
+| **Key Packages** | `react`, `react-dom`, `react-router-dom`, `lucide-react`, `tailwindcss` |
 | **Start Command** | `cd frontend && npm run dev` |
 | **Runs On** | `http://localhost:5173` (Vite default) |
-| **API Target** | Hardcoded to `http://localhost:5000/api/v1` in `App.jsx` line 5 |
+| **API Target** | `http://127.0.0.1:8000` hardcoded in `src/api.js` line 2 (bypasses gateway for mapping calls) |
 
 ### 3.4 Startup Order
 
-**All three services must be running simultaneously:**
+**All three services must be running simultaneously.** The `start-all.bat` or `start-all.ps1` scripts in the root directory launch all three in separate terminal windows.
 
 ```
 1. Backend (FastAPI):   cd backend  && venv\Scripts\uvicorn main:app --reload
@@ -151,261 +216,254 @@ D:\GenMed\
 - **Connection String:** Stored in `backend/.env` as `MONGO_URI`.
 - **Auth:** Username/password embedded in URI (Atlas DB User).
 
-### 4.2 Current Collections (as seeded by `seed_db.py`)
+### 4.2 Collections
 
-The current seed data uses legacy collection names from the initial prototype. These are being migrated to the canonical names listed in the instructions.
-
-| # | Current Collection Name | Target Canonical Name | Documents | Description |
-|---|------------------------|-----------------------|-----------|-------------|
-| 1 | `Branded_Drugs` | `genmeds` | 3 | Commercial branded medicine catalog with `brand_name`, `manufacturer`, `active_ingredients[]`, `salt_composition_hash`, `mrp_price`. |
-| 2 | `Generic_Inventory` | `janaushadhi_master` | 3 | PMBJP government generic catalog with `drug_code`, `generic_name`, `active_ingredients[]`, `salt_composition_hash`, `jan_aushadhi_price`, `unit_size`. |
-| 3 | `Blacklisted_Batches` | (keep as-is) | 2 | CDSCO OSINT spurious/NSQ batch recall alerts with `drug_name`, `batch_number`, `reason_for_recall`, `alert_month`. |
+| # | Collection Name | Documents | Description |
+|---|----------------|-----------|-------------|
+| 1 | `Branded_Drugs` | 3 (seed) | Commercial branded medicine catalog. Fields: `brand_name`, `manufacturer`, `active_ingredients[]`, `salt_composition_hash`, `canonical_salt_string`, `mrp_price`. |
+| 2 | `Generic_Inventory` | 3 (seed) + bulk CSV | PMBJP Jan Aushadhi generic catalog. Fields: `drug_code`, `generic_name`, `canonical_salt_key`, `unit_size`, `jan_aushadhi_price`. Bulk-populated via `seed_generic_inventory.py` from `janaushadhi_master.csv`. |
+| 3 | `Blacklisted_Batches` | 2 | CDSCO OSINT spurious/NSQ batch recall alerts. Fields: `drug_name`, `batch_number`, `manufacturer_on_label`, `reason_for_recall`, `alert_month`. |
+| 4 | `cdsco_regulations` | 13 | CDSCO compliance ruleset. Fields: `rule_type` (`BANNED_FDC` or `SCHEDULE_H1`), `canonical_salt_key` (for FDCs), `drug_name` (for H1), `status`, `message`. |
 
 ### 4.3 Indexes Deployed
 
-- `Branded_Drugs.salt_composition_hash` — For deterministic hash lookups.
-- `Generic_Inventory.salt_composition_hash` — For exact-match generic mapping.
-- `Blacklisted_Batches.batch_number` — For batch verification queries.
+| Collection | Field | Type | Purpose |
+|-----------|-------|------|---------|
+| `Branded_Drugs` | `salt_composition_hash` | Standard | Deterministic hash lookups |
+| `Generic_Inventory` | `salt_composition_hash` | Standard | Exact-match generic mapping |
+| `Blacklisted_Batches` | `batch_number` | Standard | Batch verification queries |
+| `cdsco_regulations` | `rule_type` | Standard | Filter by FDC/Schedule H1 |
+| `cdsco_regulations` | `canonical_salt_key` | Standard | Substring match for FDC checks |
+| `cdsco_regulations` | `drug_name` | Standard | Exact match for H1 drugs |
 
-> **Future:** 6 Atlas Search indexes (Lucene-backed) will replace simple field indexes for the `janaushadhi_master`, `genmeds`, and `salt_mappings` collections to enable typo-tolerant, fuzzy, order-agnostic compound salt matching from OCR reads.
+> **Atlas Search:** A Lucene-backed `$search` index named `"default"` on `Generic_Inventory` is used by the mapping engine for fuzzy/typo-tolerant compound matching. This must be configured in the MongoDB Atlas UI under the cluster's Search tab.
 
-### 4.4 Schema Examples
+### 4.4 The Two Hashing Functions (`utils_hasher.py`)
 
-**`Branded_Drugs` (current) / `genmeds` (target):**
-```json
-{
-  "_id": "ObjectId('...')",
-  "brand_name": "Augmentin 625 Duo",
-  "manufacturer": "GSK",
-  "active_ingredients": [
-    { "salt": "Clavulanic Acid", "strength": "125mg" },
-    { "salt": "Amoxicillin", "strength": "500mg" }
-  ],
-  "salt_composition_hash": "a1b2c3...sha256hex",
-  "canonical_salt_string": "amoxicillin_500mg|clavulanic acid_125mg",
-  "mrp_price": 200.0
-}
-```
+#### `generate_salt_hash(active_ingredients: List[Dict])` → `(sha256_hex, canonical_string)`
+Used by `seed_db.py` to fingerprint structured `{salt, strength}` ingredient lists.
+1. Lowercase + strip salt and strength.
+2. Build `"salt_strength"` tokens (e.g., `"amoxicillin_500mg"`).
+3. Alphabetically sort tokens (ingredient order never matters).
+4. Join with `|` → canonical string.
+5. SHA-256 hex digest of canonical string.
 
-**`Generic_Inventory` (current) / `janaushadhi_master` (target):**
-```json
-{
-  "_id": "ObjectId('...')",
-  "drug_code": "PMBI-0421",
-  "generic_name": "Amoxicillin & Potassium Clavulanate Tablets 625 mg",
-  "active_ingredients": [
-    { "salt": "Amoxicillin", "strength": "500mg" },
-    { "salt": "Clavulanic Acid", "strength": "125mg" }
-  ],
-  "salt_composition_hash": "a1b2c3...sha256hex",
-  "canonical_salt_string": "amoxicillin_500mg|clavulanic acid_125mg",
-  "jan_aushadhi_price": 50.0,
-  "unit_size": "10 Tablets"
-}
-```
-
-**`Blacklisted_Batches`:**
-```json
-{
-  "_id": "ObjectId('...')",
-  "drug_name": "Brilinta 90mg (Counterfeit Alert)",
-  "batch_number": "BT1089X",
-  "manufacturer_on_label": "AstraZeneca (Spurious Label)",
-  "reason_for_recall": "Spurious / Counterfeit batch detected by CDSCO North Zone",
-  "alert_month": "July 2026"
-}
-```
-
-### 4.5 The Salt Hashing Algorithm (`utils_hasher.py`)
-
-The `generate_salt_hash()` function is the heart of the deterministic engine:
-1. Receives a list of `{ "salt": "...", "strength": "..." }` dicts.
-2. Strips whitespace, lowercases both salt and strength.
-3. Creates `"salt_strength"` tokens (e.g., `"amoxicillin_500mg"`).
-4. **Alphabetically sorts** the tokens so ingredient order never matters.
-5. Joins tokens with `|` into a canonical string.
-6. Returns the **SHA-256 hex digest** of that canonical string.
-
-**Critical invariant:** A branded drug and its generic equivalent with identical active ingredients at identical strengths will ALWAYS produce the same hash, regardless of the order the ingredients are listed.
+#### `generate_canonical_salt_key(text: str)` → `pipe-delimited string`
+Used by the mapping engine, scanner pipeline, and regulatory service for free-text normalization.
+1. Lowercase entire string.
+2. Strip pharmacopeial noise (`IP`, `BP`, `USP`, `trihydrate`, `hydrochloride`, `SR`, `ER`, `acid`, etc.).
+3. Normalize synonyms: `amoxycillin → amoxicillin`, `clavulanic → clavulanate`, `acetaminophen → paracetamol`.
+4. Normalize unit spacing (`500 mg → 500mg`).
+5. Split on `+` or `and`, strip non-alphanumeric characters.
+6. Alphabetically sort tokens, join with `|`.
 
 ---
 
 ## 5. Core Engine Pipelines
 
-### 5.1 Pipeline 1: Generic Mapping via Exact-Match Hash (IMPLEMENTED)
+### 5.1 Pipeline 1: Generic Mapping via Atlas Search (LIVE)
 
 ```
-User searches "Augmentin 625 Duo"
-  → Backend finds branded drug record in Branded_Drugs collection
-  → Reads its salt_composition_hash
-  → Queries Generic_Inventory for identical hash
-  → Match found → returns generic name, price, and savings calculation
-  → No match → FAILSAFE_TRIGGERED (no probabilistic fallback, ever)
+User types brand name + optional salt composition
+  → POST /api/v1/mapping/match { query, extracted_salt }
+  → utils_hasher.generate_canonical_salt_key(extracted_salt || query)
+  → MongoDB $search compound pipeline:
+      Priority 1: text match on canonical_salt_key (5x boosted)
+      Priority 2: fuzzy text match on generic_name (maxEdits=1, prefixLength=3)
+  → Returns { match_found: true, top_alternative: { drug_code, generic_name, jan_aushadhi_price, search_score } }
+  → No match → { match_found: false }
+  → Fallback: regex find on canonical_salt_key if Atlas Search index is compiling
 ```
 
-**Savings calculation:**
-- `saved_rupees = branded.mrp_price - generic.jan_aushadhi_price`
-- `saved_percentage = ((branded - generic) / branded) * 100`
-- `annual_savings_estimate = saved_rupees * 52` (chronic usage assumption)
-
-### 5.2 Pipeline 2: CDSCO Batch Verification (IMPLEMENTED — basic)
+### 5.2 Pipeline 2: Legacy SHA-256 Exact Match (LIVE — legacy endpoint)
 
 ```
-User submits batch number (e.g., "BT1089X")
-  → Backend normalizes to uppercase, queries Blacklisted_Batches
-  → Match found → DANGER_BLACKLISTED / RED_ALERT
-  → No match → SAFE / GREEN_VERIFIED
+GET /api/v1/substitute?brand=<name>
+  → Case-insensitive regex on Branded_Drugs.brand_name
+  → Read salt_composition_hash from branded record
+  → Exact match query on Generic_Inventory.salt_composition_hash
+  → Match: returns branded + generic + savings calculation
+  → No match: FAILSAFE_TRIGGERED (never falls back to probabilistic)
 ```
 
-### 5.3 Pipeline 3: Drug-Drug Interaction Check (STUB — hardcoded rules)
+### 5.3 Pipeline 3: OCR → NER → Audit → DDI (LIVE on backend)
 
 ```
-User submits list of salt names
-  → Backend normalizes to lowercase, checks against 3 hardcoded rule pairs:
-     • Ticagrelor + Aspirin (MODERATE_TO_HIGH)
-     • Amoxicillin + Methotrexate (HIGH)
-     • Atorvastatin + Clarithromycin (HIGH)
-  → Returns detected warnings or SAFE_COMBINATION
+POST /api/v1/scanner/upload (multipart image file)
+  ├── 1. MIME type guard (JPG/PNG/WEBP/BMP, ≤10 MB)
+  ├── 2. Gemini 1.5 Flash Vision call with deterministic NER prompt
+  │         (temperature=0.1, response_mime_type="application/json")
+  ├── 3. JSON extraction (_extract_json_block): strips markdown fences, finds outermost braces
+  ├── 4. Pydantic validation (InvoiceScanResult → list of ExtractedLineItem)
+  ├── 5. Per line-item loop:
+  │     ├── matchGenericAlternative() → Jan Aushadhi alternative + price
+  │     ├── Overcharge = paid_price > (mrp × qty) → True/False + amount
+  │     ├── Generic savings = paid_price - (JA_price × qty)
+  │     └── check_regulatory_status(canonical_salt_key) → APPROVED / BANNED / SCHEDULE_H1
+  ├── 6. check_batch_interactions(all_canonical_salts) → DDI alerts across entire invoice
+  └── Returns FinalAuditReport {
+        invoice_id, total_paid, total_overcharge, total_potential_savings,
+        audited_items[], ddi_summary { interaction_count, has_critical_interactions,
+                                       severity_breakdown, alerts[] }
+      }
 ```
 
-> **TODO:** Replace hardcoded rules with RxNorm/OpenFDA clinical interaction matrix queries.
+**Gemini NER Extraction Prompt rules (enforced):**
+- UPPERCASE brand names, no batch/date contamination.
+- `invoice_id = "UNKNOWN"` if not present; `"UNREADABLE"` sentinel if image is not a bill.
+- Only report what is visible — no hallucination.
+- JSON only at root, no markdown fences.
 
-### 5.4 Pipeline 4: OCR → NER Extraction (NOT STARTED)
+### 5.4 Pipeline 4: CDSCO Regulatory Check (LIVE)
 
-Will extract structured JSON from pharmacy bill images. Target NER schema:
-```json
-{
-  "brand_name": "AUGMENTIN 625 DUO",
-  "quantity_units": 10,
-  "form_factor": "TABLET",
-  "batch_number": "C2381",
-  "expiry_date": "2027-08",
-  "printed_mrp_per_pack": 223.40,
-  "paid_price_total": 223.40
-}
+```
+check_regulatory_status(canonical_salt_key)
+  → 1h TTL in-memory cache refresh from cdsco_regulations MongoDB collection
+  → LRU(1024) cache per unique canonical_salt_key
+  → Check 1: BANNED_FDC — substring match of banned canonical_salt_key in input
+  → Check 2: SCHEDULE_H1 — exact token match of drug_name within canonical_salt_key
+  → Default: APPROVED
 ```
 
-### 5.5 Pipeline 5: NPPA/DPCO Price Audit (NOT STARTED)
+### 5.5 Pipeline 5: Drug-Drug Interaction Check (LIVE — in-memory)
 
-Will compare `paid_price` against two statutory thresholds:
-- **Threshold 1:** Printed MRP (selling above MRP is illegal under Legal Metrology Act).
-- **Threshold 2:** DPCO Schedule-I ceiling price (for essential medicines, NPPA notifies maximum unit price).
+```
+check_batch_interactions(canonical_salts: List[str])
+  → Flatten + split '|'-delimited composite keys into individual salt tokens
+  → normalize: strip, lowercase, remove spaces
+  → O(n²) pairwise check via itertools.combinations
+  → Bidirectional DDI_MATRIX lookup (a→b, then b→a)
+  → Collect InteractionAlert { drug_a, drug_b, severity, description }
+  → Sort: HIGH (rank 1) → MODERATE (rank 2) → LOW (rank 3), then alphabetically
+  → build_ddi_summary() packages into FinalAuditReport.ddi_summary dict
+```
 
-### 5.6 Data Preprocessing & Canonicalization Rule
-
-All drug compositions are normalized into a `canonical_salt_key` by:
-1. Lowercasing and stripping pharmacopeial noise tags (`IP`, `BP`, `USP`, `Trihydrate`, `Hydrochloride`, `Tablet`, `SR`, etc.).
-2. Normalizing unit weights without spacing (`500 mg` → `500mg`).
-3. Alphabetically sorting multi-salt components joined by underscores or pipes.
+**DDI_MATRIX covers 20+ pairs across 8 categories:**
+- Antiplatelets: Clopidogrel + Omeprazole/Esomeprazole/Aspirin
+- Anticoagulants: Warfarin + Aspirin/Ibuprofen/Naproxen/Metronidazole/Fluconazole/Amiodarone
+- Antibiotics: Ciprofloxacin + Calcium/Theophylline/Tizanidine; Amoxicillin + Methotrexate; Clarithromycin + Atorvastatin/Simvastatin/Carbamazepine
+- Statins: Atorvastatin + Gemfibrozil
+- Cardiac: Digoxin + Amiodarone/Clarithromycin/Spironolactone
+- ACE Inhibitors: Lisinopril + Potassium/Spironolactone
+- Diabetes: Metformin + Iodine Contrast/Alcohol
+- Antidepressants: Fluoxetine + Tramadol/MAOIs
+- Seizure: Phenytoin + Fluconazole/Carbamazepine
 
 ---
 
 ## 6. API Endpoint Reference
 
-All endpoints are proxied through the Gateway (`localhost:5000`) to the FastAPI backend (`localhost:8000`).
+All endpoints are on the FastAPI backend at `http://127.0.0.1:8000`. The Express gateway at `localhost:5000` proxies a subset.
 
-| Method | Gateway URL | FastAPI URL | Purpose | Status |
-|--------|-------------|-------------|---------|--------|
-| `GET` | `/api/v1/substitute?brand=<name>` | Same | Deterministic generic mapping | ✅ Working |
-| `GET` | `/api/v1/verify-batch/:batchNumber` | `/api/v1/verify-batch/<batch_number>` | CDSCO batch blacklist check | ✅ Working |
-| `POST` | `/api/v1/check-interactions` | Same | DDI salt interaction check | ✅ Working (stub) |
+| Method | URL | Proxied by Gateway | Purpose | Status |
+|--------|-----|--------------------|---------|--------|
+| `GET` | `/` | ✗ | Health check | ✅ Live |
+| `GET` | `/api/v1/substitute?brand=<name>` | ✅ | Legacy SHA-256 brand→generic lookup | ✅ Live |
+| `GET` | `/api/v1/verify-batch/{batch_number}` | ✅ | CDSCO batch blacklist check | ✅ Live |
+| `POST` | `/api/v1/check-interactions` | ✅ | Legacy DDI stub (3 hardcoded rules) | ✅ Live |
+| `POST` | `/api/v1/mapping/match` | ✅ | Atlas Search mapping engine | ✅ Live (primary) |
+| `POST` | `/api/v1/scanner/upload` | ✗ | Gemini OCR + full audit pipeline | ✅ Live (backend only) |
 
-### Response Shapes
-
-**Substitute (SUCCESS):**
-```json
-{
-  "status": "SUCCESS",
-  "match_type": "DETERMINISTIC_SHA256_EXACT",
-  "salt_composition_hash": "...",
-  "branded_drug": { ... },
-  "generic_match": { ... },
-  "savings": {
-    "saved_rupees": 150.0,
-    "saved_percentage": 75.0,
-    "annual_savings_estimate": 7800.0
-  }
-}
-```
-
-**Substitute (FAILSAFE):**
-```json
-{
-  "status": "FAILSAFE_TRIGGERED",
-  "message": "No exact deterministic chemical match found...",
-  "branded_drug": { ... },
-  "generic_match": null,
-  "savings": null
-}
-```
+> **Note:** The frontend `api.js` calls FastAPI **directly** at port 8000 (not via the gateway at 5000). The gateway is available but not used by current frontend code.
 
 ---
 
-## 7. Phased Implementation Roadmap
+## 7. Frontend Design System
+
+**Theme:** Galaxy-dark glassmorphism. Deep black/slate background with radial gradient (`from-slate-900 via-[#0a0a0c] to-black`). Translucent glass cards with backdrop blur.
+
+**Key CSS utilities defined in `index.css`:**
+
+| Class | Description |
+|-------|-------------|
+| `.glass-card` | `bg-slate-900/50 backdrop-blur-xl border border-slate-800/60` |
+| `.gm-input` | Dark-themed input with focus ring |
+| `.btn-primary` | Gradient emerald CTA button with hover lift |
+| `.gradient-text` | `bg-gradient-to-r from-emerald-400 to-teal-300` text |
+| `.skeleton` | Animated shimmer loading placeholder |
+| `.audit-row` | Hover highlight for table rows |
+| `.drop-zone` | Dashed border dropzone with drag-over styling |
+| `@keyframes fadeIn` | 0.4s opacity fade |
+| `@keyframes slideUp` | 0.4s translate + opacity slide |
+
+**Color palette (Tailwind HSL tokens):**
+- Brand accent: Emerald 400/500, Teal 400/600
+- GooeyNav particles: Purple/Violet (`#a855f7`, `#d946ef`, `#c084fc`, `#f0abfc`)
+- Overcharge signals: Amber 400/500
+- Safe/generic signals: Emerald 400/500
+- Danger: Red 300/500
+
+**Navigation branding:**
+- Route `/` = **MediMatch** (Generic Medicine Finder)
+- Route `/auditor` = **BillSense** (Smart Bill Auditor)
+
+---
+
+## 8. Phased Implementation Roadmap
 
 | Phase | Module | Status | Key Deliverables |
 |-------|--------|--------|------------------|
-| **1–2** | Core Infra & Generic Mapping | 🟡 In Progress | MongoDB setup, SHA-256 hash engine, FastAPI endpoints, Express gateway, React search UI, seed data. **Current focus.** |
-| **3** | CDSCO Regulatory Compliance | 🔴 Not Started | Ingest CDSCO approved APIs & banned FDC gazettes. Parse combination brands into active ingredients. Return compliance badges (APPROVED / BANNED_FDC / SCHEDULE_H1). |
-| **4** | OCR/NLP Invoice Scanner + NPPA Audit | 🔴 Not Started | Vision API/Textract OCR integration. Fine-tuned medical NER. DPCO Schedule-I ceiling price indexing. Overcharge math engine. |
-| **5** | DDI Safety Knowledge Graph | 🔴 Not Started | Replace hardcoded rules with RxNorm/OpenFDA graph queries. Support 15+ concurrent medications. Severity stratification (High/Moderate/Low). |
+| **1–2** | Core Infra & Generic Mapping | ✅ Complete | MongoDB setup, SHA-256 hash engine, FastAPI endpoints, Express gateway, React SPA with multi-page routing, Atlas Search integration, seed data pipeline. |
+| **3** | CDSCO Regulatory Compliance | 🟡 Backend Live | `regulatory_service.py` + `seed_cdsco.py` operational. Called inside scanner pipeline. Frontend display of regulatory status per line item is not yet wired. |
+| **3b** | OCR/NLP Invoice Scanner | ✅ Backend Complete | Gemini 1.5 Flash Vision pipeline fully implemented. Frontend `BillAuditor.jsx` has complete audit UI but still uses sample data internally — OCR backend endpoint not yet wired to the file upload in the UI. |
+| **3c** | DDI Safety Engine | ✅ Production In-Memory | Full DDI matrix with 20+ pairs. Auto-runs on invoice scan. Legacy 3-rule stub still exists in `main.py` (`/api/v1/check-interactions`) but is superseded by `ddi_service.py`. |
+| **4** | NPPA/DPCO Price Audit | 🔴 Not Started | DPCO Schedule-I ceiling price indexing; overcharge math against statutory price ceilings (separate from MRP overcharge already implemented). |
+| **5** | Advanced DDI (RxNorm/OpenFDA) | 🔴 Not Started | Replace in-memory matrix with live RxNorm/OpenFDA API queries for broader coverage. |
 | **6** | End-to-End Polish & Launch | 🔴 Not Started | Unified audit report UI. Load testing (<3s SLA). Medico-legal disclaimer audit. Production deployment. |
 
-### What Needs to Happen Right Now (Phase 1–2 Completion)
+---
 
-1. **Validate the end-to-end mapping flow:** Start all 3 services, search for a branded drug, confirm the correct generic match and savings are displayed.
-2. **Scale seed data:** Move from 3 test drugs to the full ~2,500 Jan Aushadhi catalog. Import real PMBJP CSV data.
-3. **Implement autocomplete:** The search input currently accepts free text. Per FR-1, it must constrain input via a dropdown populated from indexed MongoDB fields.
-4. **Set up Atlas Search indexes:** Transition from simple field indexes to Lucene-backed Atlas Search indexes for fuzzy/typo-tolerant matching.
-5. **Populate `data-scripts/` folder** with CSV cleaning and upsert scripts.
-6. **Rename collections** from prototype names (`Branded_Drugs`, `Generic_Inventory`) to canonical names (`genmeds`, `janaushadhi_master`).
+## 9. What Needs to Happen Next
+
+1. **Wire scanner endpoint to frontend:** `BillAuditor.jsx` file upload currently processes the hardcoded `SAMPLE_CHEMIST_BILL` instead of calling `POST /api/v1/scanner/upload`. The backend endpoint is fully ready — the frontend needs a `fetch` call to it.
+2. **Display regulatory status in BillAuditor UI:** The scanner backend returns `regulatory_summary` per line item (APPROVED / BANNED / SCHEDULE_H1), but the frontend table doesn't yet render it.
+3. **Display DDI summary in BillAuditor UI:** The `FinalAuditReport.ddi_summary` is returned by the backend but not yet surfaced in the frontend.
+4. **Scale seed data:** Run `seed_generic_inventory.py` against the full `janaushadhi_master.csv` (249 KB) to bulk-upsert the complete PMBJP catalog into `Generic_Inventory`.
+5. **Verify Atlas Search index:** Confirm the `"default"` Lucene index is active and configured on `Generic_Inventory` in the MongoDB Atlas UI (covers `canonical_salt_key` and `generic_name` fields).
+6. **Move API URL to env var:** `frontend/src/api.js` line 2 hardcodes `http://127.0.0.1:8000`. Should use `import.meta.env.VITE_API_URL`.
+7. **Rename legacy collections:** `Branded_Drugs` → `genmeds`, `Generic_Inventory` → `janaushadhi_master` (update all references in `main.py`, `seed_db.py`, `mapping.py`).
+8. **DDI display in GenericFinder:** Surface DDI warnings when a user searches a salt that has known interactions.
 
 ---
 
-## 8. Data Versioning & Seeding Strategy
-
-- **Raw and cleaned Jan Aushadhi CSV files** should be committed under a `data/` folder in the repository for reproducible local seeding.
-- The seeding/upsert script must push cleaned catalog updates directly into `genmed_db` using **upserts** — explicitly **without dropping Atlas Search indexes** to ensure zero downtime.
-- The `data-scripts/` directory is intended for all CSV preprocessing, normalization, and MongoDB bulk-import scripts.
-
----
-
-## 9. Engineering Guardrails (MANDATORY)
+## 10. Engineering Guardrails (MANDATORY)
 
 Any AI coding assistant or developer contributing to this repository **MUST** adhere to these rules:
 
 1. **Always use MongoDB Atlas Search** for drug matching. Use `$search` aggregation pipelines. Do NOT implement fallback regex scripts, Levenshtein distance in application code, or probabilistic cosine similarity for matching logic.
 2. **Never suggest migrating to SQLite, PostgreSQL, or any SQL database.** The entire search pipeline is built on MongoDB Atlas Search with Lucene indexes.
-3. **Never use probabilistic/AI-generated drug substitutions.** The mapping engine must be 100% deterministic (exact SHA-256 hash match or FAILSAFE). Zero tolerance for "close enough" matches.
+3. **Never use probabilistic/AI-generated drug substitutions.** The mapping engine must be deterministic (canonical key match or Atlas Search) or explicit FAILSAFE. Zero tolerance for "close enough" matches without a score threshold.
 4. **Prioritize engine accuracy over UI polish.** Always validate and optimize core mapping accuracy and database logic before building out frontend features.
-5. **Preserve Atlas Search indexes.** Any data migration or seeding script must use upserts, not `drop()` + `insert()`.
+5. **Preserve Atlas Search indexes.** Any data migration or seeding script must use upserts (`bulk_write` with `UpdateOne(upsert=True)`), not `drop()` + `insert()`.
 6. **Windows development environment.** All commands must work on Windows / PowerShell. Paths use backslashes in the shell but forward slashes in code.
-7. **Environment variables stay in `.env` files**, never hardcoded in source (except the frontend API URL which is currently hardcoded and should be moved to a Vite env var).
+7. **Environment variables stay in `.env` files.** `MONGO_URI`, `DB_NAME`, `GEMINI_API_KEY` are all in `backend/.env`. Never hardcode credentials in source files.
+8. **Pydantic v2 syntax.** All models use `model_validate()`, `model_dump()`, and `field_validator`. Do not use v1 syntax (`.parse_obj()`, `.dict()`, `@validator`).
 
 ---
 
-## 10. Known Issues & Technical Debt
+## 11. Known Issues & Technical Debt
 
-| Issue | Location | Notes |
-|-------|----------|-------|
-| Emoji characters in print statements cause `UnicodeEncodeError` on Windows (cp1252) | `backend/test_db.py` | Fixed in `seed_db.py`, still present in `test_db.py`. |
-| Frontend API URL is hardcoded | `frontend/src/App.jsx` line 5 | Should use `import.meta.env.VITE_API_URL`. |
-| Search input is free-text, not autocomplete-constrained | `frontend/src/App.jsx` | Per SRS FR-1, must be dropdown-based. |
-| DDI checker uses only 3 hardcoded rules | `backend/main.py` lines 159–175 | Must be replaced with RxNorm/OpenFDA matrix queries. |
-| Collection names don't match target schema | `backend/main.py`, `seed_db.py` | Using `Branded_Drugs`/`Generic_Inventory` instead of `genmeds`/`janaushadhi_master`. |
-| `data-scripts/` directory is empty | `data-scripts/` | Needs CSV cleaning and Atlas seeding scripts. |
-| `index.css` has Vite scaffold styles that conflict with `App.css` theme | `frontend/src/index.css` | Light-mode defaults from Vite scaffold override the dark theme in `App.css`. |
-| Only 3 branded + 3 generic drugs seeded | `backend/seed_db.py` | Need full ~2,500 PMBJP catalog import. |
-| `salt_mappings` collection referenced in design but not yet created | Database | Canonical tokenized salt lexicon collection. |
-| No authentication or rate limiting implemented | Gateway | SRS mentions auth handler but none exists. |
+| Issue | Location | Priority |
+|-------|----------|----------|
+| BillAuditor file upload ignores actual file, uses sample data | `frontend/src/components/BillAuditor.jsx` L101–102 | HIGH |
+| Regulatory + DDI results from scanner not surfaced in UI | `BillAuditor.jsx` | HIGH |
+| Frontend API URL is hardcoded | `frontend/src/api.js` line 2 | MEDIUM |
+| Collection names don't match target schema | `main.py`, `seed_db.py`, `mapping.py` | MEDIUM |
+| Duplicate `/api/v1/mapping/match` endpoint in both `main.py` and `app/routes/mapping.py` | `backend/main.py` L217–304 | MEDIUM |
+| Legacy DDI stub in `main.py` superseded by `ddi_service.py` | `main.py` L162–214 | LOW |
+| Only 3 branded + 3 generic drugs in seed | `seed_db.py` | LOW (use CSV seeder) |
+| `salt_mappings` collection referenced in design but not created | Database | LOW |
+| No authentication or rate limiting | Gateway / FastAPI | LOW |
 
 ---
 
-## 11. Key Documents Reference
+## 12. Key Documents Reference
 
 | Document | Path | Purpose |
 |----------|------|---------|
-| This context file | `PROJECT_CONTEXT.md` | AI/developer onboarding anchor |
+| This context file | `docs/status_updates/PROJECT_CONTEXT.md` | AI/developer onboarding anchor |
+| August 12 Status | `docs/status_updates/Status(12 aug).md` | Phase 1 baseline + GooeyNav UI polish log |
+| August 16 Status | `docs/status_updates/Status(16 aug).md` | Phase 2–3 completion: scanner, DDI, regulatory, BillAuditor UI |
 | Software Requirements Specification | `docs/srs/GenMed_SRS_v1.0.md` | Full FR/NFR, sequence diagrams, ERD, schemas |
 | Master Implementation Plan (Phases 3–6) | `docs/temp_docs/pharma_implementation_plan.md` | Sprint timeline, CDSCO/OCR/NLP/DDI technical breakdown |
 | Project README | `README.md` | Public overview, architecture diagram, feature list |
