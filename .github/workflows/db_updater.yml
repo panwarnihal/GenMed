@@ -1,0 +1,42 @@
+name: Weekly GenMed Database Updater
+
+# Controls when the action will run
+on:
+  schedule:
+    # Runs at 00:00 every Sunday
+    - cron: '0 0 * * 0'
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  update-database:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out your repository code
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Python
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      # 3. Install dependencies (requests, pymongo, pandas, bs4, lxml)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install lxml html5lib  # Often needed by pandas read_html
+
+      # 4. Run the PMBI Scraper & Atlas Upsert
+      - name: Run PMBI Scraper & Atlas Upsert
+        env:
+          # Pulls the URI securely from GitHub Repository Secrets
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+        run: |
+          # The script automatically appends backend to sys.path, but we can also set PYTHONPATH
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/backend
+          python backend/app/scripts/update_pmbi_catalog.py
