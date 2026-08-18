@@ -209,6 +209,7 @@ Open three separate terminals and run each command:
 ```bash
 cd backend
 venv\Scripts\activate
+pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
