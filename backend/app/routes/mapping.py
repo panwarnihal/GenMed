@@ -58,80 +58,54 @@ async def match_generic_alternative(payload: MappingRequest):
     db = client["genmed_db"]
     collection = db["Generic_Inventory"]
 
-    # MongoDB Atlas $search Pipeline
-    pipeline = [
-        {
-            "$search": {
-                "index": "default",
-                "compound": {
-                    "should": [
-                        # Priority 1: Direct match on canonical salt key (Boosted 5.0x)
-                        {
-                            "text": {
-                                "query": canonical_key,
-                                "path": "canonical_salt_key",
-                                "score": {"boost": {"value": 5.0}}
-                            }
-                        },
-                        # Priority 2: Fuzzy text match for OCR typos on generic name
-                        {
-                            "text": {
-                                "query": payload.query,
-                                "path": "generic_name",
-                                "fuzzy": {
-                                    "maxEdits": 1,
-                                    "prefixLength": 3
-                                }
-                            }
-                        }
-                    ],
-                    "minimumShouldMatch": 1
-                }
-            }
-        },
-        {
-            "$project": {
-                "_id": 0,
-                "drug_code": 1,
-                "generic_name": 1,
-                "jan_aushadhi_price": 1,
-                "search_score": {"$meta": "searchScore"}
-            }
-        },
-        {"$limit": 1}
-    ]
-
     try:
-        results = list(collection.aggregate(pipeline))
-    except Exception as e:
-        # Fallback to regex find if Atlas Search index is compiling
-        fallback = collection.find_one(
-            {"canonical_salt_key": {"$regex": canonical_key, "$options": "i"}},
+        # Priority 1: Exact match on canonical_salt_key
+        exact_match = collection.find_one(
+            {"canonical_salt_key": canonical_key},
             {"_id": 0}
         )
-        if fallback:
+        
+        if exact_match:
             return MappingResponse(
                 match_found=True,
                 top_alternative=AlternativeDetail(
-                    drug_code=str(fallback.get("drug_code", "")),
-                    generic_name=str(fallback.get("generic_name", "")),
-                    jan_aushadhi_price=float(fallback.get("jan_aushadhi_price", 0.0)),
-                    search_score=1.0
+                    drug_code=str(exact_match.get("drug_code", "")),
+                    generic_name=str(exact_match.get("generic_name", "")),
+                    jan_aushadhi_price=float(exact_match.get("jan_aushadhi_price", 0.0)),
+                    search_score=100.0
                 )
             )
+
+        # Priority 2: Fuzzy text match for OCR typos using rapidfuzz
+        from rapidfuzz import fuzz
+        
+        # Load all generics. In a real production system, cache this globally.
+        all_generics = list(collection.find({}, {"_id": 0, "drug_code": 1, "generic_name": 1, "jan_aushadhi_price": 1}))
+        
+        best_match = None
+        best_score = 0.0
+        
+        for doc in all_generics:
+            generic_name = str(doc.get("generic_name", ""))
+            # Use partial_ratio to handle subsets
+            score = fuzz.partial_ratio(payload.query.lower(), generic_name.lower())
+            if score > best_score:
+                best_score = score
+                best_match = doc
+                
+        # Define a threshold for acceptable match
+        if best_match and best_score >= 70.0:
+            return MappingResponse(
+                match_found=True,
+                top_alternative=AlternativeDetail(
+                    drug_code=str(best_match.get("drug_code", "")),
+                    generic_name=str(best_match.get("generic_name", "")),
+                    jan_aushadhi_price=float(best_match.get("jan_aushadhi_price", 0.0)),
+                    search_score=round(best_score, 2)
+                )
+            )
+            
         return MappingResponse(match_found=False, top_alternative=None)
-
-    if not results:
+        
+    except Exception as e:
         return MappingResponse(match_found=False, top_alternative=None)
-
-    top_doc = results[0]
-    
-    # Format the top result
-    alternative = AlternativeDetail(
-        drug_code=str(top_doc.get("drug_code", "")),
-        generic_name=str(top_doc.get("generic_name", "")),
-        jan_aushadhi_price=float(top_doc.get("jan_aushadhi_price", 0.0)),
-        search_score=round(float(top_doc.get("search_score", 0.0)), 2)
-    )
-
-    return MappingResponse(match_found=True, top_alternative=alternative)

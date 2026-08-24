@@ -29,6 +29,7 @@
 
 import itertools
 import logging
+import re
 from typing import List
 
 from pydantic import BaseModel
@@ -219,7 +220,7 @@ DDI_MATRIX: dict[str, dict[str, tuple[str, str]]] = {
 
     # ── ACE Inhibitor / ARB interactions ─────────────────────────────────────
     "lisinopril": {
-        "potassiumchloride": (
+        "chloride": (
             "MODERATE",
             "ACE inhibitors reduce aldosterone, impairing potassium excretion. "
             "Combined with potassium supplements, hyperkalaemia risk is significant. "
@@ -351,8 +352,14 @@ def check_batch_interactions(canonical_salts: List[str]) -> List[InteractionAler
         logger.debug("DDI check called with empty salt list — returning no alerts.")
         return []
 
-    # 1. Flatten all line-items into individual canonical salt tokens
-    unique_salts = _explode_salts(canonical_salts)
+    # Split composite salts (e.g., "amoxicillin500mg|clavulanate125mg") into individual tokens
+    # and strip any strength indicators (numbers + units) so they match the DDI matrix keys
+    unique_salts = set()
+    for salt_str in canonical_salts:
+        for token in salt_str.split("|"):
+            clean_token = re.sub(r'\d+[a-z]*$', '', token)
+            if clean_token:
+                unique_salts.add(clean_token)
 
     if len(unique_salts) < 2:
         logger.debug(

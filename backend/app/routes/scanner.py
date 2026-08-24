@@ -500,10 +500,23 @@ async def upload_invoice_image(
             
             generic_total_cost = ja_price * item.quantity_units
             
+            # Savings calculation
             if item.paid_price > generic_total_cost:
-                is_overcharged = True
                 potential_savings = round(item.paid_price - generic_total_cost, 2)
-                overcharge_amount = potential_savings
+                
+        # Overcharge calculation:
+        # ceiling = printed_mrp unless dpco_ceiling_price is provided.
+        # if dpco is provided: legal_cap = dpco_ceiling_price * quantity_units * 1.12
+        # overcharge_amount = max(0.0, paid_price - min(printed_mrp, legal_cap))
+        ceiling = item.printed_mrp
+        if item.dpco_ceiling_price is not None:
+            legal_cap = item.dpco_ceiling_price * item.quantity_units * 1.12
+            ceiling = min(item.printed_mrp, legal_cap)
+            
+        overcharge_raw = item.paid_price - ceiling
+        if overcharge_raw > 0:
+            is_overcharged = True
+            overcharge_amount = round(overcharge_raw, 2)
 
         audit_result = AuditResult(
             is_overcharged=is_overcharged,
