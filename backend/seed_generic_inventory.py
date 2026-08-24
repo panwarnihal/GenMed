@@ -37,8 +37,14 @@ def seed_database(csv_path: str, mongo_uri: str):
     if operations:
         result = collection.bulk_write(operations)
         print(f"[SUCCESS] Seeding Complete! Upserted: {result.upserted_count}, Modified: {result.modified_count}")
+        
+    print("Creating indices...")
+    collection.create_index("canonical_salt_key")
+    collection.create_index([("generic_name", "text")])
+    print("[SUCCESS] Indices created.")
 
 if __name__ == "__main__":
-    MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://<username>:<password>@cluster0.mongodb.net/?retryWrites=true&w=majority")
+    load_dotenv()
+    MONGO_URI = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/")
     CSV_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "raw", "janaushadhi_master.csv"))
     seed_database(CSV_FILE, MONGO_URI)

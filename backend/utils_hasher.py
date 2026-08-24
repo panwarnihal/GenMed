@@ -48,7 +48,7 @@ def generate_canonical_salt_key(text: str) -> str:
         return ""
 
     text = text.lower()
-    
+
     # Strip pharmacopeial & dosage form noise
     noise_patterns = [
         r'\bip\b', r'\bbp\b', r'\busp\b', r'\btrihydrate\b', r'\bhydrochloride\b',
