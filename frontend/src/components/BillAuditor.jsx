@@ -1,116 +1,259 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Upload, FileText, AlertTriangle, CheckCircle2, TrendingDown,
   IndianRupee, RefreshCw, AlertCircle, Sparkles, ShieldAlert,
   ArrowUpRight, ReceiptText, ScanLine, Zap, Info, BadgeCheck,
   ChevronRight, BarChart3, X, ImageIcon, ShieldX, Siren,
-  HeartPulse, Scale, FileWarning, Ban,
+  HeartPulse, Scale, FileWarning, Ban, Eye, ArrowRight,
+  Clock, ShieldCheck, Cpu, FlaskConical,
 } from 'lucide-react';
 import { uploadInvoiceImage } from '../api';
 
-/* ── Donut progress circle ── */
-function DonutRing({ pct, colour, size = 64 }) {
-  const r = (size - 10) / 2;
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATED BACKGROUND GRID — subtle dot grid with floating glow orbs
+   ═══════════════════════════════════════════════════════════════════════════ */
+function AnimatedBackground() {
+  return (
+    <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+      {/* Dot grid */}
+      <div className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage: 'radial-gradient(circle, #a855f7 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+        }}
+      />
+      {/* Floating glow orbs */}
+      <div className="absolute top-20 left-1/4 w-[500px] h-[500px] rounded-full bg-purple-600/[0.04] blur-[120px] animate-[floatOrb_20s_ease-in-out_infinite]" />
+      <div className="absolute bottom-40 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-600/[0.05] blur-[100px] animate-[floatOrb_15s_ease-in-out_infinite_reverse]" />
+      <div className="absolute top-1/2 left-1/2 w-[300px] h-[300px] rounded-full bg-emerald-600/[0.03] blur-[80px] animate-[floatOrb_25s_ease-in-out_infinite_2s]" />
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATED COUNTER — counts up from 0 to target
+   ═══════════════════════════════════════════════════════════════════════════ */
+function AnimatedNumber({ value, prefix = '', decimals = 2 }) {
+  const [displayed, setDisplayed] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = value;
+    const duration = 1200;
+    const step = (end - start) / (duration / 16);
+    let current = start;
+    const timer = setInterval(() => {
+      current += step;
+      if (current >= end) { current = end; clearInterval(timer); }
+      setDisplayed(current);
+    }, 16);
+    return () => clearInterval(timer);
+  }, [value]);
+  return <>{prefix}{displayed.toFixed(decimals)}</>;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DONUT RING — animated SVG circle
+   ═══════════════════════════════════════════════════════════════════════════ */
+function DonutRing({ pct, colour, bgColour = '#1e293b', size = 80, strokeWidth = 8 }) {
+  const r = (size - strokeWidth * 2) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ * (1 - Math.min(Math.max(pct, 0), 1));
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#1e293b" strokeWidth="8" />
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={bgColour} strokeWidth={strokeWidth} />
       <circle
         cx={size / 2} cy={size / 2} r={r}
-        fill="none" stroke={colour} strokeWidth="8" strokeLinecap="round"
+        fill="none" stroke={colour} strokeWidth={strokeWidth} strokeLinecap="round"
         strokeDasharray={circ}
         strokeDashoffset={offset}
-        style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+        className="transition-all duration-[1.5s] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
       />
     </svg>
   );
 }
 
-/* ── Metric card ── */
-function MetricCard({ icon: Icon, iconColour, iconBg, label, value, sub, accent }) {
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM METRIC CARD — with donut ring + animated counter
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PremiumMetricCard({ icon: Icon, label, value, sub, colour, glowColour, donutPct, ringColour, delay = '0s' }) {
   return (
-    <div className={`glass-card rounded-2xl p-5 border space-y-3 ${accent}`}>
-      <div className="flex items-start justify-between">
-        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
-          <Icon className={`w-5 h-5 ${iconColour}`} />
-        </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600">GenMed</span>
-      </div>
-      <div>
-        <p className="text-xs text-slate-400 font-medium">{label}</p>
-        <div className={`text-2xl font-extrabold mt-0.5 ${iconColour}`}>{value}</div>
-      </div>
-      <p className="text-[11px] text-slate-500 leading-snug">{sub}</p>
-    </div>
-  );
-}
+    <div
+      className="relative group rounded-2xl p-[1px] opacity-0 animate-[slideUp_0.6s_ease-out_forwards]"
+      style={{ animationDelay: delay }}
+    >
+      {/* Gradient border */}
+      <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${glowColour} opacity-60 group-hover:opacity-100 transition-opacity duration-500 blur-[1px]`} />
 
-/* ── Pulsing AI Processing Loader ── */
-function ScannerLoader() {
-  return (
-    <div className="glass-card rounded-2xl p-8 border border-blue-500/30 space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-900/40">
-            <ScanLine className="w-7 h-7 text-white animate-pulse" strokeWidth={2} />
-          </div>
-          <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-400 rounded-full animate-ping" />
-        </div>
-        <div className="flex-1">
-          <h3 className="text-lg font-bold text-white">Vision AI Processing</h3>
-          <p className="text-sm text-slate-400 mt-0.5">
-            Extracting medicines via Gemini Vision OCR…
-          </p>
-        </div>
-      </div>
+      {/* Inner card */}
+      <div className="relative glass-card rounded-2xl p-6 h-full space-y-4 overflow-hidden">
+        {/* Ambient glow */}
+        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full ${glowColour.replace('from-', 'bg-').split(' ')[0]}/10 blur-[60px] group-hover:scale-150 transition-transform duration-700`} />
 
-      {/* Animated pipeline steps */}
-      <div className="space-y-3">
-        {[
-          { icon: ImageIcon,   label: 'Image uploaded & validated',       delay: '0s' },
-          { icon: ScanLine,    label: 'Running Gemini 1.5 Flash Vision OCR', delay: '0.8s' },
-          { icon: Zap,         label: 'Extracting medicines via NER pipeline', delay: '1.6s' },
-          { icon: Scale,       label: 'Auditing prices & matching generics', delay: '2.4s' },
-          { icon: HeartPulse,  label: 'Checking Drug-Drug Interactions',   delay: '3.2s' },
-          { icon: ShieldAlert, label: 'Running CDSCO regulatory scan',     delay: '4.0s' },
-        ].map(({ icon: StepIcon, label, delay }) => (
-          <div
-            key={label}
-            className="flex items-center gap-3 opacity-0 animate-[fadeIn_0.5s_ease-out_forwards]"
-            style={{ animationDelay: delay }}
-          >
-            <div className="w-8 h-8 rounded-lg bg-slate-800/80 border border-slate-700/50 flex items-center justify-center flex-shrink-0">
-              <StepIcon className="w-4 h-4 text-blue-400" />
+        <div className="relative flex items-start justify-between">
+          <div className="space-y-3 flex-1">
+            <div className="flex items-center gap-2">
+              <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${glowColour} flex items-center justify-center shadow-lg`}>
+                <Icon className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">{label}</span>
             </div>
-            <span className="text-xs text-slate-400">{label}</span>
-            <div className="ml-auto">
-              <div className="w-4 h-4 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin" />
+            <div className={`text-3xl font-black tracking-tight ${colour}`}>
+              <AnimatedNumber value={value} prefix="₹" />
             </div>
+            <p className="text-[11px] text-slate-500 leading-relaxed">{sub}</p>
           </div>
-        ))}
-      </div>
 
-      {/* Loading bar */}
-      <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-        <div className="h-1.5 rounded-full bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 animate-[shimmerBar_2s_ease-in-out_infinite]"
-          style={{ width: '60%' }}
-        />
+          {/* Donut */}
+          {donutPct !== undefined && (
+            <div className="relative flex-shrink-0">
+              <DonutRing pct={donutPct} colour={ringColour} size={72} strokeWidth={6} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`text-xs font-bold ${colour}`}>
+                  {(donutPct * 100).toFixed(0)}%
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-      <p className="text-center text-[11px] text-slate-600">
-        This typically takes 8–15 seconds depending on bill complexity
-      </p>
     </div>
   );
 }
 
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PROCESSING LOADER — cinematic AI pipeline animation
+   ═══════════════════════════════════════════════════════════════════════════ */
+function ScannerLoader({ fileName }) {
+  const [activeStep, setActiveStep] = useState(0);
+  const steps = [
+    { icon: ImageIcon,   label: 'Image validated & uploaded',             colour: 'text-emerald-400' },
+    { icon: Eye,         label: 'Running Gemini 1.5 Flash Vision OCR',    colour: 'text-blue-400' },
+    { icon: ScanLine,    label: 'Extracting medicines via NER pipeline',  colour: 'text-indigo-400' },
+    { icon: FlaskConical,label: 'Matching Jan Aushadhi generics',         colour: 'text-purple-400' },
+    { icon: HeartPulse,  label: 'Analyzing Drug-Drug Interactions',       colour: 'text-pink-400' },
+    { icon: ShieldCheck, label: 'Running CDSCO regulatory scan',          colour: 'text-amber-400' },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveStep((s) => (s < steps.length - 1 ? s + 1 : s));
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="relative rounded-2xl p-[1px] bg-gradient-to-br from-blue-500/50 via-indigo-500/30 to-purple-500/50 animate-[fadeIn_0.3s_ease-out]">
+      <div className="glass-card rounded-2xl p-8 space-y-8 overflow-hidden relative">
+        {/* Scanning line animation */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-blue-400/60 to-transparent animate-[scanLine_2.5s_ease-in-out_infinite]" />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center gap-5">
+          <div className="relative">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-900/50">
+              <Cpu className="w-8 h-8 text-white" strokeWidth={1.5} />
+            </div>
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center">
+              <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
+            </div>
+          </div>
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white tracking-tight">Vision AI Processing</h3>
+            <p className="text-sm text-slate-400 mt-1">
+              Analyzing <span className="text-blue-300 font-medium">{fileName}</span>
+            </p>
+          </div>
+          <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
+            <Clock className="w-4 h-4 text-blue-400" />
+            <span className="text-xs text-blue-300 font-medium">~10-15s</span>
+          </div>
+        </div>
+
+        {/* Pipeline steps */}
+        <div className="space-y-2">
+          {steps.map(({ icon: StepIcon, label, colour }, idx) => {
+            const isActive = idx === activeStep;
+            const isDone = idx < activeStep;
+            const isPending = idx > activeStep;
+            return (
+              <div
+                key={label}
+                className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-500 ${
+                  isActive
+                    ? 'bg-slate-800/80 border border-blue-500/30 shadow-lg shadow-blue-900/20'
+                    : isDone
+                    ? 'bg-emerald-500/5 border border-emerald-500/10'
+                    : 'bg-transparent border border-transparent opacity-40'
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
+                  isDone
+                    ? 'bg-emerald-500/20'
+                    : isActive
+                    ? 'bg-blue-500/20 animate-pulse'
+                    : 'bg-slate-800/50'
+                }`}>
+                  {isDone ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  ) : (
+                    <StepIcon className={`w-5 h-5 ${isActive ? colour : 'text-slate-600'}`} />
+                  )}
+                </div>
+                <span className={`text-sm font-medium transition-colors duration-300 ${
+                  isDone ? 'text-emerald-300' : isActive ? 'text-white' : 'text-slate-600'
+                }`}>
+                  {label}
+                </span>
+                <div className="ml-auto">
+                  {isDone && <span className="text-[10px] font-semibold text-emerald-400">Done</span>}
+                  {isActive && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.2s' }} />
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse" style={{ animationDelay: '0.4s' }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Progress bar */}
+        <div className="space-y-2">
+          <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden">
+            <div
+              className="h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 transition-all duration-1000 ease-out"
+              style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-slate-600">
+            <span>Processing pipeline</span>
+            <span>{Math.round(((activeStep + 1) / steps.length) * 100)}% complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════════════ */
 export default function BillAuditor() {
-  const [report, setReport]       = useState(null);
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState('');
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [fileName, setFileName]   = useState('');
+  const [report, setReport]         = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState('');
+  const [isDragOver, setIsDragOver]  = useState(false);
+  const [fileName, setFileName]     = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const fileInputRef = useRef(null);
 
@@ -118,10 +261,9 @@ export default function BillAuditor() {
   const handleUpload = useCallback(async (file) => {
     if (!file) return;
 
-    // Validate file type
     const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp', 'image/gif'];
     if (!allowed.includes(file.type)) {
-      setError(`Unsupported file type "${file.type}". Please upload a JPG, PNG, or WebP image.`);
+      setError(`Unsupported file type "${file.type}". Please upload a JPG, PNG, or WebP image of your pharmacy bill.`);
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
@@ -145,7 +287,7 @@ export default function BillAuditor() {
     }
   }, []);
 
-  /* ── Drag/Drop handlers ── */
+  /* ── Event handlers ── */
   const handleDragOver = (e) => { e.preventDefault(); setIsDragOver(true); };
   const handleDragLeave = () => setIsDragOver(false);
   const handleDrop = (e) => {
@@ -157,10 +299,8 @@ export default function BillAuditor() {
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) handleUpload(file);
-    // Reset input so the same file can be re-selected
     e.target.value = '';
   };
-
   const handleReset = () => {
     setReport(null);
     setError('');
@@ -169,224 +309,295 @@ export default function BillAuditor() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  /* ── Derived data from report ── */
-  const hasBannedDrugs = report?.audited_items?.some(
-    (item) => item.regulatory_summary?.is_banned
-  ) ?? false;
-
+  /* ── Derived data ── */
+  const hasBannedDrugs = report?.audited_items?.some(i => i.regulatory_summary?.is_banned) ?? false;
   const ddiAlerts = report?.ddi_summary?.alerts ?? [];
   const hasDDI = ddiAlerts.length > 0;
-
   const regulatoryWarnings = (report?.audited_items ?? [])
-    .filter((item) => item.regulatory_summary?.warning_message)
-    .map((item) => ({
-      brand_name: item.brand_name,
-      ...item.regulatory_summary,
-    }));
-
+    .filter(i => i.regulatory_summary?.warning_message)
+    .map(i => ({ brand_name: i.brand_name, ...i.regulatory_summary }));
   const totalBilled      = report?.total_paid ?? 0;
   const totalOvercharges = report?.total_overcharge ?? 0;
   const totalSavings     = report?.total_potential_savings ?? 0;
   const overchargePct    = totalBilled > 0 ? totalOvercharges / totalBilled : 0;
   const savingsPct       = totalBilled > 0 ? totalSavings / totalBilled : 0;
 
+
   return (
-    <section className="space-y-8" id="bill-auditor">
+    <section className="relative space-y-10" id="bill-auditor">
 
-      {/* ── Hero heading ── */}
-      <div className="relative rounded-2xl overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/25 via-indigo-900/10 to-transparent pointer-events-none" />
-        <div className="relative glass-card rounded-2xl border border-blue-500/20 p-7 space-y-3">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-900/40">
-              <ReceiptText className="w-5 h-5 text-white" strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-extrabold text-white">Smart Bill Auditor</h1>
-              <p className="text-slate-400 text-sm">
-                Upload your pharmacy bill image — our Vision AI extracts every line item, audits MRP overcharges &amp; maps Jan Aushadhi savings instantly.
-              </p>
-            </div>
-          </div>
+      <AnimatedBackground />
 
-          {/* Feature chips */}
-          <div className="flex flex-wrap gap-2 pt-1">
-            {[
-              { icon: ScanLine,    text: 'Gemini Vision OCR' },
-              { icon: Zap,         text: 'AI Generic Matching' },
-              { icon: HeartPulse,  text: 'DDI Safety Check' },
-              { icon: ShieldAlert, text: 'CDSCO Regulatory Scan' },
-              { icon: BarChart3,   text: 'Itemized Savings Report' },
-              { icon: BadgeCheck,  text: 'PMBJP Verified Data' },
-            ].map(({ icon: Icon, text }) => (
-              <span key={text} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 bg-slate-800/60 border border-slate-700/50 px-3 py-1.5 rounded-full">
-                <Icon className="w-3 h-3 text-blue-400" />{text}
-              </span>
-            ))}
-          </div>
+      {/* ════════════════════════════════════════════════════════════════════
+          HERO SECTION
+          ════════════════════════════════════════════════════════════════════ */}
+      <div className="relative text-center space-y-6 pt-4 pb-2">
+        {/* Pill badge */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
+          <Sparkles className="w-3.5 h-3.5" />
+          Powered by Google Gemini Vision AI
         </div>
+
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight">
+          <span className="text-white">Scan Your Bill.</span>
+          <br />
+          <span className="gradient-text">Save Thousands.</span>
+        </h1>
+
+        <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+          Upload a photo of your pharmacy invoice. Our Vision AI extracts every medicine,
+          audits for illegal MRP overcharges, and maps affordable{' '}
+          <span className="text-emerald-400 font-medium">Jan Aushadhi</span> generic alternatives — instantly.
+        </p>
       </div>
 
-      {/* ── Upload zone (shown when no report or loading) ── */}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          UPLOAD ZONE (pre-scan state)
+          ════════════════════════════════════════════════════════════════════ */}
       {!report && !loading && (
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Drag & Drop */}
+        <div className="space-y-8 animate-[fadeIn_0.4s_ease-out]">
+          {/* Main upload area */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`md:col-span-2 drop-zone glass-card rounded-2xl p-10 text-center flex flex-col items-center justify-center gap-5 cursor-pointer transition-all duration-200 ${
-              isDragOver ? 'drag-over scale-[1.01]' : ''
+            className={`relative group rounded-2xl transition-all duration-300 ${
+              isDragOver ? 'scale-[1.01]' : ''
             }`}
           >
-            <input
-              ref={fileInputRef}
-              type="file"
-              id="bill-upload-input"
-              accept="image/jpeg,image/jpg,image/png,image/webp,image/bmp,image/gif"
-              className="hidden"
-              onChange={handleFileSelect}
-            />
-            <label htmlFor="bill-upload-input" className="cursor-pointer flex flex-col items-center gap-5 w-full">
-              <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-colors duration-200 ${
-                isDragOver ? 'bg-emerald-500/20 border border-emerald-500/40' : 'bg-slate-800/80 border border-slate-700/50'
-              }`}>
-                <Upload className={`w-9 h-9 transition-colors ${isDragOver ? 'text-emerald-400' : 'text-slate-400'}`} />
-              </div>
-              <div>
-                <p className="text-base font-semibold text-slate-200">
-                  Drop your chemist bill photo here
-                </p>
-                <p className="text-xs text-slate-500 mt-1.5">
-                  Supports JPG · PNG · WebP · BMP &nbsp;|&nbsp; Max 10 MB &nbsp;|&nbsp; Scanned prescriptions &amp; invoices
-                </p>
-              </div>
-              <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-5 py-2 rounded-full hover:bg-emerald-500/15 transition-colors">
-                Click to browse files
-              </span>
-            </label>
-          </div>
+            {/* Animated border */}
+            <div className={`absolute inset-0 rounded-2xl p-[1px] transition-opacity duration-300 ${
+              isDragOver
+                ? 'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-100'
+                : 'bg-gradient-to-br from-purple-500/40 via-indigo-500/20 to-blue-500/40 opacity-60 group-hover:opacity-100'
+            }`}>
+              <div className="w-full h-full rounded-2xl bg-[#09090b]" />
+            </div>
 
-          {/* How it works panel */}
-          <div className="glass-card rounded-2xl p-6 border border-slate-700/50 flex flex-col justify-between gap-4">
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs uppercase tracking-wider">
-                <Sparkles className="w-4 h-4" /> How It Works
-              </div>
-              <h3 className="text-sm font-bold text-white">AI-Powered Bill Audit</h3>
-              <div className="space-y-3 pt-1">
-                {[
-                  { step: '1', text: 'Upload your pharmacy bill photo' },
-                  { step: '2', text: 'Gemini Vision extracts every medicine' },
-                  { step: '3', text: 'Engine audits MRP + maps generics' },
-                  { step: '4', text: 'Get full savings & safety report' },
-                ].map(({ step, text }) => (
-                  <div key={step} className="flex items-start gap-3">
-                    <span className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0 mt-0.5">
-                      {step}
-                    </span>
-                    <span className="text-xs text-slate-400 leading-relaxed">{text}</span>
+            <div className="relative glass-card rounded-2xl border-0">
+              <input
+                ref={fileInputRef}
+                type="file"
+                id="bill-upload-input"
+                accept="image/jpeg,image/jpg,image/png,image/webp,image/bmp,image/gif"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              <label htmlFor="bill-upload-input" className="cursor-pointer block p-10 sm:p-16">
+                <div className="flex flex-col items-center gap-6">
+                  {/* Upload icon with glow */}
+                  <div className="relative">
+                    <div className={`absolute inset-0 rounded-3xl blur-2xl transition-colors duration-300 ${
+                      isDragOver ? 'bg-emerald-500/30' : 'bg-purple-500/20'
+                    }`} />
+                    <div className={`relative w-24 h-24 rounded-3xl flex items-center justify-center transition-all duration-300 ${
+                      isDragOver
+                        ? 'bg-emerald-500/15 border-2 border-emerald-400/50 shadow-2xl shadow-emerald-500/20'
+                        : 'bg-slate-800/80 border-2 border-slate-700/50 group-hover:border-purple-500/40 group-hover:bg-purple-500/5'
+                    }`}>
+                      <Upload className={`w-10 h-10 transition-all duration-300 ${
+                        isDragOver ? 'text-emerald-400 scale-110' : 'text-slate-400 group-hover:text-purple-400'
+                      }`} />
+                    </div>
                   </div>
-                ))}
+
+                  {/* Text */}
+                  <div className="text-center space-y-2">
+                    <p className="text-lg sm:text-xl font-bold text-white">
+                      {isDragOver ? 'Release to upload!' : 'Drop your pharmacy bill image here'}
+                    </p>
+                    <p className="text-sm text-slate-500 max-w-md">
+                      Supports JPG, PNG, WebP, BMP &nbsp;·&nbsp; Maximum 10 MB &nbsp;·&nbsp;
+                      Works with scanned prescriptions, printed invoices &amp; handwritten bills
+                    </p>
+                  </div>
+
+                  {/* CTA button */}
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold shadow-xl shadow-purple-900/30 group-hover:shadow-purple-900/50 group-hover:scale-[1.02] transition-all duration-200">
+                      <Upload className="w-4 h-4" />
+                      Browse Files
+                    </span>
+                    <span className="text-xs text-slate-600">or drag &amp; drop</span>
+                  </div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* How it works steps */}
+          <div className="grid sm:grid-cols-3 gap-4">
+            {[
+              {
+                step: '01', icon: Upload, colour: 'from-blue-500 to-cyan-500',
+                title: 'Upload Invoice', desc: 'Take a photo of your chemist bill or medical store receipt',
+              },
+              {
+                step: '02', icon: Cpu, colour: 'from-purple-500 to-pink-500',
+                title: 'AI Analyzes', desc: 'Gemini Vision OCR extracts every medicine, price, and batch number',
+              },
+              {
+                step: '03', icon: BarChart3, colour: 'from-emerald-500 to-teal-500',
+                title: 'Get Your Report', desc: 'Instant audit with overcharges, generic alternatives & safety alerts',
+              },
+            ].map(({ step, icon: StepIcon, colour, title, desc }, idx) => (
+              <div
+                key={step}
+                className="relative group glass-card rounded-2xl p-6 border border-slate-700/40 hover:border-slate-600/60 transition-all duration-300 hover:-translate-y-1 opacity-0 animate-[slideUp_0.5s_ease-out_forwards]"
+                style={{ animationDelay: `${0.1 + idx * 0.15}s` }}
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${colour} flex items-center justify-center shadow-lg`}>
+                      <StepIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                    </div>
+                    <span className="text-3xl font-black text-slate-800/80">{step}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">{title}</h3>
+                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{desc}</p>
+                  </div>
+                </div>
+                {idx < 2 && (
+                  <div className="hidden sm:block absolute -right-3 top-1/2 -translate-y-1/2 z-10">
+                    <ArrowRight className="w-5 h-5 text-slate-700" />
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/30">
-              <p className="text-[10px] text-slate-500 leading-relaxed">
-                <Info className="w-3 h-3 inline mr-1 text-slate-600" />
-                Your image is processed by Google Gemini Vision AI and is never stored on our servers.
-              </p>
-            </div>
+            ))}
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            {[
+              { icon: Cpu,         text: 'Gemini Vision AI' },
+              { icon: BadgeCheck,  text: 'PMBJP Verified' },
+              { icon: ShieldCheck, text: 'CDSCO Compliant' },
+              { icon: HeartPulse,  text: 'DDI Safety Engine' },
+              { icon: Scale,       text: 'MRP Audit Engine' },
+            ].map(({ icon: Icon, text }) => (
+              <span key={text} className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-800/40 border border-slate-700/30 px-4 py-2 rounded-full hover:border-purple-500/30 hover:text-slate-400 transition-colors duration-200">
+                <Icon className="w-3.5 h-3.5 text-purple-400/60" />{text}
+              </span>
+            ))}
           </div>
         </div>
       )}
 
-      {/* ── Error banner ── */}
+
+      {/* ════════════════════════════════════════════════════════════════════
+          ERROR BANNER
+          ════════════════════════════════════════════════════════════════════ */}
       {error && (
-        <div className="glass-card rounded-2xl p-5 border border-red-500/40 bg-red-500/5 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-red-400" />
+        <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-red-500/50 to-orange-500/50 animate-[slideUp_0.3s_ease-out]">
+          <div className="glass-card rounded-2xl p-5 flex items-start gap-4">
+            <div className="w-11 h-11 rounded-xl bg-red-500/15 flex items-center justify-center flex-shrink-0">
+              <AlertCircle className="w-5 h-5 text-red-400" />
+            </div>
+            <div className="flex-1 space-y-1">
+              <h3 className="text-sm font-bold text-red-300">Processing Failed</h3>
+              <p className="text-xs text-red-400/80 leading-relaxed">{error}</p>
+              <button
+                onClick={handleReset}
+                className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg hover:bg-red-500/20 transition-colors"
+              >
+                <RefreshCw className="w-3 h-3" /> Try Again
+              </button>
+            </div>
+            <button onClick={() => setError('')} className="text-red-400/40 hover:text-red-300 transition-colors p-1">
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <div className="flex-1 space-y-1">
-            <h3 className="text-sm font-bold text-red-300">Processing Failed</h3>
-            <p className="text-xs text-red-400/80 leading-relaxed">{error}</p>
-          </div>
-          <button onClick={() => setError('')} className="text-red-400/50 hover:text-red-300 transition-colors">
-            <X className="w-4 h-4" />
-          </button>
         </div>
       )}
 
-      {/* ── Loading state ── */}
-      {loading && <ScannerLoader />}
 
-      {/* ── Results ── */}
+      {/* ════════════════════════════════════════════════════════════════════
+          LOADING STATE
+          ════════════════════════════════════════════════════════════════════ */}
+      {loading && <ScannerLoader fileName={fileName} />}
+
+
+      {/* ════════════════════════════════════════════════════════════════════
+          RESULTS
+          ════════════════════════════════════════════════════════════════════ */}
       {report && !loading && (
-        <div className="space-y-6 animate-[fadeIn_0.4s_ease-out]">
+        <div className="space-y-8 animate-[fadeIn_0.5s_ease-out]">
 
-          {/* File + count header */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
-            <div className="flex items-center gap-3">
+          {/* ── Report header ── */}
+          <div className="flex items-center justify-between flex-wrap gap-4 glass-card rounded-2xl p-5 border border-slate-700/50">
+            <div className="flex items-center gap-4">
               {previewUrl && (
-                <img
-                  src={previewUrl}
-                  alt="Uploaded invoice"
-                  className="w-10 h-10 rounded-lg object-cover border border-slate-700/50"
-                />
+                <div className="relative">
+                  <img
+                    src={previewUrl}
+                    alt="Uploaded invoice"
+                    className="w-14 h-14 rounded-xl object-cover border-2 border-slate-700/50 shadow-lg"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
+                    <CheckCircle2 className="w-3 h-3 text-white" />
+                  </div>
+                </div>
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-emerald-400" />
-                  <span className="text-sm font-semibold text-slate-300">{fileName}</span>
+                  <h2 className="text-lg font-bold text-white">{fileName}</h2>
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
+                    Audited
+                  </span>
                 </div>
-                <span className="text-[11px] text-slate-500">
-                  Invoice #{report.invoice_id}
-                </span>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Invoice #{report.invoice_id} &nbsp;·&nbsp; {report.audited_items?.length ?? 0} medicines scanned
+                </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 text-xs text-slate-500">
-                <span>{report.audited_items?.length ?? 0} line items scanned</span>
-              </div>
-              <button
-                id="scan-new-bill-btn"
-                onClick={handleReset}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-400 bg-blue-500/10 border border-blue-500/20 px-3 py-1.5 rounded-full hover:bg-blue-500/15 transition-colors"
-              >
-                <RefreshCw className="w-3 h-3" /> Scan New Bill
-              </button>
-            </div>
+            <button
+              id="scan-new-bill-btn"
+              onClick={handleReset}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-[1.02] transition-all duration-200"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Scan Another Bill
+            </button>
           </div>
 
-          {/* ── Safety & Regulatory Alerts Banner ── */}
+
+          {/* ── SAFETY & REGULATORY ALERTS ── */}
           {(hasBannedDrugs || hasDDI || regulatoryWarnings.length > 0) && (
-            <div className="space-y-3">
+            <div className="space-y-4">
+
               {/* Banned Drugs Alert */}
               {hasBannedDrugs && (
-                <div className="glass-card rounded-2xl p-5 border-2 border-red-500/50 bg-red-500/8 animate-[slideUp_0.3s_ease-out]">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-red-500/20 flex items-center justify-center flex-shrink-0">
-                      <Ban className="w-6 h-6 text-red-400" />
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-red-300">⚠ CDSCO BANNED SUBSTANCE DETECTED</h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-red-400 bg-red-500/20 px-2 py-0.5 rounded-full">
-                          Critical
-                        </span>
+                <div className="relative rounded-2xl p-[2px] bg-gradient-to-r from-red-500 via-rose-500 to-red-500 animate-[slideUp_0.3s_ease-out]">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-500 via-rose-500 to-red-500 animate-pulse opacity-30 blur-md" />
+                  <div className="relative glass-card rounded-2xl p-6 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-red-500/20 flex items-center justify-center flex-shrink-0 border border-red-500/30">
+                        <Ban className="w-7 h-7 text-red-400" />
                       </div>
-                      <p className="text-xs text-red-400/80 leading-relaxed">
-                        One or more medicines in this invoice contain ingredients banned by the Central Drugs Standard Control Organisation (CDSCO). 
-                        <strong className="text-red-300"> DO NOT CONSUME</strong> without consulting a licensed physician.
-                      </p>
-                      <div className="space-y-1.5 pt-1">
-                        {regulatoryWarnings
-                          .filter((w) => w.is_banned)
-                          .map((w, i) => (
-                            <div key={i} className="flex items-center gap-2 text-[11px] text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg">
-                              <ShieldX className="w-3.5 h-3.5 flex-shrink-0" />
-                              <span><strong>{w.brand_name}</strong> — {w.warning_message}</span>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h3 className="text-lg font-black text-red-300">BANNED SUBSTANCE DETECTED</h3>
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-white bg-red-500 px-2.5 py-1 rounded-full animate-pulse">
+                            CRITICAL ALERT
+                          </span>
+                        </div>
+                        <p className="text-sm text-red-400/80 leading-relaxed">
+                          One or more medicines contain ingredients <strong className="text-red-300">banned by CDSCO</strong> (Central Drugs Standard Control Organisation).
+                          <strong className="text-red-200"> DO NOT CONSUME</strong> — consult a licensed physician immediately.
+                        </p>
+                        <div className="space-y-2 pt-2">
+                          {regulatoryWarnings.filter(w => w.is_banned).map((w, i) => (
+                            <div key={i} className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20">
+                              <ShieldX className="w-5 h-5 text-red-400 flex-shrink-0" />
+                              <div>
+                                <span className="text-sm font-bold text-red-200">{w.brand_name}</span>
+                                <p className="text-[11px] text-red-400/70 mt-0.5">{w.warning_message}</p>
+                              </div>
                             </div>
                           ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -395,52 +606,83 @@ export default function BillAuditor() {
 
               {/* DDI Alerts */}
               {hasDDI && (
-                <div className="glass-card rounded-2xl p-5 border-2 border-amber-500/40 bg-amber-500/5 animate-[slideUp_0.3s_ease-out]">
+                <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-amber-500/60 via-orange-500/40 to-amber-500/60 animate-[slideUp_0.3s_ease-out]">
+                  <div className="glass-card rounded-2xl p-6 space-y-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-amber-500/15 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+                        <HeartPulse className="w-7 h-7 text-amber-400" />
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h3 className="text-lg font-bold text-amber-300">
+                            Drug-Drug Interaction{ddiAlerts.length > 1 ? 's' : ''} Detected
+                          </h3>
+                          <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                            report.ddi_summary?.has_critical_interactions
+                              ? 'text-white bg-red-500'
+                              : 'text-amber-300 bg-amber-500/20'
+                          }`}>
+                            {report.ddi_summary?.has_critical_interactions ? 'HIGH SEVERITY' : 'WARNING'}
+                          </span>
+                        </div>
+                        <p className="text-sm text-amber-400/70 leading-relaxed">
+                          These medicines may interact with each other. Consult your physician before taking them together.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-3">
+                      {ddiAlerts.map((alert, i) => (
+                        <div
+                          key={i}
+                          className={`rounded-xl p-4 border space-y-2 ${
+                            alert.severity === 'HIGH'
+                              ? 'border-red-500/30 bg-red-500/5'
+                              : alert.severity === 'MODERATE'
+                              ? 'border-amber-500/25 bg-amber-500/5'
+                              : 'border-slate-700/50 bg-slate-800/30'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
+                              alert.severity === 'HIGH'
+                                ? 'text-red-300 bg-red-500/20 border border-red-500/30'
+                                : alert.severity === 'MODERATE'
+                                ? 'text-amber-300 bg-amber-500/15 border border-amber-500/25'
+                                : 'text-slate-400 bg-slate-700/50'
+                            }`}>
+                              {alert.severity}
+                            </span>
+                            <span className="text-sm font-bold text-white">
+                              {alert.drug_a}
+                              <span className="text-slate-500 mx-2">↔</span>
+                              {alert.drug_b}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 leading-relaxed pl-0.5">
+                            {alert.description}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Schedule H1 / other regulatory warnings */}
+              {regulatoryWarnings.filter(w => !w.is_banned).length > 0 && (
+                <div className="glass-card rounded-2xl p-5 border border-yellow-500/25 animate-[slideUp_0.3s_ease-out]">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-amber-500/15 flex items-center justify-center flex-shrink-0">
-                      <HeartPulse className="w-6 h-6 text-amber-400" />
+                    <div className="w-11 h-11 rounded-xl bg-yellow-500/15 flex items-center justify-center flex-shrink-0">
+                      <FileWarning className="w-5 h-5 text-yellow-400" />
                     </div>
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-bold text-amber-300">
-                          Drug-Drug Interaction{ddiAlerts.length > 1 ? 's' : ''} Detected
-                        </h3>
-                        <span className="text-[9px] font-bold uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">
-                          {report.ddi_summary?.has_critical_interactions ? 'High Severity' : 'Warning'}
-                        </span>
-                      </div>
-                      <p className="text-xs text-amber-400/70 leading-relaxed">
-                        The medicines in this invoice may interact with each other. Consult your physician before taking them together.
-                      </p>
-                      <div className="space-y-2 pt-1">
-                        {ddiAlerts.map((alert, i) => (
-                          <div
-                            key={i}
-                            className={`rounded-xl p-3 border space-y-1 ${
-                              alert.severity === 'HIGH'
-                                ? 'border-red-500/30 bg-red-500/5'
-                                : alert.severity === 'MODERATE'
-                                ? 'border-amber-500/25 bg-amber-500/5'
-                                : 'border-slate-700/50 bg-slate-800/30'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${
-                                alert.severity === 'HIGH'
-                                  ? 'text-red-400 bg-red-500/15'
-                                  : alert.severity === 'MODERATE'
-                                  ? 'text-amber-400 bg-amber-500/15'
-                                  : 'text-slate-400 bg-slate-700/50'
-                              }`}>
-                                {alert.severity}
-                              </span>
-                              <span className="text-xs font-semibold text-white">
-                                {alert.drug_a} <span className="text-slate-500">↔</span> {alert.drug_b}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-slate-400 leading-relaxed pl-0.5">
-                              {alert.description}
-                            </p>
+                      <h3 className="text-sm font-bold text-yellow-300">Regulatory Notices</h3>
+                      <div className="space-y-2">
+                        {regulatoryWarnings.filter(w => !w.is_banned).map((w, i) => (
+                          <div key={i} className="flex items-start gap-2 text-xs text-yellow-400/80">
+                            <Siren className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-yellow-500" />
+                            <span><strong className="text-yellow-300">{w.brand_name}</strong> — {w.warning_message}</span>
                           </div>
                         ))}
                       </div>
@@ -448,297 +690,305 @@ export default function BillAuditor() {
                   </div>
                 </div>
               )}
-
-              {/* Schedule H1 / other regulatory warnings (non-banned) */}
-              {regulatoryWarnings.filter((w) => !w.is_banned).length > 0 && (
-                <div className="glass-card rounded-2xl p-5 border border-yellow-500/30 bg-yellow-500/5 animate-[slideUp_0.3s_ease-out]">
-                  <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-yellow-500/15 flex items-center justify-center flex-shrink-0">
-                      <FileWarning className="w-5 h-5 text-yellow-400" />
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <h3 className="text-sm font-bold text-yellow-300">Regulatory Notices</h3>
-                      <div className="space-y-1.5">
-                        {regulatoryWarnings
-                          .filter((w) => !w.is_banned)
-                          .map((w, i) => (
-                            <div key={i} className="flex items-start gap-2 text-[11px] text-yellow-400/80">
-                              <Siren className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-yellow-500" />
-                              <span><strong className="text-yellow-300">{w.brand_name}</strong> — {w.warning_message}</span>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* ── Financial Summary Metric cards ── */}
-          <div className="grid sm:grid-cols-3 gap-4">
-            <MetricCard
+
+          {/* ── FINANCIAL SUMMARY ── */}
+          <div className="grid sm:grid-cols-3 gap-5">
+            <PremiumMetricCard
               icon={IndianRupee}
-              iconColour="text-slate-200"
-              iconBg="bg-slate-700/60"
               label="Total Paid"
-              value={`₹${totalBilled.toFixed(2)}`}
+              value={totalBilled}
               sub="Sum of all amounts charged on this invoice"
-              accent="border-slate-700/60"
+              colour="text-slate-100"
+              glowColour="from-slate-500/30 to-slate-600/20"
+              ringColour="#94a3b8"
+              donutPct={1}
+              delay="0s"
             />
-            <MetricCard
+            <PremiumMetricCard
               icon={ShieldAlert}
-              iconColour={totalOvercharges > 0 ? 'text-amber-400' : 'text-emerald-400'}
-              iconBg={totalOvercharges > 0 ? 'bg-amber-500/15' : 'bg-emerald-500/15'}
               label="Total Overcharge"
-              value={`₹${totalOvercharges.toFixed(2)}`}
-              sub={totalOvercharges > 0 ? '⚠️ Paid price exceeded printed MRP!' : '✓ All prices are MRP-compliant'}
-              accent={totalOvercharges > 0 ? 'border-amber-500/35 bg-amber-500/5' : 'border-emerald-500/20'}
+              value={totalOvercharges}
+              sub={totalOvercharges > 0 ? '⚠️ Paid price exceeded printed MRP!' : '✓ All prices MRP-compliant'}
+              colour={totalOvercharges > 0 ? 'text-amber-400' : 'text-emerald-400'}
+              glowColour={totalOvercharges > 0 ? 'from-amber-500/40 to-orange-500/20' : 'from-emerald-500/30 to-teal-500/20'}
+              ringColour={totalOvercharges > 0 ? '#f59e0b' : '#10b981'}
+              donutPct={overchargePct}
+              delay="0.15s"
             />
-            <MetricCard
+            <PremiumMetricCard
               icon={TrendingDown}
-              iconColour="text-emerald-400"
-              iconBg="bg-emerald-500/15"
-              label="Total Potential Savings"
-              value={`₹${totalSavings.toFixed(2)}`}
-              sub="By switching to Jan Aushadhi generic equivalents"
-              accent="border-emerald-500/35 bg-emerald-500/5"
+              label="Potential Savings"
+              value={totalSavings}
+              sub="By switching to Jan Aushadhi generics"
+              colour="text-emerald-400"
+              glowColour="from-emerald-500/40 to-teal-500/20"
+              ringColour="#10b981"
+              donutPct={savingsPct}
+              delay="0.3s"
             />
           </div>
 
-          {/* ── Savings visual bar ── */}
+
+          {/* ── SAVINGS BREAKDOWN BAR ── */}
           {(totalSavings > 0 || totalOvercharges > 0) && (
-            <div className="glass-card rounded-2xl p-5 border border-emerald-500/20 space-y-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <p className="text-sm font-semibold text-white flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-emerald-400" />
-                  Savings Potential Breakdown
-                </p>
+            <div className="glass-card rounded-2xl p-6 border border-emerald-500/20 space-y-4">
+              <div className="flex items-center justify-between flex-wrap gap-3">
+                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-emerald-400" />
+                  Savings Breakdown
+                </h3>
                 {totalSavings > 0 && (
-                  <span className="text-xs text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">
-                    {(savingsPct * 100).toFixed(1)}% saveable via Jan Aushadhi
+                  <span className="text-sm text-emerald-300 font-bold bg-emerald-500/10 border border-emerald-500/20 px-4 py-1.5 rounded-full">
+                    {(savingsPct * 100).toFixed(1)}% saveable
                   </span>
                 )}
               </div>
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1">
-                  <span>₹0</span><span>₹{totalBilled.toFixed(2)} billed</span>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs text-slate-500">
+                  <span>₹0</span>
+                  <span>₹{totalBilled.toFixed(2)} total billed</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden flex">
+                <div className="w-full bg-slate-800/80 rounded-full h-5 overflow-hidden flex shadow-inner">
                   {totalOvercharges > 0 && (
                     <div
-                      className="h-4 bg-gradient-to-r from-amber-500 to-orange-400 transition-all duration-700"
-                      style={{ width: `${overchargePct * 100}%` }}
-                      title={`Overcharge: ₹${totalOvercharges.toFixed(2)}`}
-                    />
+                      className="h-5 bg-gradient-to-r from-amber-500 to-orange-400 rounded-l-full transition-all duration-1000 relative group"
+                      style={{ width: `${Math.max(overchargePct * 100, 2)}%` }}
+                    >
+                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
+                        ₹{totalOvercharges.toFixed(2)}
+                      </div>
+                    </div>
                   )}
                   {totalSavings > 0 && (
                     <div
-                      className="h-4 bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-700"
-                      style={{ width: `${savingsPct * 100}%` }}
-                      title={`Generic savings: ₹${totalSavings.toFixed(2)}`}
-                    />
+                      className="h-5 bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 relative group"
+                      style={{ width: `${Math.max(savingsPct * 100, 2)}%` }}
+                    >
+                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
+                        ₹{totalSavings.toFixed(2)}
+                      </div>
+                    </div>
                   )}
                 </div>
-                <div className="flex flex-wrap gap-4 text-[11px]">
+                <div className="flex flex-wrap gap-5 text-xs">
                   {totalOvercharges > 0 && (
-                    <span className="flex items-center gap-1.5 text-amber-400">
-                      <span className="w-2 h-2 rounded-sm bg-amber-400" /> Overcharge ₹{totalOvercharges.toFixed(2)}
+                    <span className="flex items-center gap-2 text-amber-400">
+                      <span className="w-3 h-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-400" />
+                      Overcharge ₹{totalOvercharges.toFixed(2)}
                     </span>
                   )}
                   {totalSavings > 0 && (
-                    <span className="flex items-center gap-1.5 text-emerald-400">
-                      <span className="w-2 h-2 rounded-sm bg-emerald-400" /> Generic savings ₹{totalSavings.toFixed(2)}
+                    <span className="flex items-center gap-2 text-emerald-400">
+                      <span className="w-3 h-3 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400" />
+                      Generic savings ₹{totalSavings.toFixed(2)}
                     </span>
                   )}
-                  <span className="flex items-center gap-1.5 text-slate-600">
-                    <span className="w-2 h-2 rounded-sm bg-slate-600" /> Paid as normal ₹{(totalBilled - totalOvercharges - totalSavings).toFixed(2)}
+                  <span className="flex items-center gap-2 text-slate-500">
+                    <span className="w-3 h-3 rounded-full bg-slate-700" />
+                    Fair price ₹{Math.max(totalBilled - totalOvercharges - totalSavings, 0).toFixed(2)}
                   </span>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── Itemized Audit Table ── */}
-          <div className="glass-card rounded-2xl border border-slate-700/60 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-800 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-slate-500" />
-              <h3 className="text-sm font-bold text-slate-300">Itemized Audit Report</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-900/80 border-b border-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-3.5 px-4">Medicine</th>
-                    <th className="py-3.5 px-3 text-center">Qty</th>
-                    <th className="py-3.5 px-3 text-right">Paid</th>
-                    <th className="py-3.5 px-3 text-right">Printed MRP</th>
-                    <th className="py-3.5 px-4">Overcharge</th>
-                    <th className="py-3.5 px-4">Jan Aushadhi Alt.</th>
-                    <th className="py-3.5 px-4 text-right">Saves</th>
-                    <th className="py-3.5 px-4 text-center">Safety</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-xs text-slate-300">
-                  {(report.audited_items ?? []).map((item, idx) => {
-                    const audit = item.audit_summary;
-                    const reg   = item.regulatory_summary;
-                    const hasOvercharge = audit?.is_overcharged;
 
-                    return (
-                      <tr key={idx} className="audit-row">
-                        <td className="py-4 px-4">
-                          <div className="font-semibold text-white">{item.brand_name}</div>
-                        </td>
+          {/* ── ITEMIZED AUDIT TABLE ── */}
+          <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-slate-600/30 to-transparent">
+            <div className="glass-card rounded-2xl overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center">
+                    <ReceiptText className="w-4.5 h-4.5 text-indigo-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-white">Itemized Audit Report</h3>
+                    <p className="text-[11px] text-slate-500">{report.audited_items?.length ?? 0} medicines · Invoice #{report.invoice_id}</p>
+                  </div>
+                </div>
+              </div>
 
-                        <td className="py-4 px-3 text-center">
-                          <span className="inline-block w-6 h-6 rounded-md bg-slate-800 text-slate-300 text-center leading-6 text-[11px] font-medium">
-                            {item.quantity_units}
-                          </span>
-                        </td>
-
-                        <td className={`py-4 px-3 text-right font-semibold ${hasOvercharge ? 'text-amber-300' : 'text-slate-200'}`}>
-                          ₹{item.paid_price?.toFixed(2)}
-                        </td>
-
-                        <td className="py-4 px-3 text-right text-slate-400">
-                          ₹{item.printed_mrp?.toFixed(2)}
-                        </td>
-
-                        <td className="py-4 px-4">
-                          {hasOvercharge ? (
-                            <span className="inline-flex items-center gap-1 bg-amber-500/12 border border-amber-500/25 text-amber-300 text-[10px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap">
-                              <AlertTriangle className="w-3 h-3" />+₹{audit.overcharge_amount?.toFixed(2)}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-900/80 border-b border-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-4 px-5">Medicine</th>
+                      <th className="py-4 px-3 text-center">Qty</th>
+                      <th className="py-4 px-4 text-right">Paid</th>
+                      <th className="py-4 px-4 text-right">MRP</th>
+                      <th className="py-4 px-4 text-center">Overcharge</th>
+                      <th className="py-4 px-4">Jan Aushadhi Alt.</th>
+                      <th className="py-4 px-4 text-right">Saves</th>
+                      <th className="py-4 px-4 text-center">Safety</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/60 text-sm text-slate-300">
+                    {(report.audited_items ?? []).map((item, idx) => {
+                      const audit = item.audit_summary;
+                      const reg = item.regulatory_summary;
+                      const hasOvercharge = audit?.is_overcharged;
+                      return (
+                        <tr key={idx} className="audit-row group/row">
+                          <td className="py-5 px-5">
+                            <span className="font-semibold text-white group-hover/row:text-purple-300 transition-colors duration-200">
+                              {item.brand_name}
                             </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 text-[10px] px-2.5 py-1 rounded-full">
-                              <CheckCircle2 className="w-3 h-3" />OK
+                          </td>
+                          <td className="py-5 px-3 text-center">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-800/80 text-slate-300 text-xs font-bold border border-slate-700/50">
+                              {item.quantity_units}
                             </span>
-                          )}
-                        </td>
-
-                        <td className="py-4 px-4">
-                          {audit?.jan_aushadhi_alternative ? (
-                            <div>
-                              <div className="text-emerald-300 font-medium flex items-center gap-1">
-                                <ChevronRight className="w-3 h-3 text-emerald-600 flex-shrink-0" />
-                                {audit.jan_aushadhi_alternative}
-                              </div>
-                              {audit.jan_aushadhi_price != null && (
-                                <div className="text-[10px] text-slate-500 mt-0.5">
-                                  ₹{audit.jan_aushadhi_price.toFixed(2)}/unit
+                          </td>
+                          <td className={`py-5 px-4 text-right font-bold ${hasOvercharge ? 'text-amber-300' : 'text-slate-200'}`}>
+                            ₹{item.paid_price?.toFixed(2)}
+                          </td>
+                          <td className="py-5 px-4 text-right text-slate-500">
+                            ₹{item.printed_mrp?.toFixed(2)}
+                          </td>
+                          <td className="py-5 px-4 text-center">
+                            {hasOvercharge ? (
+                              <span className="inline-flex items-center gap-1 bg-amber-500/12 border border-amber-500/25 text-amber-300 text-[10px] font-bold px-3 py-1.5 rounded-full whitespace-nowrap">
+                                <AlertTriangle className="w-3 h-3" />+₹{audit.overcharge_amount?.toFixed(2)}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 text-[10px] font-medium px-3 py-1.5 rounded-full">
+                                <CheckCircle2 className="w-3 h-3" />Fair
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-5 px-4">
+                            {audit?.jan_aushadhi_alternative ? (
+                              <div className="space-y-1">
+                                <div className="text-emerald-300 font-semibold flex items-center gap-1.5 text-xs">
+                                  <ChevronRight className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
+                                  {audit.jan_aushadhi_alternative}
                                 </div>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-slate-600 italic text-[11px]">No match found</span>
-                          )}
-                        </td>
+                                {audit.jan_aushadhi_price != null && (
+                                  <span className="text-[10px] text-emerald-500/70 ml-5">
+                                    ₹{audit.jan_aushadhi_price.toFixed(2)}/unit
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-600 italic text-xs">No match</span>
+                            )}
+                          </td>
+                          <td className="py-5 px-4 text-right">
+                            {audit?.potential_savings > 0 ? (
+                              <span className="text-emerald-400 font-black text-base">
+                                +₹{audit.potential_savings.toFixed(2)}
+                              </span>
+                            ) : (
+                              <span className="text-slate-700">—</span>
+                            )}
+                          </td>
+                          <td className="py-5 px-4 text-center">
+                            {reg?.is_banned ? (
+                              <span className="inline-flex items-center gap-1 bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-bold px-2.5 py-1.5 rounded-full" title={reg.warning_message}>
+                                <Ban className="w-3 h-3" />BANNED
+                              </span>
+                            ) : reg?.status === 'SCHEDULE_H1' ? (
+                              <span className="inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-[10px] font-medium px-2.5 py-1.5 rounded-full" title={reg.warning_message}>
+                                <Siren className="w-3 h-3" />H1
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 text-[10px] px-2.5 py-1.5 rounded-full">
+                                <CheckCircle2 className="w-3 h-3" />OK
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
 
-                        <td className="py-4 px-4 text-right">
-                          {audit?.potential_savings > 0 ? (
-                            <span className="text-emerald-400 font-bold text-sm">
-                              +₹{audit.potential_savings.toFixed(2)}
-                            </span>
-                          ) : (
-                            <span className="text-slate-600">—</span>
-                          )}
-                        </td>
-
-                        <td className="py-4 px-4 text-center">
-                          {reg?.is_banned ? (
-                            <span className="inline-flex items-center gap-1 bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-semibold px-2 py-1 rounded-full" title={reg.warning_message}>
-                              <Ban className="w-3 h-3" />BANNED
-                            </span>
-                          ) : reg?.status === 'SCHEDULE_H1' ? (
-                            <span className="inline-flex items-center gap-1 bg-yellow-500/10 border border-yellow-500/25 text-yellow-400 text-[10px] px-2 py-1 rounded-full" title={reg.warning_message}>
-                              <Siren className="w-3 h-3" />H1
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 bg-emerald-500/8 border border-emerald-500/15 text-emerald-400 text-[10px] px-2 py-1 rounded-full">
-                              <CheckCircle2 className="w-3 h-3" />OK
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Table footer */}
-            <div className="px-5 py-3 border-t border-slate-800 bg-slate-900/50 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5">
-                <Info className="w-3.5 h-3.5" />
-                MRP data sourced from PMBJP government database
-              </span>
-              <span className="flex items-center gap-1.5 text-emerald-400 font-semibold">
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                Total potential savings: ₹{totalSavings.toFixed(2)}
-              </span>
+              {/* Table footer */}
+              <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex flex-wrap items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-xs text-slate-500">
+                  <Info className="w-3.5 h-3.5" />
+                  Generic alternatives sourced from PMBJP government database
+                </span>
+                <span className="flex items-center gap-2 text-sm text-emerald-400 font-bold">
+                  <ArrowUpRight className="w-4 h-4" />
+                  Total savings: ₹{totalSavings.toFixed(2)}
+                </span>
+              </div>
             </div>
           </div>
 
-          {/* ── DDI Summary (collapsed into table when shown in banner) ── */}
+
+          {/* ── DDI SUMMARY GRID ── */}
           {report.ddi_summary && report.ddi_summary.interaction_count > 0 && (
-            <div className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-3">
-              <div className="flex items-center gap-2">
-                <HeartPulse className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-bold text-slate-300">DDI Analysis Summary</h3>
+            <div className="glass-card rounded-2xl p-6 border border-slate-700/50 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+                  <HeartPulse className="w-4.5 h-4.5 text-amber-400" />
+                </div>
+                <h3 className="text-base font-bold text-white">DDI Analysis Summary</h3>
               </div>
-              <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="grid grid-cols-3 gap-4">
                 {Object.entries(report.ddi_summary.severity_breakdown || {}).map(([severity, count]) => (
-                  <div key={severity} className={`rounded-xl py-3 px-4 border ${
-                    severity === 'HIGH'
-                      ? 'border-red-500/25 bg-red-500/5'
-                      : severity === 'MODERATE'
-                      ? 'border-amber-500/20 bg-amber-500/5'
-                      : 'border-slate-700/50 bg-slate-800/30'
+                  <div key={severity} className={`rounded-xl py-4 px-5 border text-center ${
+                    severity === 'HIGH'   ? 'border-red-500/25 bg-red-500/5' :
+                    severity === 'MODERATE' ? 'border-amber-500/20 bg-amber-500/5' :
+                    'border-slate-700/50 bg-slate-800/30'
                   }`}>
-                    <div className={`text-2xl font-extrabold ${
+                    <div className={`text-3xl font-black ${
                       severity === 'HIGH' ? 'text-red-400' : severity === 'MODERATE' ? 'text-amber-400' : 'text-slate-400'
                     }`}>
                       {count}
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mt-1">{severity}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{severity}</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ── Medical Disclaimer ── */}
-          <div className="glass-card rounded-2xl p-5 border border-slate-700/40 bg-slate-900/30 space-y-2">
-            <div className="flex items-center gap-2 text-slate-400">
-              <Scale className="w-4 h-4" />
-              <h3 className="text-xs font-bold uppercase tracking-wider">Statutory Medical Disclaimer</h3>
-            </div>
-            <div className="text-[11px] text-slate-500 leading-relaxed space-y-2">
-              <p>
-                <strong className="text-slate-400">GenMed is an informational tool only.</strong> The audit results, generic alternative suggestions, 
-                and safety alerts provided are computed algorithmically and are <strong className="text-slate-400">not a substitute for professional medical advice</strong>, 
-                diagnosis, or treatment.
-              </p>
-              <p>
-                Generic alternatives listed are sourced from the <strong className="text-slate-400">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong> database 
-                and are matched using deterministic chemical composition hashing. While every effort is made to ensure accuracy, 
-                pharmacological equivalence does not guarantee therapeutic interchangeability in all clinical scenarios.
-              </p>
-              <p>
-                Drug-Drug Interaction (DDI) alerts are based on a curated in-memory rule matrix and <strong className="text-slate-400">do not represent an exhaustive clinical database</strong>. 
-                Regulatory status checks reference CDSCO (Central Drugs Standard Control Organisation) data which may not reflect the most recent amendments.
-              </p>
-              <p>
-                <strong className="text-red-400/80">Always consult a qualified physician or pharmacist</strong> before making any changes to your medication. 
-                Do not discontinue, substitute, or alter dosage of any prescribed medicine based solely on this report.
-              </p>
-              <p className="text-[10px] text-slate-600 pt-1 border-t border-slate-800/60">
-                GenMed Platform · Not affiliated with any pharmaceutical company · Open-source &amp; free to use · 
-                Data last synced from government databases
-              </p>
+
+          {/* ── MEDICAL DISCLAIMER ── */}
+          <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-slate-700/30 to-transparent">
+            <div className="glass-card rounded-2xl p-6 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <Scale className="w-4.5 h-4.5 text-slate-500" />
+                <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                  Statutory Medical Disclaimer
+                </h3>
+              </div>
+              <div className="text-xs text-slate-500 leading-relaxed space-y-3 pl-0.5">
+                <p>
+                  <strong className="text-slate-400">GenMed is an informational tool only.</strong> The audit results, generic alternative suggestions,
+                  and safety alerts provided are computed algorithmically and are <strong className="text-slate-400">not a substitute for professional medical advice</strong>,
+                  diagnosis, or treatment.
+                </p>
+                <p>
+                  Generic alternatives are sourced from the <strong className="text-slate-400">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong> database
+                  and matched using deterministic chemical composition hashing. Pharmacological equivalence does not guarantee therapeutic interchangeability.
+                </p>
+                <p>
+                  DDI alerts are based on a curated rule matrix and <strong className="text-slate-400">do not represent an exhaustive clinical database</strong>.
+                  CDSCO regulatory data may not reflect the most recent amendments.
+                </p>
+                <p className="text-red-400/70">
+                  <strong>Always consult a qualified physician or pharmacist</strong> before making any changes to your medication.
+                  Do not discontinue, substitute, or alter dosage based solely on this report.
+                </p>
+                <div className="pt-2 border-t border-slate-800/60 text-[10px] text-slate-600 flex flex-wrap gap-3">
+                  <span>GenMed Platform</span>
+                  <span>·</span>
+                  <span>Not affiliated with any pharmaceutical company</span>
+                  <span>·</span>
+                  <span>Open-source &amp; free to use</span>
+                </div>
+              </div>
             </div>
           </div>
+
         </div>
       )}
     </section>
