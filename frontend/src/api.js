@@ -23,6 +23,29 @@ export async function matchGenericAlternative(query, extractedSalt = '') {
 }
 
 /**
+ * POST /api/v1/scanner/upload
+ * Uploads a pharmacy invoice image for OCR + audit.
+ * @param {File} file - The image file to upload
+ * @returns {Promise<object>} FinalAuditReport JSON
+ */
+export async function uploadInvoiceImage(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${BASE_URL}/api/v1/scanner/upload`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Scanner API error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
  * GET / — health check
  * @returns {{ status: string }}
  */

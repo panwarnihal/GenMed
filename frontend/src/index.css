@@ -119,6 +119,13 @@ body {
   border-radius: 6px;
 }
 
+/* ─── Shimmer bar for loading state ─── */
+@keyframes shimmerBar {
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(60%); }
+  100% { transform: translateX(-100%); }
+}
+
 /* ─── Savings bar fill ─── */
 @keyframes barFill {
   from { width: 0%; }
