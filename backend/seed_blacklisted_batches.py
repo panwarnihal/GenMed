@@ -1,6 +1,6 @@
 import os
-from dotenv import load_dotenv
-from pymongo import MongoClient, UpdateOne
+from dotenv import load_dotenv  # type: ignore
+from pymongo import MongoClient, UpdateOne  # type: ignore
 
 load_dotenv()
 mongo_uri = os.getenv("MONGO_URI")
