@@ -1,6 +1,6 @@
 import os
-from dotenv import load_dotenv
-from pymongo import MongoClient
+from dotenv import load_dotenv  # type: ignore
+from pymongo import MongoClient  # type: ignore
 from utils_hasher import generate_salt_hash
 
 # 1. Load Environment Variables & Connect

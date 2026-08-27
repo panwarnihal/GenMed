@@ -1,9 +1,9 @@
 import os
 import re
 import hashlib
-import pandas as pd
-from dotenv import load_dotenv
-from pymongo import MongoClient, UpdateOne
+import pandas as pd  # type: ignore
+from dotenv import load_dotenv  # type: ignore
+from pymongo import MongoClient, UpdateOne  # type: ignore
 
 from utils_hasher import generate_canonical_salt_key
 
