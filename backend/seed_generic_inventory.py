@@ -1,5 +1,6 @@
 import os
 import re
+import hashlib
 import pandas as pd
 from dotenv import load_dotenv
 from pymongo import MongoClient, UpdateOne
@@ -20,11 +21,13 @@ def seed_database(csv_path: str, mongo_uri: str):
         mrp = float(row.get("MRP", 0.0))
         
         canonical_key = generate_canonical_salt_key(generic_name)
+        salt_hash = hashlib.sha256(canonical_key.encode('utf-8')).hexdigest() if canonical_key else ""
         
         doc = {
             "drug_code": drug_code,
             "generic_name": generic_name,
             "canonical_salt_key": canonical_key,
+            "salt_composition_hash": salt_hash,
             "unit_size": unit_size,
             "jan_aushadhi_price": mrp
         }
@@ -40,6 +43,7 @@ def seed_database(csv_path: str, mongo_uri: str):
         
     print("Creating indices...")
     collection.create_index("canonical_salt_key")
+    collection.create_index("salt_composition_hash")
     collection.create_index([("generic_name", "text")])
     print("[SUCCESS] Indices created.")
 
