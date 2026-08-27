@@ -7,7 +7,8 @@ import {
   HeartPulse, Scale, FileWarning, Ban, Eye, ArrowRight,
   Clock, ShieldCheck, Cpu, FlaskConical,
 } from 'lucide-react';
-import { uploadInvoiceImage } from '../api';
+import { uploadInvoiceImage, auditManualInvoice } from '../api';
+
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -255,7 +256,59 @@ export default function BillAuditor() {
   const [isDragOver, setIsDragOver]  = useState(false);
   const [fileName, setFileName]     = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
+  const [manualItems, setManualItems] = useState([
+    { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }
+  ]);
   const fileInputRef = useRef(null);
+
+  const addManualItemField = () => {
+    setManualItems(prev => [...prev, { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }]);
+  };
+
+  const removeManualItem = (index) => {
+    setManualItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateManualItem = (index, field, value) => {
+    setManualItems(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
+
+  const handleManualSubmit = async (e) => {
+    e.preventDefault();
+    const validItems = manualItems
+      .filter(i => (i.brand_name || '').trim() !== '')
+      .map(i => ({
+        brand_name: i.brand_name.trim(),
+        paid_price: parseFloat(i.paid_price) || 0,
+        printed_mrp: i.printed_mrp ? parseFloat(i.printed_mrp) : undefined,
+        quantity_units: parseInt(i.quantity_units, 10) || 1,
+      }));
+
+    if (validItems.length === 0) {
+      setError('Please enter at least one medicine name and amount paid.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setReport(null);
+    setFileName(validItems.length === 1 ? validItems[0].brand_name : `${validItems.length} Manual Items`);
+    setPreviewUrl('');
+
+    try {
+      const data = await auditManualInvoice(validItems);
+      setReport(data);
+    } catch (err) {
+      setError(err.message || 'An error occurred while performing manual audit.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   /* ── Core upload handler ── */
   const handleUpload = useCallback(async (file) => {
@@ -358,74 +411,228 @@ export default function BillAuditor() {
           ════════════════════════════════════════════════════════════════════ */}
       {!report && !loading && (
         <div className="space-y-8 animate-[fadeIn_0.4s_ease-out]">
-          {/* Main upload area */}
-          <div
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            className={`relative group rounded-2xl transition-all duration-300 ${
-              isDragOver ? 'scale-[1.01]' : ''
-            }`}
-          >
-            {/* Animated border */}
-            <div className={`absolute inset-0 rounded-2xl p-[1px] transition-opacity duration-300 ${
-              isDragOver
-                ? 'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-100'
-                : 'bg-gradient-to-br from-purple-500/40 via-indigo-500/20 to-blue-500/40 opacity-60 group-hover:opacity-100'
-            }`}>
-              <div className="w-full h-full rounded-2xl bg-[#09090b]" />
-            </div>
+          {/* Two-box horizontal split layout with OR divider */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch relative">
 
-            <div className="relative glass-card rounded-2xl border-0">
-              <input
-                ref={fileInputRef}
-                type="file"
-                id="bill-upload-input"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/bmp,image/gif"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
-              <label htmlFor="bill-upload-input" className="cursor-pointer block p-10 sm:p-16">
-                <div className="flex flex-col items-center gap-6">
-                  {/* Upload icon with glow */}
+            {/* LEFT BOX: Upload Receipt */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`relative group rounded-2xl transition-all duration-300 flex flex-col ${
+                isDragOver ? 'scale-[1.01]' : ''
+              }`}
+            >
+              {/* Animated border */}
+              <div className={`absolute inset-0 rounded-2xl p-[1px] transition-opacity duration-300 ${
+                isDragOver
+                  ? 'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-100'
+                  : 'bg-gradient-to-br from-purple-500/40 via-indigo-500/20 to-blue-500/40 opacity-60 group-hover:opacity-100'
+              }`}>
+                <div className="w-full h-full rounded-2xl bg-[#09090b]" />
+              </div>
+
+              <div className="relative glass-card rounded-2xl border-0 p-6 sm:p-8 flex-1 flex flex-col justify-between">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  id="bill-upload-input"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/bmp,image/gif"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                <label htmlFor="bill-upload-input" className="cursor-pointer flex-1 flex flex-col items-center justify-center gap-5 text-center p-4 rounded-xl hover:bg-slate-800/20 transition-colors">
+                  <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[11px] uppercase tracking-wider mb-1">
+                    <Upload className="w-3.5 h-3.5" /> Option 01: Image Scan
+                  </div>
+
                   <div className="relative">
                     <div className={`absolute inset-0 rounded-3xl blur-2xl transition-colors duration-300 ${
                       isDragOver ? 'bg-emerald-500/30' : 'bg-purple-500/20'
                     }`} />
-                    <div className={`relative w-24 h-24 rounded-3xl flex items-center justify-center transition-all duration-300 ${
+                    <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-300 ${
                       isDragOver
                         ? 'bg-emerald-500/15 border-2 border-emerald-400/50 shadow-2xl shadow-emerald-500/20'
                         : 'bg-slate-800/80 border-2 border-slate-700/50 group-hover:border-purple-500/40 group-hover:bg-purple-500/5'
                     }`}>
-                      <Upload className={`w-10 h-10 transition-all duration-300 ${
+                      <Upload className={`w-9 h-9 transition-all duration-300 ${
                         isDragOver ? 'text-emerald-400 scale-110' : 'text-slate-400 group-hover:text-purple-400'
                       }`} />
                     </div>
                   </div>
 
-                  {/* Text */}
-                  <div className="text-center space-y-2">
-                    <p className="text-lg sm:text-xl font-bold text-white">
-                      {isDragOver ? 'Release to upload!' : 'Drop your pharmacy bill image here'}
+                  <div className="space-y-2">
+                    <p className="text-xl font-bold text-white">
+                      {isDragOver ? 'Release to upload!' : 'Drop Pharmacy Bill Image'}
                     </p>
-                    <p className="text-sm text-slate-500 max-w-md">
-                      Supports JPG, PNG, WebP, BMP &nbsp;·&nbsp; Maximum 10 MB &nbsp;·&nbsp;
-                      Works with scanned prescriptions, printed invoices &amp; handwritten bills
+                    <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+                      Upload invoice photo or receipt. Gemini Vision AI auto-extracts every medicine, price &amp; batch.
                     </p>
                   </div>
 
-                  {/* CTA button */}
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-semibold shadow-xl shadow-purple-900/30 group-hover:shadow-purple-900/50 group-hover:scale-[1.02] transition-all duration-200">
+                  <div className="pt-2">
+                    <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-xl shadow-purple-900/30 group-hover:shadow-purple-900/50 group-hover:scale-[1.02] transition-all duration-200">
                       <Upload className="w-4 h-4" />
                       Browse Files
                     </span>
-                    <span className="text-xs text-slate-600">or drag &amp; drop</span>
                   </div>
-                </div>
-              </label>
+
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Supports JPG, PNG, WebP, BMP (Max 10 MB)
+                  </p>
+                </label>
+              </div>
             </div>
+
+            {/* OR DIVIDER */}
+            <div className="lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 z-20 flex items-center justify-center my-2 lg:my-0 pointer-events-none">
+              <div className="w-11 h-11 rounded-full bg-slate-950 border-2 border-purple-500/40 shadow-2xl shadow-purple-950 flex items-center justify-center">
+                <span className="text-xs font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-emerald-400">
+                  OR
+                </span>
+              </div>
+            </div>
+
+            {/* RIGHT BOX: Manual Medicine Entry */}
+            <div className="relative group rounded-2xl flex flex-col">
+              {/* Border glow */}
+              <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-emerald-500/40 via-teal-500/20 to-cyan-500/40 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="w-full h-full rounded-2xl bg-[#09090b]" />
+              </div>
+
+              <div className="relative glass-card rounded-2xl border-0 p-6 sm:p-8 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between mb-5">
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold text-[11px] uppercase tracking-wider">
+                      <FileText className="w-3.5 h-3.5" /> Option 02: Manual Entry
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      Instant Audit
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 mb-5">
+                    <h3 className="text-xl font-bold text-white">Enter Medicine &amp; Paid Price</h3>
+                    <p className="text-xs text-slate-400">
+                      Type the medicine name and amount paid to check MRP compliance &amp; Jan Aushadhi generic savings.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleManualSubmit} id="manual-audit-form" className="space-y-4">
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                      {manualItems.map((item, idx) => (
+                        <div key={idx} className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3 relative">
+                          {manualItems.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeManualItem(idx)}
+                              className="absolute top-2 right-2 text-slate-500 hover:text-red-400 transition-colors p-1"
+                              title="Remove medicine"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
+                          <div>
+                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                              Medicine Name <span className="text-emerald-400">*</span>
+                            </label>
+                            <div className="relative">
+                              <FlaskConical className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                              <input
+                                type="text"
+                                required
+                                placeholder="e.g. Augmentin 625 Duo / Calpol 500"
+                                value={item.brand_name}
+                                onChange={(e) => updateManualItem(idx, 'brand_name', e.target.value)}
+                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                                Paid Price (₹) <span className="text-emerald-400">*</span>
+                              </label>
+                              <div className="relative">
+                                <IndianRupee className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  required
+                                  placeholder="e.g. 223"
+                                  value={item.paid_price}
+                                  onChange={(e) => updateManualItem(idx, 'paid_price', e.target.value)}
+                                  className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg pl-7 pr-2 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                                />
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                                Printed MRP (₹)
+                              </label>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                placeholder="Optional"
+                                value={item.printed_mrp}
+                                onChange={(e) => updateManualItem(idx, 'printed_mrp', e.target.value)}
+                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                              />
+                            </div>
+
+                            <div className="col-span-2 sm:col-span-1">
+                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                                Qty (Units)
+                              </label>
+                              <input
+                                type="number"
+                                min="1"
+                                placeholder="1"
+                                value={item.quantity_units}
+                                onChange={(e) => updateManualItem(idx, 'quantity_units', e.target.value)}
+                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </form>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-slate-800/80 mt-4">
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={addManualItemField}
+                      className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 transition-colors flex items-center gap-1"
+                    >
+                      + Add Another Medicine
+                    </button>
+                    <span className="text-[10px] text-slate-500">
+                      {manualItems.length} item{manualItems.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <button
+                    type="submit"
+                    form="manual-audit-form"
+                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 transition-all duration-200 flex items-center justify-center gap-2"
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-200" />
+                    Audit Medicine &amp; Calculate Savings
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
+
 
           {/* How it works steps */}
           <div className="grid sm:grid-cols-3 gap-4">

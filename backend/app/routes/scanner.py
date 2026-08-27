@@ -3,24 +3,22 @@
   GenMed — OCR & NER Invoice Scanner Router
   File  : app/routes/scanner.py
   Route : POST /api/v1/scanner/upload
+          POST /api/v1/scanner/manual
 
   Pipeline:
-    [Pharmacy Bill Image]
+    [Pharmacy Bill Image / Manual Input]
          |
          v
-    [Gemini 1.5 Flash Vision] ─── structured JSON prompt
+    [Gemini 1.5 Flash Vision / Manual Line Items]
          |
          v
     [Pydantic validation + sanitisation]
          |
          v
-    [InvoiceScanResult JSON response]
-
-  Environment variables required (add to backend/.env):
-    GEMINI_API_KEY=<your-google-generativeai-key>
-
-  Install dependency (already in requirements after this PR):
-    pip install google-generativeai>=0.7.0
+    [Mapping, Regulatory, DDI Audit Pipeline]
+         |
+         v
+    [FinalAuditReport JSON response]
 ==============================================================================
 """
 
@@ -60,11 +58,11 @@ ALLOWED_MIME_TYPES = {
     "image/jpg",
     "image/png",
     "image/webp",
-    "image/gif",          # animated GIF first-frame is fine for still bills
+    "image/gif",
     "image/bmp",
 }
-MAX_IMAGE_BYTES = 10 * 1024 * 1024   # 10 MB hard cap (Gemini inline limit is 20 MB)
-GEMINI_MODEL   = "gemini-1.5-flash"  # fast & cost-effective; swap to gemini-1.5-pro for max accuracy
+MAX_IMAGE_BYTES = 10 * 1024 * 1024   # 10 MB hard cap
+GEMINI_MODEL   = "gemini-1.5-flash"  # fast & cost-effective
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -156,6 +154,18 @@ class InvoiceScanResult(BaseModel):
         return cleaned
 
 
+class ManualLineItem(BaseModel):
+    brand_name: str = Field(..., description="Brand name of the medicine")
+    paid_price: float = Field(..., ge=0, description="Price paid for the medicine")
+    printed_mrp: Optional[float] = Field(None, ge=0, description="Printed MRP if known")
+    quantity_units: Optional[int] = Field(1, ge=1, description="Quantity of units")
+    extracted_salt: Optional[str] = Field(None, description="Chemical composition if known")
+
+
+class ManualAuditRequest(BaseModel):
+    line_items: List[ManualLineItem] = Field(..., min_length=1)
+
+
 class AuditResult(BaseModel):
     is_overcharged: bool
     overcharge_amount: float
@@ -186,14 +196,11 @@ class FinalAuditReport(BaseModel):
     total_potential_savings: float
     audited_items: List[AuditedLineItem]
     ddi_summary: dict
-    """Drug-Drug Interaction summary for all salts present in this invoice."""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
 # GEMINI VISION — EXTRACTION ENGINE
 # ─────────────────────────────────────────────────────────────────────────────
-
-# Authoritative system-level extraction prompt — keeps model output deterministic
 _EXTRACTION_PROMPT = """
 You are an expert Indian pharmaceutical billing analyst specialising in OCR and
 Named Entity Recognition (NER). You will be given an image of an Indian pharmacy
@@ -234,46 +241,29 @@ Rules you MUST follow:
 
 
 def _build_gemini_client():
-    """
-    Lazily imports google.genai (the current unified Gemini SDK) and returns
-    a configured client.  Raises HTTPException 503 if the SDK is not installed
-    or the API key is missing.
-    """
     try:
         from google import genai  # type: ignore[import]
     except ImportError:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "google-genai SDK is not installed. "
-                "Run: pip install google-genai"
-            ),
+            detail="google-genai SDK is not installed. Run: pip install google-genai",
         )
 
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail=(
-                "GEMINI_API_KEY environment variable is not set. "
-                "Add it to backend/.env and restart the server."
-            ),
+            detail="GEMINI_API_KEY environment variable is not set. Add it to backend/.env and restart the server.",
         )
 
     return genai.Client(api_key=api_key)
 
 
 def _extract_json_block(raw: str) -> str:
-    """
-    Defensively extract the first {...} JSON object from a raw string.
-    Handles cases where the model wraps output in ```json``` fences despite instructions.
-    """
-    # Strip markdown code fences if present
     fence_match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", raw, re.DOTALL)
     if fence_match:
         return fence_match.group(1)
 
-    # Find the outermost braces
     start = raw.find("{")
     if start == -1:
         raise ValueError("No JSON object found in model response")
@@ -291,21 +281,7 @@ def _extract_json_block(raw: str) -> str:
 
 
 def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
-    """
-    Sends the invoice image to Gemini Vision and returns the parsed JSON dict.
-
-    Args:
-        image_bytes: Raw bytes of the uploaded image.
-        mime_type:   MIME type string (e.g. "image/jpeg").
-
-    Returns:
-        Parsed dict matching the InvoiceScanResult schema.
-
-    Raises:
-        HTTPException 422 if the model response cannot be parsed.
-        HTTPException 502 if the Gemini API call fails.
-    """
-    from google import genai  # type: ignore[import]  (guarded by _build_gemini_client)
+    from google import genai  # type: ignore[import]
     from google.genai import types as genai_types  # type: ignore[import]
 
     client = _build_gemini_client()
@@ -325,17 +301,17 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
                 genai_types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
             ],
             config=genai_types.GenerateContentConfig(
-                temperature=0.1,        # near-deterministic for structured NER
+                temperature=0.1,
                 top_p=0.9,
                 max_output_tokens=4096,
-                response_mime_type="application/json",  # enforce JSON mode
+                response_mime_type="application/json",
             ),
         )
 
         raw_text: str = response.text
 
     except HTTPException:
-        raise  # re-raise our own 503 from _build_gemini_client
+        raise
     except Exception as exc:
         logger.exception("Gemini API call failed")
         raise HTTPException(
@@ -343,7 +319,6 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
             detail=f"Gemini Vision API error: {exc}",
         ) from exc
 
-    # Parse & validate JSON
     try:
         json_str = _extract_json_block(raw_text)
         data = json.loads(json_str)
@@ -351,141 +326,30 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
         logger.error("Failed to parse Gemini response as JSON: %s", raw_text[:500])
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"The Vision AI returned non-JSON output that could not be parsed. "
-                f"Raw excerpt: {raw_text[:300]!r}"
-            ),
+            detail=f"The Vision AI returned non-JSON output that could not be parsed. Excerpt: {raw_text[:300]!r}",
         ) from exc
 
     return data
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ENDPOINT
+# AUDIT PIPELINE HELPER
 # ─────────────────────────────────────────────────────────────────────────────
-@router.post(
-    "/upload",
-    response_model=FinalAuditReport,
-    status_code=status.HTTP_200_OK,
-    summary="Upload & Scan a Pharmacy Invoice, Return Audit Report",
-    description=(
-        "Accepts a JPEG / PNG / WEBP image of an Indian pharmacy bill. "
-        "Passes it through Google Gemini Vision for OCR and Medical NER. "
-        "Then queries the internal Mapping Engine for generic alternatives "
-        "and calculates potential savings, returning a complete FinalAuditReport."
-    ),
-    responses={
-        200: {"description": "Extraction and mapping succeeded — audit report returned."},
-        400: {"description": "Invalid file type or oversized image."},
-        422: {"description": "Vision AI returned unparseable or schema-invalid output."},
-        502: {"description": "Upstream Gemini Vision API call failed."},
-        503: {"description": "SDK not installed or GEMINI_API_KEY not configured."},
-    },
-)
-async def upload_invoice_image(
-    file: UploadFile = File(
-        ...,
-        description="Pharmacy bill image (JPG, PNG, WEBP, BMP — max 10 MB).",
-    ),
+async def _process_audit_pipeline(
+    line_items: List[ExtractedLineItem],
+    invoice_id: str
 ) -> FinalAuditReport:
-    """
-    **OCR & NER Invoice Scanner — Full Pipeline**
-
-    1. Validates the uploaded image (MIME type + size guard).
-    2. Sends the raw bytes inline to **Google Gemini 1.5 Flash** Vision model
-       with a deterministic extraction prompt.
-    3. Parses and validates the model's JSON output through Pydantic schemas.
-    4. Iterates over line items, querying the mapping engine for alternatives.
-    5. Calculates overcharges and returns a fully-typed `FinalAuditReport`.
-    """
-
-    # ── 1. MIME-type guard ────────────────────────────────────────────────────
-    content_type = (file.content_type or "").lower().strip()
-    # Some clients send "image/jpg" instead of "image/jpeg"
-    if content_type == "image/jpg":
-        content_type = "image/jpeg"
-
-    if content_type not in ALLOWED_MIME_TYPES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Unsupported file type '{content_type}'. "
-                f"Accepted formats: {', '.join(sorted(ALLOWED_MIME_TYPES))}."
-            ),
-        )
-
-    # ── 2. Read & size-guard ──────────────────────────────────────────────────
-    image_bytes = await file.read()
-    if not image_bytes:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Uploaded file is empty.",
-        )
-    if len(image_bytes) > MAX_IMAGE_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Image exceeds the 10 MB size limit "
-                f"(received {len(image_bytes) / 1_048_576:.1f} MB)."
-            ),
-        )
-
-    logger.info(
-        "Invoice scan request | filename=%s | size=%.1f KB",
-        file.filename,
-        len(image_bytes) / 1024,
-    )
-
-    # ── 3. Gemini Vision extraction ───────────────────────────────────────────
-    raw_data = _call_gemini_vision(image_bytes, content_type)
-
-    # ── 4. Handle "UNREADABLE" sentinel ──────────────────────────────────────
-    if raw_data.get("invoice_id") == "UNREADABLE":
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                "The uploaded image could not be read as a pharmacy bill. "
-                "Please upload a clearer, well-lit photograph of the invoice."
-            ),
-        )
-
-    # ── 5. Pydantic schema validation ─────────────────────────────────────────
-    try:
-        scan_result = InvoiceScanResult.model_validate(raw_data)
-    except Exception as exc:
-        logger.error(
-            "Pydantic validation failed on Gemini output: %s | data=%s",
-            exc,
-            str(raw_data)[:500],
-        )
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=(
-                f"Extracted data did not match the expected schema: {exc}. "
-                f"Raw model output excerpt: {str(raw_data)[:300]!r}"
-            ),
-        ) from exc
-
-    logger.info(
-        "Scan complete | invoice_id=%s | line_items=%d",
-        scan_result.invoice_id,
-        len(scan_result.line_items),
-    )
-
-    # ── 6. Mapping & Audit Engine ─────────────────────────────────────────────
     audited_items = []
-    all_canonical_salts: List[str] = []   # collected for batch DDI analysis
+    all_canonical_salts: List[str] = []
     total_paid = 0.0
     total_overcharge = 0.0
     total_potential_savings = 0.0
 
-    for item in scan_result.line_items:
-        # Call mapping engine
+    for item in line_items:
         req = MappingRequest(
             query=item.brand_name,
             extracted_salt=item.extracted_salt
         )
-        # match_generic_alternative returns a MappingResponse
         map_resp = await match_generic_alternative(req)
 
         is_overcharged = False
@@ -500,14 +364,9 @@ async def upload_invoice_image(
             
             generic_total_cost = ja_price * item.quantity_units
             
-            # Savings calculation
             if item.paid_price > generic_total_cost:
                 potential_savings = round(item.paid_price - generic_total_cost, 2)
                 
-        # Overcharge calculation:
-        # ceiling = printed_mrp unless dpco_ceiling_price is provided.
-        # if dpco is provided: legal_cap = dpco_ceiling_price * quantity_units * 1.12
-        # overcharge_amount = max(0.0, paid_price - min(printed_mrp, legal_cap))
         ceiling = item.printed_mrp
         if item.dpco_ceiling_price is not None:
             legal_cap = item.dpco_ceiling_price * item.quantity_units * 1.12
@@ -526,7 +385,6 @@ async def upload_invoice_image(
             potential_savings=potential_savings
         )
 
-        # Regulatory Check
         canonical_salt = generate_canonical_salt_key(item.extracted_salt if item.extracted_salt else item.brand_name)
         reg_status_dict = check_regulatory_status(canonical_salt)
         reg_status = RegulatoryStatus(**reg_status_dict)
@@ -545,32 +403,116 @@ async def upload_invoice_image(
         total_overcharge += overcharge_amount
         total_potential_savings += potential_savings
 
-        # Accumulate canonical salts for batch DDI analysis
         if canonical_salt:
             all_canonical_salts.append(canonical_salt)
 
-    # ── 7. Drug-Drug Interaction check across entire invoice ──────────────────
     ddi_alerts = check_batch_interactions(all_canonical_salts)
     ddi_result = build_ddi_summary(ddi_alerts)
 
-    if ddi_alerts:
-        logger.warning(
-            "DDI check | invoice_id=%s | %d interaction(s) detected (%d HIGH severity)",
-            scan_result.invoice_id,
-            ddi_result["interaction_count"],
-            ddi_result["severity_breakdown"]["HIGH"],
-        )
-    else:
-        logger.info(
-            "DDI check | invoice_id=%s | No interactions detected.",
-            scan_result.invoice_id,
-        )
-
     return FinalAuditReport(
-        invoice_id=scan_result.invoice_id,
+        invoice_id=invoice_id,
         total_paid=round(total_paid, 2),
         total_overcharge=round(total_overcharge, 2),
         total_potential_savings=round(total_potential_savings, 2),
         audited_items=audited_items,
         ddi_summary=ddi_result,
     )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENDPOINTS
+# ─────────────────────────────────────────────────────────────────────────────
+@router.post(
+    "/upload",
+    response_model=FinalAuditReport,
+    status_code=status.HTTP_200_OK,
+    summary="Upload & Scan a Pharmacy Invoice, Return Audit Report",
+)
+async def upload_invoice_image(
+    file: UploadFile = File(
+        ...,
+        description="Pharmacy bill image (JPG, PNG, WEBP, BMP — max 10 MB).",
+    ),
+) -> FinalAuditReport:
+    content_type = (file.content_type or "").lower().strip()
+    if content_type == "image/jpg":
+        content_type = "image/jpeg"
+
+    if content_type not in ALLOWED_MIME_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported file type '{content_type}'. Accepted formats: {', '.join(sorted(ALLOWED_MIME_TYPES))}.",
+        )
+
+    image_bytes = await file.read()
+    if not image_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file is empty.",
+        )
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Image exceeds the 10 MB size limit (received {len(image_bytes) / 1_048_576:.1f} MB).",
+        )
+
+    logger.info("Invoice scan request | filename=%s | size=%.1f KB", file.filename, len(image_bytes) / 1024)
+
+    raw_data = _call_gemini_vision(image_bytes, content_type)
+
+    if raw_data.get("invoice_id") == "UNREADABLE":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The uploaded image could not be read as a pharmacy bill. Please upload a clearer photograph.",
+        )
+
+    try:
+        scan_result = InvoiceScanResult.model_validate(raw_data)
+    except Exception as exc:
+        logger.error("Pydantic validation failed on Gemini output: %s | data=%s", exc, str(raw_data)[:500])
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Extracted data did not match expected schema: {exc}.",
+        ) from exc
+
+    return await _process_audit_pipeline(scan_result.line_items, invoice_id=scan_result.invoice_id)
+
+
+@router.post(
+    "/manual",
+    response_model=FinalAuditReport,
+    status_code=status.HTTP_200_OK,
+    summary="Manually Audit Medicine Line Items",
+)
+async def audit_manual_invoice(req: ManualAuditRequest) -> FinalAuditReport:
+    if not req.line_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="At least one medicine line item is required."
+        )
+
+    converted_items = []
+    for item in req.line_items:
+        if not item.brand_name or not item.brand_name.strip():
+            continue
+        paid = float(item.paid_price) if item.paid_price is not None else 0.0
+        mrp = float(item.printed_mrp) if (item.printed_mrp is not None and item.printed_mrp > 0) else paid
+        qty = int(item.quantity_units) if (item.quantity_units and item.quantity_units > 0) else 1
+
+        converted_items.append(
+            ExtractedLineItem(
+                brand_name=item.brand_name.strip().upper(),
+                paid_price=paid,
+                printed_mrp=mrp,
+                quantity_units=qty,
+                extracted_salt=item.extracted_salt,
+            )
+        )
+
+    if not converted_items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No valid medicine names provided."
+        )
+
+    return await _process_audit_pipeline(converted_items, invoice_id="MANUAL-ENTRY")

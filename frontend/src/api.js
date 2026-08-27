@@ -46,6 +46,27 @@ export async function uploadInvoiceImage(file) {
 }
 
 /**
+ * POST /api/v1/scanner/manual
+ * Manually audits medicine line items for generic savings & DDI
+ * @param {Array<{brand_name: string, paid_price: number, printed_mrp?: number, quantity_units?: number}>} lineItems
+ * @returns {Promise<object>} FinalAuditReport JSON
+ */
+export async function auditManualInvoice(lineItems) {
+  const response = await fetch(`${BASE_URL}/api/v1/scanner/manual`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ line_items: lineItems }),
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Manual Audit API error ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
  * GET / — health check
  * @returns {{ status: string }}
  */
@@ -54,3 +75,4 @@ export async function checkHealth() {
   if (!response.ok) throw new Error('Backend offline');
   return response.json();
 }
+
