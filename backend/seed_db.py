@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv  # type: ignore
 from pymongo import MongoClient  # type: ignore
-from utils_hasher import generate_salt_hash
+from utils_hasher import generate_salt_hash, generate_canonical_salt_key
 
 # 1. Load Environment Variables & Connect
 load_dotenv()
@@ -44,11 +44,14 @@ branded_drugs_data = [
     }
 ]
 
-# Compute SHA-256 hash for each branded drug
+# Compute SHA-256 hash and canonical_salt_key for each branded drug
 for drug in branded_drugs_data:
     salt_hash, canonical_str = generate_salt_hash(drug["active_ingredients"])
     drug["salt_composition_hash"] = salt_hash
     drug["canonical_salt_string"] = canonical_str
+    # Build a raw composition string from active_ingredients for canonical key generation
+    raw_comp = " + ".join(f"{i['salt']} {i['strength']}" for i in drug["active_ingredients"])
+    drug["canonical_salt_key"] = generate_canonical_salt_key(raw_comp)
 
 # -------------------------------------------------------------------------
 # 3. DEFINE PMBJP GENERIC INVENTORY (Jan Aushadhi)
@@ -85,11 +88,13 @@ generic_inventory_data = [
     }
 ]
 
-# Compute SHA-256 hash for each generic drug
+# Compute SHA-256 hash and canonical_salt_key for each generic drug
 for drug in generic_inventory_data:
     salt_hash, canonical_str = generate_salt_hash(drug["active_ingredients"])
     drug["salt_composition_hash"] = salt_hash
     drug["canonical_salt_string"] = canonical_str
+    raw_comp = " + ".join(f"{i['salt']} {i['strength']}" for i in drug["active_ingredients"])
+    drug["canonical_salt_key"] = generate_canonical_salt_key(raw_comp)
 
 # -------------------------------------------------------------------------
 # 4. DEFINE CDSCO BLACKLISTED BATCHES (OSINT Spurious Drug Alert Data)
@@ -124,7 +129,10 @@ db["Blacklisted_Batches"].insert_many(blacklisted_batches_data)
 
 # Create an index on `salt_composition_hash` for lightning-fast deterministic matching
 db["Branded_Drugs"].create_index("salt_composition_hash")
+db["Branded_Drugs"].create_index("canonical_salt_key")
+db["Branded_Drugs"].create_index("brand_name")
 db["Generic_Inventory"].create_index("salt_composition_hash")
+db["Generic_Inventory"].create_index("canonical_salt_key")
 db["Blacklisted_Batches"].create_index("batch_number")
 
 print("SEEDING COMPLETE!")

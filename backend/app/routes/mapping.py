@@ -90,6 +90,39 @@ def _get_db():
 # ─────────────────────────────────────────────────────────────────────────────
 # STAGE 1 — BRAND RESOLUTION  (RapidFuzz for OCR typos only, >90% threshold)
 # ─────────────────────────────────────────────────────────────────────────────
+
+def _extract_csk_from_doc(doc: dict) -> Optional[str]:
+    """
+    Extract or derive the canonical_salt_key from a Branded_Drugs document,
+    handling both document schemas (seed_db.py and seed_branded_drugs.py).
+    """
+    # Priority 1: direct field
+    csk = doc.get("canonical_salt_key")
+    if csk:
+        return csk
+
+    # Priority 2: derive from raw_composition text
+    raw_comp = doc.get("raw_composition")
+    if raw_comp:
+        return generate_canonical_salt_key(raw_comp)
+
+    # Priority 3: derive from active_ingredients list
+    ingredients = doc.get("active_ingredients")
+    if ingredients and isinstance(ingredients, list):
+        comp_str = " + ".join(
+            f"{i.get('salt', '')} {i.get('strength', '')}" for i in ingredients
+        )
+        return generate_canonical_salt_key(comp_str)
+
+    return None
+
+
+_BRAND_PROJECTION = {
+    "_id": 0, "brand_name": 1, "canonical_salt_key": 1,
+    "raw_composition": 1, "active_ingredients": 1,
+}
+
+
 def _resolve_brand_to_salt_key(brand_query: str, db) -> tuple[Optional[str], float]:
     """
     Resolve an OCR-extracted brand name to its canonical_salt_key via
@@ -105,22 +138,17 @@ def _resolve_brand_to_salt_key(brand_query: str, db) -> tuple[Optional[str], flo
     # 1a. Try exact case-insensitive match first (fastest path)
     exact_doc = branded_col.find_one(
         {"brand_name": {"$regex": f"^{query_clean}$", "$options": "i"}},
-        {"_id": 0, "brand_name": 1, "canonical_salt_key": 1, "raw_composition": 1},
+        _BRAND_PROJECTION,
     )
     if exact_doc:
-        csk = exact_doc.get("canonical_salt_key")
-        if not csk and exact_doc.get("raw_composition"):
-            csk = generate_canonical_salt_key(exact_doc["raw_composition"])
+        csk = _extract_csk_from_doc(exact_doc)
         return csk, 100.0
 
     # 1b. Fuzzy fallback — correct minor OCR typos in brand name only.
     #     Load a projection of brand names and their salt keys.
     from rapidfuzz import fuzz  # type: ignore[import]
 
-    all_brands = list(branded_col.find(
-        {},
-        {"_id": 0, "brand_name": 1, "canonical_salt_key": 1, "raw_composition": 1},
-    ))
+    all_brands = list(branded_col.find({}, _BRAND_PROJECTION))
 
     best_doc = None
     best_score = 0.0
@@ -133,9 +161,7 @@ def _resolve_brand_to_salt_key(brand_query: str, db) -> tuple[Optional[str], flo
             best_doc = doc
 
     if best_doc and best_score >= BRAND_FUZZY_THRESHOLD:
-        csk = best_doc.get("canonical_salt_key")
-        if not csk and best_doc.get("raw_composition"):
-            csk = generate_canonical_salt_key(best_doc["raw_composition"])
+        csk = _extract_csk_from_doc(best_doc)
         logger.info(
             "Brand resolved via fuzzy match: '%s' -> '%s' (%.1f%%)",
             query_clean, best_doc.get("brand_name"), best_score,
