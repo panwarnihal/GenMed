@@ -123,6 +123,18 @@ _BRAND_PROJECTION = {
 }
 
 
+def _clean_brand_for_matching(brand: str) -> str:
+    import re
+    s = brand.lower()
+    # Strip common dosage form noise
+    s = re.sub(r'\b(tablet|tab|capsule|cap|injection|inj|syrup|syp|suspension|susp|mg|ml|gm)\b', '', s)
+    # Strip attached numbers like '500mg' -> '500'
+    s = re.sub(r'(\d+)mg', r'\1', s)
+    s = re.sub(r'(\d+)ml', r'\1', s)
+    s = re.sub(r'(\d+)gm', r'\1', s)
+    return re.sub(r'\s+', ' ', s).strip()
+
+
 def _resolve_brand_to_salt_key(brand_query: str, db) -> tuple[Optional[str], float]:
     """
     Resolve an OCR-extracted brand name to its canonical_salt_key via
@@ -155,7 +167,12 @@ def _resolve_brand_to_salt_key(brand_query: str, db) -> tuple[Optional[str], flo
 
     for doc in all_brands:
         db_brand = str(doc.get("brand_name", ""))
-        score = fuzz.ratio(query_clean.lower(), db_brand.lower())
+        
+        # Clean both query and DB brand name before comparing
+        query_cleaned = _clean_brand_for_matching(query_clean)
+        db_brand_cleaned = _clean_brand_for_matching(db_brand)
+        
+        score = fuzz.ratio(query_cleaned, db_brand_cleaned)
         if score > best_score:
             best_score = score
             best_doc = doc
