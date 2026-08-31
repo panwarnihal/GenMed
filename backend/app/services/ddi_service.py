@@ -357,7 +357,7 @@ def check_batch_interactions(canonical_salts: List[str]) -> List[InteractionAler
     unique_salts = set()
     for salt_str in canonical_salts:
         for token in salt_str.split("|"):
-            clean_token = re.sub(r'\d+[a-z]*$', '', token)
+            clean_token = re.sub(r'[\d\.]+[a-z]*$', '', token)
             if clean_token:
                 unique_salts.add(clean_token)
 
