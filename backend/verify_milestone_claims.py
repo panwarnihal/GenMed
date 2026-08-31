@@ -25,7 +25,7 @@ from functools import lru_cache
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Load environment
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore[import]
 load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 
 # Import target functions
@@ -72,12 +72,14 @@ class MilestoneAuditor:
         if os.path.exists(mapping_file):
             with open(mapping_file, "r", encoding="utf-8") as f:
                 content = f.read()
-                if "rapidfuzz" in content and "fuzz.partial_ratio" in content:
+                # After LASA safety refactor: RapidFuzz is used in Stage 1 for
+                # brand-name OCR typo correction (fuzz.ratio) with a >90% threshold.
+                if "rapidfuzz" in content and ("fuzz.ratio" in content or "fuzz.partial_ratio" in content):
                     rapidfuzz_used = True
 
         try:
-            from rapidfuzz import fuzz
-            score = fuzz.partial_ratio("augmentin 625", "augmentin 625 duo tab")
+            from rapidfuzz import fuzz  # type: ignore[import]
+            score = fuzz.ratio("augmentin 625 duo", "augmentin 625 duo tab")
             rf_run = score > 50
         except ImportError:
             rf_run = False

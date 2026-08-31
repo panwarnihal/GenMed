@@ -187,6 +187,7 @@ class AuditedLineItem(BaseModel):
     paid_price: float
     audit_summary: AuditResult
     regulatory_summary: RegulatoryStatus
+    requires_pharmacist_verification: bool = False
 
 
 class FinalAuditReport(BaseModel):
@@ -395,7 +396,8 @@ async def _process_audit_pipeline(
             printed_mrp=item.printed_mrp,
             paid_price=item.paid_price,
             audit_summary=audit_result,
-            regulatory_summary=reg_status
+            regulatory_summary=reg_status,
+            requires_pharmacist_verification=map_resp.requires_pharmacist_verification,
         )
 
         audited_items.append(audited_line)
