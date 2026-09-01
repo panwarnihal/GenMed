@@ -7,7 +7,7 @@ import {
   HeartPulse, Scale, FileWarning, Ban, Eye, ArrowRight,
   Clock, ShieldCheck, Cpu, FlaskConical,
 } from 'lucide-react';
-import { uploadInvoiceImage, auditManualInvoice } from '../api';
+import { uploadInvoice, uploadInvoiceImage, auditManualInvoice } from '../api';
 
 
 
@@ -331,7 +331,7 @@ export default function BillAuditor() {
     setPreviewUrl(URL.createObjectURL(file));
 
     try {
-      const data = await uploadInvoiceImage(file);
+      const data = await uploadInvoice(file);
       setReport(data);
     } catch (err) {
       setError(err.message || 'An unexpected error occurred while processing your invoice.');

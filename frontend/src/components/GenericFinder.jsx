@@ -1,10 +1,10 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Search, Zap, IndianRupee, Loader2, AlertTriangle, CheckCircle2,
   TrendingDown, Hash, Star, ChevronRight, FlaskConical, Sparkles,
   ArrowRight, Info, ShieldCheck, BadgeCheck, Pill,
 } from 'lucide-react';
-import { matchGenericAlternative } from '../api';
+import { searchGeneric, matchGenericAlternative } from '../api';
 
 /* ── Demo presets ── */
 const DEMO_CASES = [
@@ -130,21 +130,29 @@ function NoMatchCard({ query }) {
 function ResultCard({ result, billedPrice, query }) {
   if (!result.match_found) return <NoMatchCard query={query} />;
 
+  const alternatives = result.alternatives || (result.top_alternative ? [result.top_alternative] : []);
   const alt       = result.top_alternative;
-  const jaPrice   = alt.jan_aushadhi_price;
+  const jaPrice   = alt ? alt.jan_aushadhi_price : 0;
   const billed    = parseFloat(billedPrice) || 0;
   const savings   = billed > 0 ? Math.max(billed - jaPrice, 0) : null;
   const savingsPct = billed > 0 && savings !== null ? (savings / billed) * 100 : 0;
-  const score      = alt.search_score ?? 0;
+  const score      = alt ? (alt.search_score ?? 0) : 0;
 
   return (
     <div className="space-y-5 animate-[slideUp_0.4s_ease-out]">
       {/* Match badge */}
-      <div className="flex items-center gap-2">
-        <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Jan Aushadhi Match Found
-        </span>
-        <span className="text-xs text-slate-500">{alt.drug_code && `Drug Code: ${alt.drug_code}`}</span>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Jan Aushadhi Match Found
+          </span>
+          {result.requires_pharmacist_verification && (
+            <span className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">
+              <AlertTriangle className="w-3.5 h-3.5" /> Pharmacist Verification Advised
+            </span>
+          )}
+        </div>
+        {alt && alt.drug_code && <span className="text-xs text-slate-500">Drug Code: {alt.drug_code}</span>}
       </div>
 
       {/* Split comparison */}
@@ -183,21 +191,23 @@ function ResultCard({ result, billedPrice, query }) {
             <BadgeCheck className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white leading-snug">{alt.generic_name}</h3>
-            <p className="text-xs text-emerald-700 mt-0.5">Pradhan Mantri Jan Aushadhi Kendra</p>
+            <h3 className="text-base font-bold text-white leading-snug">{alt?.generic_name}</h3>
+            <p className="text-xs text-emerald-400 mt-0.5">Pradhan Mantri Jan Aushadhi Kendra</p>
           </div>
           <div className="flex items-baseline gap-1">
             <IndianRupee className="w-5 h-5 text-emerald-400 flex-shrink-0" />
             <span className="text-4xl font-extrabold text-emerald-300">{jaPrice.toFixed(2)}</span>
           </div>
-          <span className="text-xs text-emerald-700">Government Approved MRP</span>
+          <span className="text-xs text-emerald-400/80">Government Approved MRP</span>
 
           {/* Meta chips */}
           <div className="flex flex-wrap gap-2 pt-1">
-            <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
-              <Hash className="w-3 h-3 text-sky-400" />
-              <span className="text-[11px] text-slate-300">Code <strong className="text-sky-300">{alt.drug_code}</strong></span>
-            </div>
+            {alt?.drug_code && (
+              <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
+                <Hash className="w-3 h-3 text-sky-400" />
+                <span className="text-[11px] text-slate-300">Code <strong className="text-sky-300">{alt.drug_code}</strong></span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
               <Star className="w-3 h-3 text-amber-400" />
               <span className="text-[11px] text-slate-300">Score <strong className="text-amber-300">{score.toFixed(2)}</strong></span>
@@ -209,6 +219,27 @@ function ResultCard({ result, billedPrice, query }) {
           </div>
         </div>
       </div>
+
+      {/* Array list of generic alternatives if multiple */}
+      {alternatives.length > 1 && (
+        <div className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">All Available Generic Alternatives</h4>
+          <div className="divide-y divide-slate-800">
+            {alternatives.map((item, idx) => (
+              <div key={idx} className="py-3 flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-bold text-emerald-300">{item.generic_name}</p>
+                  <p className="text-[11px] text-slate-500">Drug Code: {item.drug_code || 'N/A'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-white">₹{item.jan_aushadhi_price?.toFixed(2)}</p>
+                  <span className="text-[10px] text-emerald-400">PMBI Price</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Match score ring + savings banner */}
       {billed > 0 && savings !== null && savings > 0 && (
@@ -267,23 +298,40 @@ export default function GenericFinder() {
   const [error,   setError]   = useState(null);
   const queryRef = useRef(null);
 
-  const handleSearch = async (e) => {
-    e?.preventDefault();
-    const q = query.trim();
-    if (!q) { queryRef.current?.focus(); return; }
+  const performSearch = useCallback(async (searchQuery, searchSalt) => {
+    const q = searchQuery.trim();
+    if (!q) return;
 
     setLoading(true);
     setError(null);
-    setResult(null);
 
     try {
-      const data = await matchGenericAlternative(q, salt.trim());
+      const data = await searchGeneric({ query: q, extracted_salt: searchSalt.trim() });
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Failed to reach the backend. Make sure GenMed API is running on port 8000.');
+      setError(err.message || 'Failed to reach the backend. Make sure GenMed API is running.');
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Debounce API calls when input changes
+  useEffect(() => {
+    if (!query.trim()) {
+      setResult(null);
+      return;
+    }
+    const timer = setTimeout(() => {
+      performSearch(query, salt);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [query, salt, performSearch]);
+
+  const handleSearch = async (e) => {
+    e?.preventDefault();
+    if (!query.trim()) { queryRef.current?.focus(); return; }
+    performSearch(query, salt);
   };
 
   const loadDemo = (demo) => {
