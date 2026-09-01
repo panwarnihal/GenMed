@@ -111,6 +111,15 @@ app.post("/api/v1/mapping/match", async (req, res) => {
   }
 });
 
+// Serve frontend static files
+const path = require("path");
+app.use(express.static(path.join(__dirname, "dist")));
+
+// Catch-all to route to React app
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "dist", "index.html"));
+});
+
 // Start Gateway Server
 app.listen(PORT, () => {
   console.log(`[Gateway] Express API Gateway running on http://localhost:${PORT}`);
