@@ -29,13 +29,19 @@ import base64
 import logging
 from typing import List, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.routes.mapping import match_generic_alternative, MappingRequest
 from app.services.regulatory_service import check_regulatory_status
 from app.services.ddi_service import check_batch_interactions, build_ddi_summary
 from utils_hasher import generate_canonical_salt_key
+
+# Rate limiter is initialised in main.py; import here to apply the decorator
+try:
+    from main import limiter as _limiter
+except Exception:
+    _limiter = None
 
 # ─────────────────────────────────────────────────────────────────────────────
 # LOGGER
@@ -431,11 +437,15 @@ async def _process_audit_pipeline(
     summary="Upload & Scan a Pharmacy Invoice, Return Audit Report",
 )
 async def upload_invoice_image(
+    request: Request,
     file: UploadFile = File(
         ...,
         description="Pharmacy bill image (JPG, PNG, WEBP, BMP — max 10 MB).",
     ),
 ) -> FinalAuditReport:
+    # Apply rate limit: 10 uploads per minute per IP
+    if _limiter is not None:
+        await _limiter.async_check(request, "10/minute")
     content_type = (file.content_type or "").lower().strip()
     if content_type == "image/jpg":
         content_type = "image/jpeg"

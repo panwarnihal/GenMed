@@ -54,3 +54,5 @@ uvicorn==0.52.1
 websockets==16.1.1
 rapidfuzz
 opencv-python-headless
+cachetools==5.5.2
+slowapi==0.1.9

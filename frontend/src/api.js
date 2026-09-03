@@ -9,14 +9,27 @@ async function fetchWithFallback(endpoint, options = {}) {
     if (res.ok) return res;
     // If gateway returns 404 or connection failure, attempt direct backend fallback
     if (res.status === 404 || res.status >= 500) {
-      const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
-      if (fallbackRes.ok) return fallbackRes;
+      try {
+        const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
+        if (fallbackRes.ok) return fallbackRes;
+        return fallbackRes;
+      } catch {
+        // fallback also failed — return original gateway response
+        return res;
+      }
     }
     return res;
-  } catch (err) {
-    // Retry on FastAPI directly if gateway server fails to connect
-    const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
-    return fallbackRes;
+  } catch {
+    // Gateway is completely unreachable — try FastAPI directly
+    try {
+      const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
+      return fallbackRes;
+    } catch {
+      throw new Error(
+        'Both the API gateway (port 5000) and backend (port 8000) are unreachable. ' +
+        'Please start the GenMed servers using start-all.ps1 or start-all.bat.'
+      );
+    }
   }
 }
 
@@ -114,6 +127,48 @@ export async function auditManualInvoice(lineItems) {
 }
 
 /**
+ * GET /api/v1/mapping/autocomplete?q=<prefix>
+ * Returns up to 8 brand name suggestions for typeahead UI
+ * @param {string} q - At least 2 characters
+ * @returns {Promise<string[]>} Array of matching brand names
+ */
+export async function autocomplete(q) {
+  if (!q || q.trim().length < 2) return [];
+  try {
+    const response = await fetchWithFallback(
+      `/api/v1/mapping/autocomplete?q=${encodeURIComponent(q.trim())}`,
+      { method: 'GET' }
+    );
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.suggestions || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * GET /api/v1/verify-batch/{batchNumber}
+ * Checks a batch number against the CDSCO NSQ/Spurious blacklist
+ * @param {string} batchNumber
+ * @returns {Promise<object>} { status, safety_level, message, ... }
+ */
+export async function verifyBatch(batchNumber) {
+  if (!batchNumber || !batchNumber.trim()) {
+    throw new Error('Batch number is required');
+  }
+  const response = await fetchWithFallback(
+    `/api/v1/verify-batch/${encodeURIComponent(batchNumber.trim().toUpperCase())}`,
+    { method: 'GET' }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Batch verification failed with status ${response.status}`);
+  }
+  return response.json();
+}
+
+/**
  * Health check endpoint
  * GET /
  * @returns {Promise<object>}
@@ -127,5 +182,3 @@ export async function checkHealth() {
     throw new Error('Backend offline');
   }
 }
-
-

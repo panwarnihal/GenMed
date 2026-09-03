@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Search, Zap, IndianRupee, Loader2, AlertTriangle, CheckCircle2,
   TrendingDown, Hash, Star, ChevronRight, FlaskConical, Sparkles,
-  ArrowRight, Info, ShieldCheck, BadgeCheck, Pill,
+  ArrowRight, Info, ShieldCheck, BadgeCheck, Pill, Clock, X,
+  CalendarDays,
 } from 'lucide-react';
-import { searchGeneric, matchGenericAlternative } from '../api';
+import { searchGeneric, matchGenericAlternative, autocomplete } from '../api';
 
 /* ── Demo presets ── */
 const DEMO_CASES = [
@@ -21,6 +22,24 @@ const HOW_IT_WORKS = [
   { icon: '💊', title: 'Instant Match',      desc: 'Our AI engine searches 8,000+ Jan Aushadhi generics by salt composition.' },
   { icon: '💰', title: 'See Savings',        desc: 'Compare government MRP vs. what you paid and see exactly how much you save.' },
 ];
+
+const HISTORY_KEY = 'genmed_search_history';
+const MAX_HISTORY = 5;
+
+/* ── Local storage search history helpers ── */
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
+}
+function saveHistory(query) {
+  if (!query.trim()) return;
+  try {
+    const h = [query.trim(), ...getHistory().filter(q => q !== query.trim())].slice(0, MAX_HISTORY);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+  } catch { /* ignore */ }
+}
+function clearHistory() {
+  try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
+}
 
 /* ── Confidence ring SVG ── */
 function ScoreRing({ score }) {
@@ -137,6 +156,8 @@ function ResultCard({ result, billedPrice, query }) {
   const savings   = billed > 0 ? Math.max(billed - jaPrice, 0) : null;
   const savingsPct = billed > 0 && savings !== null ? (savings / billed) * 100 : 0;
   const score      = alt ? (alt.search_score ?? 0) : 0;
+  // Annual savings estimate: assume weekly chronic use (52 weeks)
+  const annualSavings = savings !== null && savings > 0 ? savings * 52 : null;
 
   return (
     <div className="space-y-5 animate-[slideUp_0.4s_ease-out]">
@@ -208,6 +229,14 @@ function ResultCard({ result, billedPrice, query }) {
                 <span className="text-[11px] text-slate-300">Code <strong className="text-sky-300">{alt.drug_code}</strong></span>
               </div>
             )}
+            {alt?.canonical_salt_key && (
+              <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5 max-w-full">
+                <FlaskConical className="w-3 h-3 text-purple-400 flex-shrink-0" />
+                <span className="text-[11px] text-purple-300 truncate" title={alt.canonical_salt_key}>
+                  {alt.canonical_salt_key}
+                </span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
               <Star className="w-3 h-3 text-amber-400" />
               <span className="text-[11px] text-slate-300">Score <strong className="text-amber-300">{score.toFixed(2)}</strong></span>
@@ -257,6 +286,18 @@ function ResultCard({ result, billedPrice, query }) {
                 </p>
               </div>
               <SavingsBar savingsPct={savingsPct} />
+
+              {/* Annual savings estimate */}
+              {annualSavings !== null && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
+                  <CalendarDays className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                  <p className="text-xs text-emerald-400">
+                    <strong>₹{annualSavings.toFixed(0)}</strong> estimated annual savings
+                    <span className="text-emerald-500/60 ml-1">(chronic weekly use)</span>
+                  </p>
+                </div>
+              )}
+
               <p className="text-xs text-slate-500 flex items-center gap-1.5">
                 <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
                 Available at any Pradhan Mantri Jan Aushadhi Kendra across India
@@ -289,7 +330,7 @@ function ResultCard({ result, billedPrice, query }) {
 /* ══════════════════════════════════
    Main GenericFinder Tab
 ══════════════════════════════════ */
-export default function GenericFinder() {
+export default function GenericFinder({ status }) {
   const [query,   setQuery]   = useState('');
   const [salt,    setSalt]    = useState('');
   const [price,   setPrice]   = useState('');
@@ -298,12 +339,54 @@ export default function GenericFinder() {
   const [error,   setError]   = useState(null);
   const queryRef = useRef(null);
 
+  // Autocomplete state
+  const [suggestions, setSuggestions]         = useState([]);
+  const [showDropdown, setShowDropdown]       = useState(false);
+  const [acLoading, setAcLoading]             = useState(false);
+  const [selectedSuggIdx, setSelectedSuggIdx] = useState(-1);
+  const dropdownRef = useRef(null);
+
+  // Search history
+  const [history, setHistory] = useState(getHistory);
+  const [showHistory, setShowHistory] = useState(false);
+
+  /* ── Close dropdown on outside click ── */
+  useEffect(() => {
+    const handler = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+        setShowHistory(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  /* ── Autocomplete fetch ── */
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setSuggestions([]);
+      setShowDropdown(false);
+      return;
+    }
+    setAcLoading(true);
+    const timer = setTimeout(async () => {
+      const results = await autocomplete(query);
+      setSuggestions(results);
+      setShowDropdown(results.length > 0);
+      setAcLoading(false);
+    }, 250);
+    return () => { clearTimeout(timer); setAcLoading(false); };
+  }, [query]);
+
   const performSearch = useCallback(async (searchQuery, searchSalt) => {
     const q = searchQuery.trim();
     if (!q) return;
 
     setLoading(true);
     setError(null);
+    saveHistory(q);
+    setHistory(getHistory());
 
     try {
       const data = await searchGeneric({ query: q, extracted_salt: searchSalt.trim() });
@@ -315,7 +398,7 @@ export default function GenericFinder() {
     }
   }, []);
 
-  // Debounce API calls when input changes
+  // Debounce search when query/salt changes — 700ms
   useEffect(() => {
     if (!query.trim()) {
       setResult(null);
@@ -323,15 +406,24 @@ export default function GenericFinder() {
     }
     const timer = setTimeout(() => {
       performSearch(query, salt);
-    }, 400);
-
+    }, 700);
     return () => clearTimeout(timer);
   }, [query, salt, performSearch]);
 
   const handleSearch = async (e) => {
     e?.preventDefault();
     if (!query.trim()) { queryRef.current?.focus(); return; }
+    setShowDropdown(false);
     performSearch(query, salt);
+  };
+
+  const selectSuggestion = (suggestion) => {
+    setQuery(suggestion);
+    setSuggestions([]);
+    setShowDropdown(false);
+    setSelectedSuggIdx(-1);
+    // Fire immediately — no debounce wait
+    performSearch(suggestion, salt);
   };
 
   const loadDemo = (demo) => {
@@ -340,7 +432,31 @@ export default function GenericFinder() {
     setPrice(String(demo.price));
     setResult(null);
     setError(null);
+    setShowDropdown(false);
+    setSuggestions([]);
+    // Fire immediately — no debounce wait
+    setTimeout(() => performSearch(demo.query, demo.salt), 0);
   };
+
+  const handleQueryKeyDown = (e) => {
+    if (!showDropdown || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedSuggIdx(i => Math.min(i + 1, suggestions.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedSuggIdx(i => Math.max(i - 1, -1));
+    } else if (e.key === 'Enter' && selectedSuggIdx >= 0) {
+      e.preventDefault();
+      selectSuggestion(suggestions[selectedSuggIdx]);
+    } else if (e.key === 'Escape') {
+      setShowDropdown(false);
+      setSelectedSuggIdx(-1);
+    }
+  };
+
+  // Show offline warning if status is offline
+  const isOffline = status === 'offline';
 
   return (
     <section className="grid lg:grid-cols-12 gap-6 items-start" id="generic-finder">
@@ -364,27 +480,105 @@ export default function GenericFinder() {
           </div>
         </div>
 
+        {/* Offline banner */}
+        {isOffline && (
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/25 animate-[fadeIn_0.3s_ease-out]">
+            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-400 leading-relaxed">
+              <strong>Backend offline</strong> — Start the GenMed API servers using{' '}
+              <code className="bg-red-500/10 px-1 rounded">start-all.ps1</code> or{' '}
+              <code className="bg-red-500/10 px-1 rounded">start-all.bat</code>.
+            </p>
+          </div>
+        )}
+
         {/* Search form */}
         <form
           onSubmit={handleSearch}
           className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-4"
           id="search-form"
         >
-          {/* Brand query */}
-          <div className="space-y-1.5">
+          {/* Brand query with autocomplete */}
+          <div className="space-y-1.5" ref={dropdownRef}>
             <label htmlFor="brand-query" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
               <Search className="w-3.5 h-3.5" /> Brand Name / Query <span className="text-red-400">*</span>
             </label>
-            <input
-              id="brand-query"
-              ref={queryRef}
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="e.g. Augmentin 625 Duo Tab"
-              className="gm-input w-full px-4 py-2.5 rounded-xl text-sm"
-              required
-            />
+            <div className="relative">
+              <input
+                id="brand-query"
+                ref={queryRef}
+                type="text"
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value);
+                  setSelectedSuggIdx(-1);
+                  if (e.target.value.trim().length >= 2) setShowDropdown(true);
+                  else { setShowDropdown(false); setShowHistory(false); }
+                }}
+                onFocus={() => {
+                  if (query.trim().length < 2 && history.length > 0) setShowHistory(true);
+                  else if (suggestions.length > 0) setShowDropdown(true);
+                }}
+                onKeyDown={handleQueryKeyDown}
+                placeholder="e.g. Augmentin 625 Duo Tab"
+                className="gm-input w-full px-4 py-2.5 rounded-xl text-sm pr-8"
+                autoComplete="off"
+                required
+              />
+              {acLoading && (
+                <Loader2 className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 animate-spin" />
+              )}
+
+              {/* Autocomplete dropdown */}
+              {showDropdown && suggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden border border-purple-500/30 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-[fadeIn_0.15s_ease-out]">
+                  {suggestions.map((s, i) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onMouseDown={() => selectSuggestion(s)}
+                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors duration-100 ${
+                        i === selectedSuggIdx
+                          ? 'bg-purple-500/20 text-white'
+                          : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                      }`}
+                    >
+                      <Search className="w-3 h-3 text-slate-500 flex-shrink-0" />
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Search history dropdown */}
+              {showHistory && !showDropdown && history.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-[fadeIn_0.15s_ease-out]">
+                  <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+                      <Clock className="w-3 h-3" /> Recent Searches
+                    </span>
+                    <button
+                      type="button"
+                      onMouseDown={() => { clearHistory(); setHistory([]); setShowHistory(false); }}
+                      className="text-[10px] text-slate-600 hover:text-red-400 transition-colors"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  {history.map((h) => (
+                    <button
+                      key={h}
+                      type="button"
+                      onMouseDown={() => { setQuery(h); setShowHistory(false); performSearch(h, salt); }}
+                      className="w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 text-slate-400 hover:bg-slate-800/80 hover:text-white transition-colors duration-100"
+                    >
+                      <Clock className="w-3 h-3 text-slate-600 flex-shrink-0" />
+                      {h}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Salt */}
@@ -425,7 +619,7 @@ export default function GenericFinder() {
           <button
             id="find-generic-btn"
             type="submit"
-            disabled={loading}
+            disabled={loading || isOffline}
             className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 mt-2"
           >
             {loading ? (
@@ -452,10 +646,35 @@ export default function GenericFinder() {
             </button>
           ))}
         </div>
+
+        {/* Recent history pills (compact row below demo) */}
+        {history.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[11px] text-slate-600 flex items-center gap-1">
+              <Clock className="w-3 h-3" /> Recent:
+            </span>
+            {history.map((h) => (
+              <button
+                key={h}
+                onClick={() => { setQuery(h); performSearch(h, salt); }}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-500 hover:border-purple-500/40 hover:text-slate-300 transition-all duration-150 flex items-center gap-1"
+              >
+                <Clock className="w-2.5 h-2.5" />
+                {h}
+              </button>
+            ))}
+            <button
+              onClick={() => { clearHistory(); setHistory([]); }}
+              className="text-[10px] text-slate-700 hover:text-red-400 transition-colors flex items-center gap-0.5"
+            >
+              <X className="w-2.5 h-2.5" /> clear
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT COLUMN (Results / How it works) ── */}
-      <div className="lg:col-span-7">
+      <div className="lg:col-span-7 min-h-[420px]">
         
         {loading && <LoadingSkeleton />}
 

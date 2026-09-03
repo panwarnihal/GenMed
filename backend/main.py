@@ -1,18 +1,27 @@
 import os
 from typing import List, Optional
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pymongo import MongoClient
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 # Load environment variables and initialize the FastAPI application
 load_dotenv()
+
+# Rate limiter: keyed by client IP
+limiter = Limiter(key_func=get_remote_address)
+
 app = FastAPI(
     title="GenMed API Gateway",
     description="Deterministic Exact-Match Pharmaceutical Substitution Engine",
     version="1.0.0"
 )
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS middleware to enable communication with the frontend application
 app.add_middleware(

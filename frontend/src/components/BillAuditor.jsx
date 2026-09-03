@@ -7,7 +7,7 @@ import {
   HeartPulse, Scale, FileWarning, Ban, Eye, ArrowRight,
   Clock, ShieldCheck, Cpu, FlaskConical,
 } from 'lucide-react';
-import { uploadInvoice, uploadInvoiceImage, auditManualInvoice } from '../api';
+import { uploadInvoice, uploadInvoiceImage, auditManualInvoice, verifyBatch } from '../api';
 
 
 
@@ -252,6 +252,7 @@ function ScannerLoader({ fileName }) {
 export default function BillAuditor() {
   const [report, setReport]         = useState(null);
   const [loading, setLoading]       = useState(false);
+  const [manualLoading, setManualLoading] = useState(false);
   const [error, setError]           = useState('');
   const [isDragOver, setIsDragOver]  = useState(false);
   const [fileName, setFileName]     = useState('');
@@ -259,6 +260,8 @@ export default function BillAuditor() {
   const [manualItems, setManualItems] = useState([
     { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }
   ]);
+  // Per-row batch verification state: { [rowIndex]: { loading, result, error } }
+  const [batchVerify, setBatchVerify] = useState({});
   const fileInputRef = useRef(null);
 
   const addManualItemField = () => {
@@ -293,6 +296,7 @@ export default function BillAuditor() {
       return;
     }
 
+    setManualLoading(true);
     setLoading(true);
     setError('');
     setReport(null);
@@ -306,6 +310,7 @@ export default function BillAuditor() {
       setError(err.message || 'An error occurred while performing manual audit.');
     } finally {
       setLoading(false);
+      setManualLoading(false);
     }
   };
 
@@ -359,7 +364,14 @@ export default function BillAuditor() {
     setError('');
     setFileName('');
     setPreviewUrl('');
+    setBatchVerify({});
     if (fileInputRef.current) fileInputRef.current.value = '';
+    // manualItems intentionally preserved so user doesn't lose typed data
+  };
+
+  const handleFullReset = () => {
+    handleReset();
+    setManualItems([{ brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }]);
   };
 
   /* ── Derived data ── */
@@ -1029,6 +1041,7 @@ export default function BillAuditor() {
                       <th className="py-4 px-4 text-center">Overcharge</th>
                       <th className="py-4 px-4">Jan Aushadhi Alt.</th>
                       <th className="py-4 px-4 text-right">Saves</th>
+                      <th className="py-4 px-4 text-center">Batch</th>
                       <th className="py-4 px-4 text-center">Safety</th>
                     </tr>
                   </thead>
@@ -1037,6 +1050,20 @@ export default function BillAuditor() {
                       const audit = item.audit_summary;
                       const reg = item.regulatory_summary;
                       const hasOvercharge = audit?.is_overcharged;
+                      const bv = batchVerify[idx] || {};
+                      const batchNum = item.batch_number;
+
+                      const handleBatchVerify = async () => {
+                        if (!batchNum) return;
+                        setBatchVerify(prev => ({ ...prev, [idx]: { loading: true } }));
+                        try {
+                          const result = await verifyBatch(batchNum);
+                          setBatchVerify(prev => ({ ...prev, [idx]: { loading: false, result } }));
+                        } catch (err) {
+                          setBatchVerify(prev => ({ ...prev, [idx]: { loading: false, error: err.message } }));
+                        }
+                      };
+
                       return (
                         <tr key={idx} className="audit-row group/row">
                           <td className="py-5 px-5">
@@ -1092,6 +1119,42 @@ export default function BillAuditor() {
                               <span className="text-slate-700">—</span>
                             )}
                           </td>
+                          {/* Inline Batch Verifier */}
+                          <td className="py-5 px-4 text-center">
+                            {batchNum ? (
+                              <div className="space-y-1.5">
+                                <span className="block text-[10px] text-slate-500 font-mono">{batchNum}</span>
+                                {!bv.result && !bv.loading && !bv.error && (
+                                  <button
+                                    onClick={handleBatchVerify}
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-slate-800 border border-slate-700/60 text-slate-400 hover:border-blue-500/50 hover:text-blue-300 transition-all duration-150"
+                                    title="Check CDSCO blacklist"
+                                  >
+                                    <ScanLine className="w-2.5 h-2.5" /> Verify
+                                  </button>
+                                )}
+                                {bv.loading && (
+                                  <RefreshCw className="w-3 h-3 text-blue-400 animate-spin mx-auto" />
+                                )}
+                                {bv.result && (
+                                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-full ${
+                                    bv.result.safety_level === 'GREEN_VERIFIED'
+                                      ? 'bg-emerald-500/12 border border-emerald-500/25 text-emerald-400'
+                                      : 'bg-red-500/15 border border-red-500/30 text-red-400'
+                                  }`} title={bv.result.message}>
+                                    {bv.result.safety_level === 'GREEN_VERIFIED'
+                                      ? <><CheckCircle2 className="w-2.5 h-2.5" /> Safe</>
+                                      : <><ShieldAlert className="w-2.5 h-2.5" /> Flagged!</>}
+                                  </span>
+                                )}
+                                {bv.error && (
+                                  <span className="text-[10px] text-red-400" title={bv.error}>Error</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-700 text-[10px]">—</span>
+                            )}
+                          </td>
                           <td className="py-5 px-4 text-center">
                             {reg?.is_banned ? (
                               <span className="inline-flex items-center gap-1 bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-bold px-2.5 py-1.5 rounded-full" title={reg.warning_message}>
@@ -1110,7 +1173,7 @@ export default function BillAuditor() {
                         </tr>
                       );
                     })}
-                  </tbody>
+                            </tbody>
                 </table>
               </div>
 

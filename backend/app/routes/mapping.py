@@ -24,14 +24,22 @@
 """
 
 import os
+import re
 import logging
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Query, status
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import List, Optional
 from pymongo import MongoClient  # type: ignore[import]
+from cachetools import TTLCache  # type: ignore[import]
 from utils_hasher import generate_canonical_salt_key
 
 logger = logging.getLogger("genmed.mapping")
+
+# ─────────────────────────────────────────────────────────────────────────────
+# IN-MEMORY TTL CACHE  (avoids repeat Atlas Search calls for common medicines)
+# ─────────────────────────────────────────────────────────────────────────────
+# max 500 distinct query keys, 1-hour TTL
+_MATCH_CACHE: TTLCache = TTLCache(maxsize=500, ttl=3600)
 
 router = APIRouter(
     prefix="/api/v1/mapping",
@@ -211,6 +219,32 @@ def _find_generic_by_salt_key(canonical_salt_key: str, db) -> Optional[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# AUTOCOMPLETE ENDPOINT
+# ─────────────────────────────────────────────────────────────────────────────
+@router.get("/autocomplete", status_code=status.HTTP_200_OK, tags=["Search"])
+def autocomplete_brand(
+    q: str = Query(..., min_length=2, description="Prefix to search brand names"),
+):
+    """
+    Returns up to 8 brand name suggestions for the typeahead UI.
+    Performs a case-insensitive prefix search against the Branded_Drugs collection.
+    """
+    db = _get_db()
+    branded_col = db["Branded_Drugs"]
+    try:
+        escaped = re.escape(q.strip())
+        results = branded_col.find(
+            {"brand_name": {"$regex": f"^{escaped}", "$options": "i"}},
+            {"_id": 0, "brand_name": 1},
+        ).limit(8)
+        suggestions = [doc["brand_name"] for doc in results if "brand_name" in doc]
+        return {"suggestions": suggestions}
+    except Exception as exc:
+        logger.warning("Autocomplete error: %s", exc)
+        return {"suggestions": []}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # MAPPING ENDPOINT
 # ─────────────────────────────────────────────────────────────────────────────
 @router.post("/match", response_model=MappingResponse, status_code=status.HTTP_200_OK)
@@ -222,7 +256,14 @@ async def match_generic_alternative(payload: MappingRequest):
 
     If either stage fails, the item is quarantined with
     requires_pharmacist_verification=True.
+    Results are cached in memory for 1 hour to reduce Atlas Search load.
     """
+    # ── Cache lookup ────────────────────────────────────────────────────────
+    cache_key = f"{payload.query.strip().lower()}|{(payload.extracted_salt or '').strip().lower()}"
+    if cache_key in _MATCH_CACHE:
+        logger.debug("Cache HIT for key='%s'", cache_key)
+        return _MATCH_CACHE[cache_key]
+
     db = _get_db()
 
     # ── Determine the canonical salt key ────────────────────────────────────
@@ -262,7 +303,7 @@ async def match_generic_alternative(payload: MappingRequest):
     generic_doc = _find_generic_by_salt_key(canonical_key, db)
 
     if generic_doc:
-        return MappingResponse(
+        result = MappingResponse(
             match_found=True,
             top_alternative=AlternativeDetail(
                 drug_code=str(generic_doc.get("drug_code", "")),
@@ -272,14 +313,18 @@ async def match_generic_alternative(payload: MappingRequest):
             ),
             requires_pharmacist_verification=False,
         )
+        _MATCH_CACHE[cache_key] = result
+        return result
 
     # Salt key resolved but no generic equivalent exists in PMBI inventory
     logger.info(
         "No PMBI generic found for canonical_salt_key='%s'. Quarantined.",
         canonical_key,
     )
-    return MappingResponse(
+    result = MappingResponse(
         match_found=False,
         top_alternative=None,
         requires_pharmacist_verification=True,
     )
+    _MATCH_CACHE[cache_key] = result
+    return result

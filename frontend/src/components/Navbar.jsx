@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 /**
  * Sticky top nav — GooeyNav for desktop, slide-down for mobile.
  */
-export default function Navbar() {
+export default function Navbar({ status }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
@@ -53,8 +53,23 @@ export default function Navbar() {
 
           {/* Logo → home */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
-              <Pill className="w-5 h-5 text-white" strokeWidth={2} />
+            <div className="relative w-9 h-9">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
+                <Pill className="w-5 h-5 text-white" strokeWidth={2} />
+              </div>
+              {/* Live status dot */}
+              <div
+                title={status === 'online' ? 'API Online' : status === 'offline' ? 'API Offline' : 'Checking API…'}
+                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 transition-colors duration-500 ${
+                  status === 'online'   ? 'bg-emerald-400' :
+                  status === 'offline'  ? 'bg-red-500'     :
+                  'bg-amber-400'
+                }`}
+              >
+                {status === 'online' && (
+                  <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+                )}
+              </div>
             </div>
             <div>
               <span className="text-xl font-bold tracking-tight gradient-text">GenMed</span>

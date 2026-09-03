@@ -1,17 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import GenericFinder from './components/GenericFinder';
-import BillAuditor from './components/BillAuditor';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
 import { checkHealth } from './api';
+
+// Lazy-load the heavy BillAuditor (65 KB) — only fetched when user navigates to /auditor
+const BillAuditor = lazy(() => import('./components/BillAuditor'));
 
 /* Scroll to top whenever the route changes */
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
   return null;
+}
+
+/* Minimal fallback shown while BillAuditor chunk loads */
+function AuditorFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[40vh] gap-3 text-slate-500">
+      <div className="w-6 h-6 rounded-full border-2 border-purple-500/40 border-t-purple-400 animate-spin" />
+      <span className="text-sm">Loading BillSense…</span>
+    </div>
+  );
 }
 
 /* Page shell: Navbar + content + footer */
@@ -35,7 +47,7 @@ function Layout({ status, children }) {
           <p className="text-[11px] text-slate-600 flex-shrink-0">
             API at{' '}
             <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
-              http://127.0.0.1:8000
+              {import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}
             </code>
           </p>
         </div>
@@ -67,10 +79,14 @@ export default function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={
-          <Layout status={status}><GenericFinder /></Layout>
+          <Layout status={status}><GenericFinder status={status} /></Layout>
         } />
         <Route path="/auditor" element={
-          <Layout status={status}><BillAuditor /></Layout>
+          <Layout status={status}>
+            <Suspense fallback={<AuditorFallback />}>
+              <BillAuditor />
+            </Suspense>
+          </Layout>
         } />
         <Route path="/about" element={
           <Layout status={status}><AboutUs /></Layout>
