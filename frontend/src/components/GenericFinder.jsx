@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Search, Zap, IndianRupee, Loader2, AlertTriangle, CheckCircle2,
-  TrendingDown, Hash, Star, ChevronRight, FlaskConical, Sparkles,
+  Hash, Star, ChevronRight, FlaskConical,
   ArrowRight, Info, ShieldCheck, BadgeCheck, Pill, Clock, X,
-  CalendarDays,
+  CalendarDays, Sparkles, TrendingDown, Database, Award,
+  ArrowDownRight, ExternalLink, Dna, Hexagon, Activity
 } from 'lucide-react';
-import { searchGeneric, matchGenericAlternative, autocomplete } from '../api';
+import { searchGeneric, autocomplete } from '../api';
 
 /* ── Demo presets ── */
 const DEMO_CASES = [
@@ -15,18 +16,15 @@ const DEMO_CASES = [
   { query: 'Crocin Advance 500mg',   salt: 'Paracetamol 500mg',                         price: 38.00  },
 ];
 
-/* ── How it works steps ── */
-const HOW_IT_WORKS = [
-  { icon: '🔍', title: 'Enter Brand Name',   desc: 'Type the commercial brand name exactly as written on your prescription or bill.' },
-  { icon: '⚗️',  title: 'Add Salt (Optional)', desc: 'For better accuracy, add the chemical composition from the medicine strip.' },
-  { icon: '💊', title: 'Instant Match',      desc: 'Our AI engine searches 8,000+ Jan Aushadhi generics by salt composition.' },
-  { icon: '💰', title: 'See Savings',        desc: 'Compare government MRP vs. what you paid and see exactly how much you save.' },
+const STATS = [
+  { icon: Database, value: '8,000+', label: 'Jan Aushadhi Generics', color: 'emerald' },
+  { icon: TrendingDown, value: '~60%', label: 'Avg. Price Reduction', color: 'purple' },
+  { icon: ShieldCheck, value: 'PMBJP', label: 'Govt. Verified Database', color: 'sky' },
 ];
 
 const HISTORY_KEY = 'genmed_search_history';
 const MAX_HISTORY = 5;
 
-/* ── Local storage search history helpers ── */
 function getHistory() {
   try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
 }
@@ -41,25 +39,71 @@ function clearHistory() {
   try { localStorage.removeItem(HISTORY_KEY); } catch { /* ignore */ }
 }
 
-/* ── Confidence ring SVG ── */
+/* ═══════════════════════════════════════
+   Floating Background Orbs
+═══════════════════════════════════════ */
+function BackgroundOrbs() {
+  return (
+    <div className="gf-orbs-container" aria-hidden="true">
+      <div className="gf-orb gf-orb--emerald" />
+      <div className="gf-orb gf-orb--purple" />
+      <div className="gf-orb gf-orb--blue" />
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   Stat Badges
+═══════════════════════════════════════ */
+function StatBadges() {
+  return (
+    <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mb-2">
+      {STATS.map((s) => {
+        const Icon = s.icon;
+        const colorMap = {
+          emerald: { bg: 'bg-emerald-500/8', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: 'text-emerald-500' },
+          purple:  { bg: 'bg-purple-500/8',  border: 'border-purple-500/20',  text: 'text-purple-400',  icon: 'text-purple-500'  },
+          sky:     { bg: 'bg-sky-500/8',     border: 'border-sky-500/20',     text: 'text-sky-400',     icon: 'text-sky-500'     },
+        };
+        const c = colorMap[s.color];
+        return (
+          <div
+            key={s.label}
+            className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl ${c.bg} border ${c.border} backdrop-blur-sm`}
+          >
+            <Icon className={`w-4 h-4 ${c.icon} flex-shrink-0`} />
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-sm font-extrabold ${c.text}`}>{s.value}</span>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">{s.label}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   Score Ring
+═══════════════════════════════════════ */
 function ScoreRing({ score }) {
   const maxScore = 20;
   const pct = Math.min(score / maxScore, 1);
-  const r = 52;
+  const r = 44;
   const circumference = 2 * Math.PI * r;
   const offset = circumference * (1 - pct);
   const colour = pct >= 0.7 ? '#10b981' : pct >= 0.4 ? '#f59e0b' : '#ef4444';
   const label  = pct >= 0.7 ? 'High'    : pct >= 0.4 ? 'Medium'  : 'Low';
 
   return (
-    <div className="flex flex-col items-center gap-1 relative">
-      <svg width="120" height="120" viewBox="0 0 120 120" className="-rotate-90">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="#1e293b" strokeWidth="10" />
+    <div className="flex flex-col items-center gap-1 relative flex-shrink-0">
+      <svg width="100" height="100" viewBox="0 0 100 100" className="-rotate-90">
+        <circle cx="50" cy="50" r={r} fill="none" stroke="rgba(30,41,59,0.6)" strokeWidth="8" />
         <circle
-          cx="60" cy="60" r={r}
+          cx="50" cy="50" r={r}
           fill="none"
           stroke={colour}
-          strokeWidth="10"
+          strokeWidth="8"
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={offset}
@@ -67,240 +111,191 @@ function ScoreRing({ score }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold" style={{ color: colour }}>{score.toFixed(1)}</span>
-        <span className="text-[10px] text-slate-500 font-medium">/ {maxScore}</span>
-        <span className="text-[10px] font-semibold mt-0.5" style={{ color: colour }}>{label} match</span>
+        <span className="text-xl font-bold" style={{ color: colour }}>{score.toFixed(1)}</span>
+        <span className="text-[9px] text-slate-500 font-medium">/ {maxScore}</span>
+        <span className="text-[9px] font-semibold mt-0.5" style={{ color: colour }}>{label}</span>
       </div>
     </div>
   );
 }
 
-/* ── Savings bar ── */
-function SavingsBar({ savingsPct }) {
-  const clampedPct = Math.min(Math.max(savingsPct, 0), 100);
-  const colour =
-    clampedPct >= 60 ? 'from-emerald-500 to-teal-400'
-    : clampedPct >= 30 ? 'from-amber-500 to-yellow-400'
-    :                    'from-slate-500 to-slate-400';
-
-  return (
-    <div className="space-y-1.5">
-      <div className="flex items-center justify-between text-[11px]">
-        <span className="text-slate-500">Jan Aushadhi Price</span>
-        <span className="text-emerald-400 font-semibold">{clampedPct.toFixed(1)}% cheaper</span>
-      </div>
-      <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
-        <div
-          className={`h-3 rounded-full bg-gradient-to-r ${colour} transition-all duration-1000 ease-out`}
-          style={{ width: `${clampedPct}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between text-[10px] text-slate-600">
-        <span>₹0</span>
-        <span>Commercial Brand Price</span>
-      </div>
-    </div>
-  );
-}
-
-/* ── Skeleton card ── */
+/* ═══════════════════════════════════════
+   Loading Skeleton
+═══════════════════════════════════════ */
 function LoadingSkeleton() {
   return (
-    <div className="animate-pulse space-y-4 mt-2">
-      <div className="skeleton h-4 w-1/4 rounded-lg" />
+    <div className="animate-pulse space-y-5 mt-4 max-w-3xl mx-auto">
+      <div className="skeleton h-5 w-48 rounded-lg mx-auto" />
       <div className="grid md:grid-cols-2 gap-4">
-        {[0, 1].map((i) => (
-          <div key={i} className="glass-card rounded-2xl p-6 space-y-3 border border-slate-700/30">
+        {[0, 1].map(i => (
+          <div key={i} className="gf-result-card rounded-2xl p-6 space-y-3">
             <div className="skeleton h-3 w-1/3" />
-            <div className="skeleton h-7 w-3/4" />
+            <div className="skeleton h-8 w-3/4" />
             <div className="skeleton h-4 w-1/2" />
-            <div className="skeleton h-10 w-1/3 mt-2" />
+            <div className="skeleton h-12 w-1/3 mt-2" />
           </div>
         ))}
       </div>
-      <div className="skeleton h-28 w-full rounded-2xl" />
+      <div className="skeleton h-32 w-full rounded-2xl" />
     </div>
   );
 }
 
-/* ── No-match card ── */
+/* ═══════════════════════════════════════
+   No Match Card
+═══════════════════════════════════════ */
 function NoMatchCard({ query }) {
   return (
-    <div className="glass-card rounded-2xl p-10 border border-amber-500/20 animate-[fadeIn_0.4s_ease-out] text-center space-y-4">
-      <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
-        <AlertTriangle className="w-8 h-8 text-amber-400" />
+    <div className="gf-result-card rounded-3xl p-10 text-center space-y-5 animate-[gfSlideUp_0.5s_ease-out] max-w-xl mx-auto"
+         style={{ '--gf-card-accent': 'rgba(245,158,11,0.12)' }}>
+      <div className="w-20 h-20 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto">
+        <AlertTriangle className="w-10 h-10 text-amber-400" />
       </div>
       <div>
-        <h3 className="text-xl font-bold text-white mb-2">No Jan Aushadhi Match Found</h3>
+        <h3 className="text-2xl font-bold text-white mb-2">No Generic Match Found</h3>
         <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
-          We couldn't locate a government generic equivalent for{' '}
-          <strong className="text-slate-200">{query}</strong> in the Jan Aushadhi database.
-          Try adding the salt composition for a better match, or consult your physician.
+          We couldn't locate a Jan Aushadhi equivalent for{' '}
+          <strong className="text-white">{query}</strong>. Try adding the chemical salt composition for a more precise lookup.
         </p>
       </div>
-      <div className="flex flex-wrap justify-center gap-3 text-xs text-slate-500">
-        <span className="flex items-center gap-1"><Info className="w-3.5 h-3.5" /> Tip: add chemical composition for better accuracy</span>
+      <div className="flex justify-center">
+        <span className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-800/50 px-3 py-1.5 rounded-full">
+          <Info className="w-3.5 h-3.5" /> Tip: add salt composition for better results
+        </span>
       </div>
     </div>
   );
 }
 
-/* ── Main result card ── */
+/* ═══════════════════════════════════════
+   Result Card — premium comparison
+═══════════════════════════════════════ */
 function ResultCard({ result, billedPrice, query }) {
   if (!result.match_found) return <NoMatchCard query={query} />;
 
-  const alternatives = result.alternatives || (result.top_alternative ? [result.top_alternative] : []);
-  const alt       = result.top_alternative;
-  const jaPrice   = alt ? alt.jan_aushadhi_price : 0;
-  const billed    = parseFloat(billedPrice) || 0;
-  const savings   = billed > 0 ? Math.max(billed - jaPrice, 0) : null;
+  const alt        = result.top_alternative;
+  const jaPrice    = alt ? alt.jan_aushadhi_price : 0;
+  const billed     = parseFloat(billedPrice) || 0;
+  const savings    = billed > 0 ? Math.max(billed - jaPrice, 0) : null;
   const savingsPct = billed > 0 && savings !== null ? (savings / billed) * 100 : 0;
   const score      = alt ? (alt.search_score ?? 0) : 0;
-  // Annual savings estimate: assume weekly chronic use (52 weeks)
   const annualSavings = savings !== null && savings > 0 ? savings * 52 : null;
 
   return (
-    <div className="space-y-5 animate-[slideUp_0.4s_ease-out]">
-      {/* Match badge */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold px-3 py-1 rounded-full">
-            <CheckCircle2 className="w-3.5 h-3.5" /> Jan Aushadhi Match Found
+    <div className="space-y-5 animate-[gfSlideUp_0.5s_ease-out] max-w-3xl mx-auto">
+
+      {/* Status badges */}
+      <div className="flex items-center justify-center flex-wrap gap-2">
+        <span className="gf-badge gf-badge--success">
+          <CheckCircle2 className="w-3.5 h-3.5" /> Jan Aushadhi Match Found
+        </span>
+        {result.requires_pharmacist_verification && (
+          <span className="gf-badge gf-badge--warning">
+            <AlertTriangle className="w-3.5 h-3.5" /> Pharmacist Verification Advised
           </span>
-          {result.requires_pharmacist_verification && (
-            <span className="inline-flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold px-3 py-1 rounded-full">
-              <AlertTriangle className="w-3.5 h-3.5" /> Pharmacist Verification Advised
-            </span>
-          )}
-        </div>
-        {alt && alt.drug_code && <span className="text-xs text-slate-500">Drug Code: {alt.drug_code}</span>}
+        )}
       </div>
 
-      {/* Split comparison */}
+      {/* ── Price Comparison Cards ── */}
       <div className="grid md:grid-cols-2 gap-4">
-        {/* Commercial brand */}
-        <div className="glass-card rounded-2xl p-6 border border-red-500/15 space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-red-500/50 rounded-l-2xl" />
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-red-400 bg-red-500/10 px-2 py-0.5 rounded-full">
-              Commercial Brand
-            </span>
-          </div>
-          <div>
-            <h3 className="text-lg font-bold text-white leading-snug">{query}</h3>
-            <p className="text-xs text-slate-500 mt-0.5">Branded / Retail Pharmacy</p>
-          </div>
-          <div className="flex items-baseline gap-1">
-            <IndianRupee className="w-5 h-5 text-red-400 flex-shrink-0" />
+
+        {/* Branded / Commercial */}
+        <div className="gf-result-card gf-result-card--branded rounded-2xl p-6 space-y-3 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500/60 to-orange-500/30 rounded-l-2xl" />
+          <span className="gf-card-label text-red-400 bg-red-500/10">Commercial Brand</span>
+          <h3 className="text-lg font-bold text-white leading-snug">{query}</h3>
+          <p className="text-[11px] text-slate-500">Branded / Retail Pharmacy</p>
+          <div className="flex items-baseline gap-1 mt-1">
+            <span className="text-sm text-red-400/80">₹</span>
             {billed > 0 ? (
-              <span className="text-4xl font-extrabold text-red-300">{billed.toFixed(2)}</span>
+              <span className="text-4xl font-black text-red-300 tracking-tight">{billed.toFixed(2)}</span>
             ) : (
               <span className="text-slate-500 text-sm italic">No price entered</span>
             )}
           </div>
-          {billed > 0 && <span className="text-xs text-slate-500">Retail / Billed Price</span>}
+          {billed > 0 && <span className="text-[10px] text-slate-600">Retail / Billed Price</span>}
         </div>
 
-        {/* Jan Aushadhi */}
-        <div className="glass-card rounded-2xl p-6 border border-emerald-500/25 space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/60 rounded-l-2xl" />
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/15 to-transparent pointer-events-none" />
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
-              Jan Aushadhi Generic ✓
-            </span>
-            <BadgeCheck className="w-4 h-4 text-emerald-400" />
+        {/* Jan Aushadhi Generic */}
+        <div className="gf-result-card gf-result-card--generic rounded-2xl p-6 space-y-3 relative overflow-hidden group">
+          <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-emerald-400 to-teal-500/40 rounded-l-2xl" />
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/20 to-transparent pointer-events-none" />
+          <div className="relative flex items-center justify-between">
+            <span className="gf-card-label text-emerald-400 bg-emerald-500/10">Jan Aushadhi ✓</span>
+            <BadgeCheck className="w-5 h-5 text-emerald-400/60" />
           </div>
-          <div>
+          <div className="relative">
             <h3 className="text-base font-bold text-white leading-snug">{alt?.generic_name}</h3>
-            <p className="text-xs text-emerald-400 mt-0.5">Pradhan Mantri Jan Aushadhi Kendra</p>
+            <p className="text-[11px] text-emerald-400/70 mt-0.5">PM Jan Aushadhi Kendra</p>
           </div>
-          <div className="flex items-baseline gap-1">
-            <IndianRupee className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-            <span className="text-4xl font-extrabold text-emerald-300">{jaPrice.toFixed(2)}</span>
+          <div className="relative flex items-baseline gap-1 mt-1">
+            <span className="text-sm text-emerald-400/80">₹</span>
+            <span className="text-4xl font-black text-emerald-300 tracking-tight">{jaPrice.toFixed(2)}</span>
           </div>
-          <span className="text-xs text-emerald-400/80">Government Approved MRP</span>
+          <span className="relative text-[10px] text-emerald-500/60">Government Approved MRP</span>
 
           {/* Meta chips */}
-          <div className="flex flex-wrap gap-2 pt-1">
+          <div className="relative flex flex-wrap gap-1.5 pt-2">
             {alt?.drug_code && (
-              <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
+              <span className="gf-chip">
                 <Hash className="w-3 h-3 text-sky-400" />
-                <span className="text-[11px] text-slate-300">Code <strong className="text-sky-300">{alt.drug_code}</strong></span>
-              </div>
+                <span className="text-sky-300">{alt.drug_code}</span>
+              </span>
             )}
-            {alt?.canonical_salt_key && (
-              <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5 max-w-full">
-                <FlaskConical className="w-3 h-3 text-purple-400 flex-shrink-0" />
-                <span className="text-[11px] text-purple-300 truncate" title={alt.canonical_salt_key}>
-                  {alt.canonical_salt_key}
-                </span>
-              </div>
-            )}
-            <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
+            <span className="gf-chip">
               <Star className="w-3 h-3 text-amber-400" />
-              <span className="text-[11px] text-slate-300">Score <strong className="text-amber-300">{score.toFixed(2)}</strong></span>
-            </div>
-            <div className="flex items-center gap-1.5 bg-slate-800/60 rounded-lg px-2.5 py-1.5">
+              <span className="text-amber-300">{score.toFixed(1)}</span>
+            </span>
+            <span className="gf-chip">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              <span className="text-[11px] text-emerald-300">Govt. Verified</span>
-            </div>
+              <span className="text-emerald-300">Verified</span>
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Array list of generic alternatives if multiple */}
-      {alternatives.length > 1 && (
-        <div className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400">All Available Generic Alternatives</h4>
-          <div className="divide-y divide-slate-800">
-            {alternatives.map((item, idx) => (
-              <div key={idx} className="py-3 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold text-emerald-300">{item.generic_name}</p>
-                  <p className="text-[11px] text-slate-500">Drug Code: {item.drug_code || 'N/A'}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-white">₹{item.jan_aushadhi_price?.toFixed(2)}</p>
-                  <span className="text-[10px] text-emerald-400">PMBI Price</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Match score ring + savings banner */}
+      {/* ── Savings Banner ── */}
       {billed > 0 && savings !== null && savings > 0 && (
-        <div className="glass-card rounded-2xl p-6 border border-emerald-500/25 bg-gradient-to-r from-emerald-900/15 to-teal-900/8 space-y-5">
-          <div className="flex flex-col sm:flex-row items-center gap-6">
-            {/* Score ring */}
+        <div className="gf-savings-card rounded-2xl p-6 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-900/30 via-teal-900/15 to-transparent pointer-events-none" />
+          <div className="relative flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing score={score} />
-
-            <div className="flex-1 space-y-4 w-full">
-              <div>
-                <p className="text-xs text-slate-500 mb-1">Potential Savings by Switching</p>
-                <p className="text-3xl font-extrabold text-white">
-                  <span className="gradient-text">Save ₹{savings.toFixed(2)}</span>
-                  <span className="text-lg font-medium text-slate-400 ml-3">({savingsPct.toFixed(1)}%)</span>
-                </p>
+            <div className="flex-1 space-y-3 w-full">
+              <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold">Potential Savings</p>
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="gf-savings-number">₹{savings.toFixed(2)}</span>
+                <span className="text-lg font-medium text-emerald-400/60">saved per purchase</span>
               </div>
-              <SavingsBar savingsPct={savingsPct} />
 
-              {/* Annual savings estimate */}
+              {/* Savings bar */}
+              <div className="space-y-1.5">
+                <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 ease-out"
+                    style={{ width: `${Math.min(savingsPct, 100)}%` }}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[10px] text-slate-600">
+                  <span>Jan Aushadhi ₹{jaPrice.toFixed(2)}</span>
+                  <span className="text-emerald-500 font-semibold">{savingsPct.toFixed(1)}% cheaper</span>
+                  <span>Brand ₹{billed.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Annual estimate */}
               {annualSavings !== null && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-emerald-500/6 border border-emerald-500/15">
                   <CalendarDays className="w-4 h-4 text-emerald-500 flex-shrink-0" />
                   <p className="text-xs text-emerald-400">
                     <strong>₹{annualSavings.toFixed(0)}</strong> estimated annual savings
-                    <span className="text-emerald-500/60 ml-1">(chronic weekly use)</span>
+                    <span className="text-emerald-600 ml-1">(weekly chronic use)</span>
                   </p>
                 </div>
               )}
 
-              <p className="text-xs text-slate-500 flex items-center gap-1.5">
-                <ChevronRight className="w-3.5 h-3.5 text-emerald-500" />
-                Available at any Pradhan Mantri Jan Aushadhi Kendra across India
+              <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+                <ChevronRight className="w-3 h-3 text-emerald-500" />
+                Available at any PM Jan Aushadhi Kendra across India
               </p>
             </div>
           </div>
@@ -308,18 +303,18 @@ function ResultCard({ result, billedPrice, query }) {
       )}
 
       {savings !== null && savings <= 0 && billed > 0 && (
-        <div className="glass-card rounded-2xl p-4 border border-slate-700/50 flex items-center gap-3">
+        <div className="gf-result-card rounded-2xl p-5 flex items-center gap-3 max-w-xl mx-auto">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          <p className="text-sm text-slate-400">You are already paying at or below the Jan Aushadhi government price. Great value!</p>
+          <p className="text-sm text-slate-400">You're already paying at or below the Jan Aushadhi price. Great value!</p>
         </div>
       )}
 
-      {/* No price entered — still show JA price */}
       {!billed && (
-        <div className="glass-card rounded-2xl p-5 border border-blue-500/20 bg-blue-500/5 flex items-start gap-3">
+        <div className="gf-result-card rounded-2xl p-5 flex items-start gap-3 max-w-xl mx-auto"
+             style={{ '--gf-card-accent': 'rgba(59,130,246,0.1)' }}>
           <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-slate-400">
-            Enter the price you were billed above to see exactly how much you could save by switching to the Jan Aushadhi generic.
+            Enter the billed price to see how much you could save by switching to the Jan Aushadhi generic.
           </p>
         </div>
       )}
@@ -327,9 +322,57 @@ function ResultCard({ result, billedPrice, query }) {
   );
 }
 
-/* ══════════════════════════════════
-   Main GenericFinder Tab
-══════════════════════════════════ */
+/* ═══════════════════════════════════════
+   How it Works — Empty State
+═══════════════════════════════════════ */
+const HOW_STEPS = [
+  { icon: Search,       title: 'Search',        desc: 'Enter the brand name from your prescription or pharmacy bill.', color: 'purple' },
+  { icon: FlaskConical, title: 'Match',         desc: 'Our engine maps the chemical salt to 8,000+ Jan Aushadhi generics.', color: 'emerald' },
+  { icon: IndianRupee,  title: 'Compare',       desc: 'See exact pricing: branded vs. government-approved generic MRP.', color: 'sky' },
+  { icon: Award,        title: 'Save',          desc: 'Switch at your nearest PM Jan Aushadhi Kendra and pocket the difference.', color: 'amber' },
+];
+
+function HowItWorks() {
+  const colorMap = {
+    purple:  { bg: 'bg-purple-500/10',  border: 'border-purple-500/20',  icon: 'text-purple-400'  },
+    emerald: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', icon: 'text-emerald-400' },
+    sky:     { bg: 'bg-sky-500/10',     border: 'border-sky-500/20',     icon: 'text-sky-400'     },
+    amber:  { bg: 'bg-amber-500/10',   border: 'border-amber-500/20',   icon: 'text-amber-400'   },
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto mt-8 animate-[gfSlideUp_0.6s_ease-out]">
+      <h2 className="text-center text-lg font-bold text-white mb-8 flex items-center justify-center gap-2">
+        <Sparkles className="w-5 h-5 text-purple-400" />
+        How MediMatch Works
+      </h2>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {HOW_STEPS.map((step, i) => {
+          const c = colorMap[step.color];
+          const Icon = step.icon;
+          return (
+            <div key={i} className="gf-how-card group">
+              <div className={`w-11 h-11 rounded-xl ${c.bg} border ${c.border} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                <Icon className={`w-5 h-5 ${c.icon}`} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-600 font-bold">{String(i + 1).padStart(2, '0')}</span>
+                  <p className="text-sm font-semibold text-slate-200">{step.title}</p>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed mt-1">{step.desc}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════
+   MAIN COMPONENT
+═══════════════════════════════════════ */
 export default function GenericFinder({ status }) {
   const [query,   setQuery]   = useState('');
   const [salt,    setSalt]    = useState('');
@@ -339,7 +382,7 @@ export default function GenericFinder({ status }) {
   const [error,   setError]   = useState(null);
   const queryRef = useRef(null);
 
-  // Autocomplete state
+  // Autocomplete
   const [suggestions, setSuggestions]         = useState([]);
   const [showDropdown, setShowDropdown]       = useState(false);
   const [acLoading, setAcLoading]             = useState(false);
@@ -350,7 +393,10 @@ export default function GenericFinder({ status }) {
   const [history, setHistory] = useState(getHistory);
   const [showHistory, setShowHistory] = useState(false);
 
-  /* ── Close dropdown on outside click ── */
+  // Expanded search fields
+  const [showExtraFields, setShowExtraFields] = useState(false);
+
+  /* Close dropdown on outside click */
   useEffect(() => {
     const handler = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -362,7 +408,7 @@ export default function GenericFinder({ status }) {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  /* ── Autocomplete fetch ── */
+  /* Autocomplete fetch */
   useEffect(() => {
     if (query.trim().length < 2) {
       setSuggestions([]);
@@ -382,7 +428,6 @@ export default function GenericFinder({ status }) {
   const performSearch = useCallback(async (searchQuery, searchSalt) => {
     const q = searchQuery.trim();
     if (!q) return;
-
     setLoading(true);
     setError(null);
     saveHistory(q);
@@ -392,25 +437,20 @@ export default function GenericFinder({ status }) {
       const data = await searchGeneric({ query: q, extracted_salt: searchSalt.trim() });
       setResult(data);
     } catch (err) {
-      setError(err.message || 'Failed to reach the backend. Make sure GenMed API is running.');
+      setError(err.message || 'Failed to reach the backend.');
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Debounce search when query/salt changes — 700ms
+  // Debounce 700ms
   useEffect(() => {
-    if (!query.trim()) {
-      setResult(null);
-      return;
-    }
-    const timer = setTimeout(() => {
-      performSearch(query, salt);
-    }, 700);
+    if (!query.trim()) { setResult(null); return; }
+    const timer = setTimeout(() => performSearch(query, salt), 700);
     return () => clearTimeout(timer);
   }, [query, salt, performSearch]);
 
-  const handleSearch = async (e) => {
+  const handleSearch = (e) => {
     e?.preventDefault();
     if (!query.trim()) { queryRef.current?.focus(); return; }
     setShowDropdown(false);
@@ -422,7 +462,6 @@ export default function GenericFinder({ status }) {
     setSuggestions([]);
     setShowDropdown(false);
     setSelectedSuggIdx(-1);
-    // Fire immediately — no debounce wait
     performSearch(suggestion, salt);
   };
 
@@ -434,7 +473,7 @@ export default function GenericFinder({ status }) {
     setError(null);
     setShowDropdown(false);
     setSuggestions([]);
-    // Fire immediately — no debounce wait
+    setShowExtraFields(true);
     setTimeout(() => performSearch(demo.query, demo.salt), 0);
   };
 
@@ -455,55 +494,54 @@ export default function GenericFinder({ status }) {
     }
   };
 
-  // Show offline warning if status is offline
   const isOffline = status === 'offline';
 
   return (
-    <section className="grid lg:grid-cols-12 gap-6 items-start" id="generic-finder">
-      
-      {/* ── LEFT COLUMN (Search & Context) ── */}
-      <div className="lg:col-span-5 space-y-6">
-        
-        {/* Title Box */}
-        <div className="relative glass-card rounded-2xl border border-emerald-500/20 p-5 overflow-hidden bg-slate-900/50 backdrop-blur-xl">
-          <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/30 via-teal-900/10 to-transparent pointer-events-none" />
-          <div className="relative flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 flex-shrink-0">
-              <Pill className="w-5 h-5 text-white" strokeWidth={2} />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Generic Medicine Finder</h1>
-              <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
-                Find affordable Jan Aushadhi generics — instantly.
-              </p>
+    <section className="gf-page" id="generic-finder">
+      <BackgroundOrbs />
+
+      <div className="relative z-10 max-w-4xl mx-auto px-2">
+
+        {/* ── Hero Header ── */}
+        <div className="text-center mb-8 animate-[gfSlideUp_0.4s_ease-out]">
+          <div className="inline-flex items-center justify-center mb-6 relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-purple-500 rounded-full blur-[20px] opacity-40 animate-pulse" />
+            <div className="relative w-16 h-16 rounded-2xl bg-slate-900/90 border border-slate-700/50 flex items-center justify-center backdrop-blur-xl shadow-2xl overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-purple-500/10" />
+              <Hexagon className="absolute w-12 h-12 text-slate-700/50 stroke-[1] group-hover:rotate-90 transition-transform duration-700" />
+              <Dna className="relative w-7 h-7 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" strokeWidth={2.5} />
             </div>
           </div>
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-2">
+            Medi<span className="gf-gradient-text">Match</span>
+          </h1>
+          <p className="text-slate-400 text-sm sm:text-base max-w-md mx-auto">
+            Find affordable Jan Aushadhi generics for any branded medicine — instantly.
+          </p>
         </div>
 
-        {/* Offline banner */}
+        {/* ── Stat Badges ── */}
+        <div className="animate-[gfSlideUp_0.5s_ease-out]">
+          <StatBadges />
+        </div>
+
+        {/* ── Offline Banner ── */}
         {isOffline && (
-          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/25 animate-[fadeIn_0.3s_ease-out]">
+          <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/25 animate-[fadeIn_0.3s_ease-out] mt-4 max-w-xl mx-auto">
             <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-red-400 leading-relaxed">
-              <strong>Backend offline</strong> — Start the GenMed API servers using{' '}
-              <code className="bg-red-500/10 px-1 rounded">start-all.ps1</code> or{' '}
-              <code className="bg-red-500/10 px-1 rounded">start-all.bat</code>.
+              <strong>Backend offline</strong> — Run <code className="bg-red-500/10 px-1 rounded">start-all.ps1</code> to start GenMed servers.
             </p>
           </div>
         )}
 
-        {/* Search form */}
-        <form
-          onSubmit={handleSearch}
-          className="glass-card rounded-2xl p-5 border border-slate-700/50 space-y-4"
-          id="search-form"
-        >
-          {/* Brand query with autocomplete */}
-          <div className="space-y-1.5" ref={dropdownRef}>
-            <label htmlFor="brand-query" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <Search className="w-3.5 h-3.5" /> Brand Name / Query <span className="text-red-400">*</span>
-            </label>
-            <div className="relative">
+        {/* ═══════════════════════════════════
+            HERO SEARCH BAR
+        ═══════════════════════════════════ */}
+        <form onSubmit={handleSearch} className="mt-6 mb-6 animate-[gfSlideUp_0.55s_ease-out]" id="search-form">
+          <div className="gf-search-container" ref={dropdownRef}>
+            <div className="gf-search-bar">
+              <Search className="w-5 h-5 text-slate-500 flex-shrink-0 ml-1" />
               <input
                 id="brand-query"
                 ref={queryRef}
@@ -520,202 +558,186 @@ export default function GenericFinder({ status }) {
                   else if (suggestions.length > 0) setShowDropdown(true);
                 }}
                 onKeyDown={handleQueryKeyDown}
-                placeholder="e.g. Augmentin 625 Duo Tab"
-                className="gm-input w-full px-4 py-2.5 rounded-xl text-sm pr-8"
+                placeholder="Search any medicine brand name…"
+                className="gf-search-input"
                 autoComplete="off"
                 required
               />
-              {acLoading && (
-                <Loader2 className="w-3.5 h-3.5 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 animate-spin" />
-              )}
-
-              {/* Autocomplete dropdown */}
-              {showDropdown && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden border border-purple-500/30 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-[fadeIn_0.15s_ease-out]">
-                  {suggestions.map((s, i) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onMouseDown={() => selectSuggestion(s)}
-                      className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors duration-100 ${
-                        i === selectedSuggIdx
-                          ? 'bg-purple-500/20 text-white'
-                          : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-                      }`}
-                    >
-                      <Search className="w-3 h-3 text-slate-500 flex-shrink-0" />
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Search history dropdown */}
-              {showHistory && !showDropdown && history.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-1 z-50 rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/95 backdrop-blur-xl shadow-2xl shadow-black/50 animate-[fadeIn_0.15s_ease-out]">
-                  <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
-                      <Clock className="w-3 h-3" /> Recent Searches
-                    </span>
-                    <button
-                      type="button"
-                      onMouseDown={() => { clearHistory(); setHistory([]); setShowHistory(false); }}
-                      className="text-[10px] text-slate-600 hover:text-red-400 transition-colors"
-                    >
-                      Clear
-                    </button>
-                  </div>
-                  {history.map((h) => (
-                    <button
-                      key={h}
-                      type="button"
-                      onMouseDown={() => { setQuery(h); setShowHistory(false); performSearch(h, salt); }}
-                      className="w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 text-slate-400 hover:bg-slate-800/80 hover:text-white transition-colors duration-100"
-                    >
-                      <Clock className="w-3 h-3 text-slate-600 flex-shrink-0" />
-                      {h}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {acLoading && <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />}
+              <button
+                id="find-generic-btn"
+                type="submit"
+                disabled={loading || isOffline}
+                className="gf-search-btn"
+              >
+                {loading ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Zap className="w-4 h-4" />
+                    <span className="hidden sm:inline">Find Generic</span>
+                  </>
+                )}
+              </button>
             </div>
-          </div>
 
-          {/* Salt */}
-          <div className="space-y-1.5">
-            <label htmlFor="salt-composition" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <FlaskConical className="w-3.5 h-3.5" /> Chemical Salt (Optional)
-            </label>
-            <input
-              id="salt-composition"
-              type="text"
-              value={salt}
-              onChange={(e) => setSalt(e.target.value)}
-              placeholder="e.g. Amoxicillin 500mg"
-              className="gm-input w-full px-4 py-2.5 rounded-xl text-sm"
-            />
-          </div>
-
-          {/* Price */}
-          <div className="space-y-1.5 flex-1">
-            <label htmlFor="billed-price" className="text-xs font-semibold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-              <IndianRupee className="w-3.5 h-3.5" /> Billed Price (Optional)
-            </label>
-            <div className="relative">
-              <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              <input
-                id="billed-price"
-                type="number"
-                min="0"
-                step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.00"
-                className="gm-input w-full pl-9 pr-4 py-2.5 rounded-xl text-sm"
-              />
-            </div>
-          </div>
-
-          <button
-            id="find-generic-btn"
-            type="submit"
-            disabled={loading || isOffline}
-            className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 mt-2"
-          >
-            {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Searching…</>
-            ) : (
-              <><Zap className="w-4 h-4" /> Find Generic <ArrowRight className="w-4 h-4" /></>
+            {/* Autocomplete dropdown */}
+            {showDropdown && suggestions.length > 0 && (
+              <div className="gf-dropdown">
+                {suggestions.map((s, i) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onMouseDown={() => selectSuggestion(s)}
+                    className={`gf-dropdown-item ${i === selectedSuggIdx ? 'gf-dropdown-item--active' : ''}`}
+                  >
+                    <Pill className="w-3.5 h-3.5 text-emerald-500/60 flex-shrink-0" />
+                    <span>{s}</span>
+                    <ArrowRight className="w-3 h-3 text-slate-600 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </button>
+                ))}
+              </div>
             )}
-          </button>
+
+            {/* Search history dropdown */}
+            {showHistory && !showDropdown && history.length > 0 && (
+              <div className="gf-dropdown">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/80">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 flex items-center gap-1.5">
+                    <Clock className="w-3 h-3" /> Recent
+                  </span>
+                  <button
+                    type="button"
+                    onMouseDown={() => { clearHistory(); setHistory([]); setShowHistory(false); }}
+                    className="text-[10px] text-slate-600 hover:text-red-400 transition-colors"
+                  >Clear all</button>
+                </div>
+                {history.map((h) => (
+                  <button
+                    key={h}
+                    type="button"
+                    onMouseDown={() => { setQuery(h); setShowHistory(false); performSearch(h, salt); }}
+                    className="gf-dropdown-item"
+                  >
+                    <Clock className="w-3 h-3 text-slate-600 flex-shrink-0" />
+                    {h}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Extra fields toggle */}
+          <div className="flex items-center justify-center mt-3 gap-3">
+            <button
+              type="button"
+              onClick={() => setShowExtraFields(!showExtraFields)}
+              className="text-[11px] text-slate-500 hover:text-purple-400 transition-colors flex items-center gap-1"
+            >
+              <FlaskConical className="w-3 h-3" />
+              {showExtraFields ? 'Hide' : 'Add'} salt composition & price
+              <ChevronRight className={`w-3 h-3 transition-transform duration-200 ${showExtraFields ? 'rotate-90' : ''}`} />
+            </button>
+          </div>
+
+          {/* Collapsible salt + price fields */}
+          {showExtraFields && (
+            <div className="grid sm:grid-cols-2 gap-3 mt-3 animate-[gfSlideUp_0.3s_ease-out] max-w-2xl mx-auto">
+              <div>
+                <label htmlFor="salt-composition" className="gf-field-label">
+                  <FlaskConical className="w-3 h-3" /> Chemical Salt
+                </label>
+                <input
+                  id="salt-composition"
+                  type="text"
+                  value={salt}
+                  onChange={(e) => setSalt(e.target.value)}
+                  placeholder="e.g. Amoxicillin 500mg"
+                  className="gf-field-input"
+                />
+              </div>
+              <div>
+                <label htmlFor="billed-price" className="gf-field-label">
+                  <IndianRupee className="w-3 h-3" /> Billed Price (₹)
+                </label>
+                <input
+                  id="billed-price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  placeholder="0.00"
+                  className="gf-field-input"
+                />
+              </div>
+            </div>
+          )}
         </form>
 
-        {/* Demo pills */}
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-slate-500 flex items-center gap-1">
-            <FlaskConical className="w-3 h-3 text-slate-600" /> Demo:
-          </span>
+        {/* ── Demo pills ── */}
+        <div className="flex flex-wrap justify-center items-center gap-2 mb-8 animate-[gfSlideUp_0.6s_ease-out]">
+          <span className="text-[11px] text-slate-600 mr-1">Try:</span>
           {DEMO_CASES.map((d) => (
             <button
               key={d.query}
               id={`demo-${d.query.replace(/\s+/g, '-').toLowerCase()}`}
               onClick={() => loadDemo(d)}
-              className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700/60 text-slate-300 hover:border-emerald-500/50 hover:text-emerald-300 hover:bg-emerald-500/8 transition-all duration-150"
+              className="gf-demo-pill"
             >
+              <Pill className="w-3 h-3 text-emerald-500/60" />
               {d.query}
             </button>
           ))}
         </div>
 
-        {/* Recent history pills (compact row below demo) */}
+        {/* ── Recent history pills ── */}
         {history.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[11px] text-slate-600 flex items-center gap-1">
-              <Clock className="w-3 h-3" /> Recent:
+          <div className="flex flex-wrap justify-center items-center gap-2 -mt-4 mb-6">
+            <span className="text-[10px] text-slate-700 flex items-center gap-1">
+              <Clock className="w-2.5 h-2.5" /> Recent:
             </span>
             {history.map((h) => (
               <button
                 key={h}
                 onClick={() => { setQuery(h); performSearch(h, salt); }}
-                className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-500 hover:border-purple-500/40 hover:text-slate-300 transition-all duration-150 flex items-center gap-1"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-600 hover:border-purple-500/30 hover:text-slate-400 transition-all"
               >
-                <Clock className="w-2.5 h-2.5" />
                 {h}
               </button>
             ))}
             <button
               onClick={() => { clearHistory(); setHistory([]); }}
-              className="text-[10px] text-slate-700 hover:text-red-400 transition-colors flex items-center gap-0.5"
+              className="text-[10px] text-slate-700 hover:text-red-400 transition-colors"
             >
-              <X className="w-2.5 h-2.5" /> clear
+              <X className="w-2.5 h-2.5" />
             </button>
           </div>
         )}
-      </div>
 
-      {/* ── RIGHT COLUMN (Results / How it works) ── */}
-      <div className="lg:col-span-7 min-h-[420px]">
-        
-        {loading && <LoadingSkeleton />}
+        {/* ═══════════════════════════════════
+            RESULTS AREA
+        ═══════════════════════════════════ */}
+        <div className="min-h-[300px]">
+          {loading && <LoadingSkeleton />}
 
-        {error && (
-          <div className="glass-card rounded-2xl p-5 border border-red-500/30 flex items-start gap-3 animate-[fadeIn_0.3s_ease-out]">
-            <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-4 h-4 text-red-400" />
+          {error && (
+            <div className="gf-result-card rounded-2xl p-5 flex items-start gap-3 max-w-xl mx-auto animate-[fadeIn_0.3s_ease-out]"
+                 style={{ '--gf-card-accent': 'rgba(239,68,68,0.1)' }}>
+              <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-4.5 h-4.5 text-red-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-red-300">Connection Error</p>
+                <p className="text-sm text-slate-400 mt-1">{error}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-red-300">Connection Error</p>
-              <p className="text-sm text-slate-400 mt-0.5">{error}</p>
-            </div>
-          </div>
-        )}
+          )}
 
-        {!loading && result && (
-          <ResultCard result={result} billedPrice={price} query={query} />
-        )}
+          {!loading && result && <ResultCard result={result} billedPrice={price} query={query} />}
 
-        {/* Initial state: How it works (shown when no result, no loading, no error) */}
-        {!loading && !result && !error && (
-          <div className="glass-card rounded-2xl border border-slate-700/50 p-6 bg-slate-900/40 backdrop-blur-md h-full">
-            <h2 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-400" />
-              How it works
-            </h2>
-            <div className="grid sm:grid-cols-2 gap-6">
-              {HOW_IT_WORKS.map((step, i) => (
-                <div key={i} className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center flex-shrink-0 text-xl shadow-inner">
-                    {step.icon}
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-200">{step.title}</p>
-                    <p className="text-xs text-slate-400 leading-relaxed mt-1">{step.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          {!loading && !result && !error && <HowItWorks />}
+        </div>
 
       </div>
     </section>

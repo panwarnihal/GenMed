@@ -219,6 +219,336 @@ body {
   animation: drawRing 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   GENERIC FINDER — Premium MediMatch Design System
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Page wrapper ── */
+.gf-page {
+  position: relative;
+  min-height: 70vh;
+  overflow: hidden;
+  padding-bottom: 4rem;
+}
+
+/* ── Floating Background Orbs ── */
+.gf-orbs-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
+}
+.gf-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  animation: floatOrb 20s ease-in-out infinite;
+}
+.gf-orb--emerald {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #10b981 0%, transparent 70%);
+  top: -10%; right: -5%;
+  animation-delay: 0s;
+}
+.gf-orb--purple {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+  bottom: -5%; left: -8%;
+  animation-delay: -7s;
+}
+.gf-orb--blue {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+  top: 30%; left: 50%;
+  transform: translateX(-50%);
+  animation-delay: -14s;
+  opacity: 0.08;
+}
+
+/* ── Gradient text for "Match" ── */
+.gf-gradient-text {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 40%, #8b5cf6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Slide-up animation ── */
+@keyframes gfSlideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════
+   Search Bar
+   ═══════════════════════════════ */
+.gf-search-container {
+  position: relative;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.gf-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 1rem;
+  border-radius: 1rem;
+  background: rgba(9, 9, 15, 0.85);
+  border: 1.5px solid rgba(139, 92, 246, 0.2);
+  backdrop-filter: blur(20px);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.gf-search-bar:focus-within {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow:
+    0 0 0 4px rgba(139, 92, 246, 0.08),
+    0 0 40px rgba(139, 92, 246, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.gf-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e2e8f0;
+  font-size: 0.938rem;
+  padding: 0.5rem 0;
+}
+.gf-search-input::placeholder { color: #475569; }
+
+.gf-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
+  font-size: 0.813rem;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(135deg, #7e22ce, #a855f7);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
+  flex-shrink: 0;
+}
+.gf-search-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4);
+}
+.gf-search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ═══════════════════════════════
+   Dropdowns
+   ═══════════════════════════════ */
+.gf-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  z-index: 50;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(9, 9, 15, 0.95);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: gfSlideUp 0.15s ease-out;
+}
+
+.gf-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+  transition: all 0.1s;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+.gf-dropdown-item:hover,
+.gf-dropdown-item--active {
+  background: rgba(139, 92, 246, 0.1);
+  color: #fff;
+}
+
+/* ═══════════════════════════════
+   Field Labels & Inputs
+   ═══════════════════════════════ */
+.gf-field-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.688rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.375rem;
+}
+
+.gf-field-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  font-size: 0.813rem;
+  color: #e2e8f0;
+  background: rgba(9, 9, 15, 0.7);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.gf-field-input:focus {
+  outline: none;
+  border-color: rgba(139, 92, 246, 0.4);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+}
+.gf-field-input::placeholder { color: #334155; }
+
+/* ═══════════════════════════════
+   Demo Pills
+   ═══════════════════════════════ */
+.gf-demo-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.688rem;
+  font-weight: 500;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  color: #94a3b8;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.gf-demo-pill:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.06);
+  transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════
+   Result Cards
+   ═══════════════════════════════ */
+.gf-result-card {
+  background: rgba(9, 9, 15, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+  backdrop-filter: blur(16px);
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.gf-result-card:hover {
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
+.gf-result-card--branded {
+  border-color: rgba(239, 68, 68, 0.12);
+}
+.gf-result-card--branded:hover {
+  border-color: rgba(239, 68, 68, 0.25);
+  box-shadow: 0 0 30px rgba(239, 68, 68, 0.04);
+}
+
+.gf-result-card--generic {
+  border-color: rgba(16, 185, 129, 0.2);
+}
+.gf-result-card--generic:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.06);
+}
+
+.gf-card-label {
+  display: inline-block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+}
+
+.gf-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.688rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.5rem;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.3);
+}
+
+/* ── Badge ── */
+.gf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.375rem 0.875rem;
+  border-radius: 999px;
+}
+.gf-badge--success {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+.gf-badge--warning {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+/* ═══════════════════════════════
+   Savings Card
+   ═══════════════════════════════ */
+.gf-savings-card {
+  background: rgba(9, 9, 15, 0.7);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  backdrop-filter: blur(16px);
+}
+
+.gf-savings-number {
+  font-size: 2.5rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 50%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ═══════════════════════════════
+   How It Works Cards
+   ═══════════════════════════════ */
+.gf-how-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background: rgba(9, 9, 15, 0.5);
+  border: 1px solid rgba(51, 65, 85, 0.2);
+  transition: all 0.3s;
+}
+.gf-how-card:hover {
+  border-color: rgba(139, 92, 246, 0.2);
+  background: rgba(139, 92, 246, 0.03);
+  transform: translateY(-2px);
+}
+
 @layer base {
   .theme { --font-heading: var(--font-sans); --font-sans: 'Geist Variable', sans-serif; }
   :root, .dark { 
