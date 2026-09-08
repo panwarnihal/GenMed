@@ -98,6 +98,9 @@ export default function KendraLocator() {
       const data = await getNearbyKendras(lat, lng, radiusVal);
       if (data && data.results) {
         setKendras(data.results);
+        if (data.fallback_used) {
+          console.warn("Overpass API unavailable. Using fallback location data.");
+        }
       }
     } catch (err) {
       setError(err.message || 'Failed to fetch nearby Kendras.');
