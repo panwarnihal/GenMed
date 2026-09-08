@@ -182,3 +182,24 @@ export async function checkHealth() {
     throw new Error('Backend offline');
   }
 }
+
+/**
+ * GET /api/v1/kendras/nearby
+ * Find nearby PMBJK kendras based on coordinates
+ * @param {number} lat
+ * @param {number} lng
+ * @param {number} radius in meters (default 5000)
+ * @returns {Promise<object>}
+ */
+export async function getNearbyKendras(lat, lng, radius = 5000) {
+  if (lat == null || lng == null) throw new Error('Latitude and Longitude are required');
+  const response = await fetchWithFallback(
+    `/api/v1/kendras/nearby?lat=${lat}&lng=${lng}&radius=${radius}`,
+    { method: 'GET' }
+  );
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch nearby kendras with status ${response.status}`);
+  }
+  return response.json();
+}

@@ -8,6 +8,8 @@ import { checkHealth } from './api';
 
 // Lazy-load the heavy BillAuditor (65 KB) — only fetched when user navigates to /auditor
 const BillAuditor = lazy(() => import('./components/BillAuditor'));
+// Lazy-load KendraLocator
+const KendraLocator = lazy(() => import('./components/KendraLocator'));
 
 /* Scroll to top whenever the route changes */
 function ScrollToTop() {
@@ -90,6 +92,13 @@ export default function App() {
         } />
         <Route path="/about" element={
           <Layout status={status}><AboutUs /></Layout>
+        } />
+        <Route path="/locator" element={
+          <Layout status={status}>
+            <Suspense fallback={<div className="flex justify-center p-10"><div className="w-8 h-8 rounded-full border-4 border-primary/40 border-t-primary animate-spin" /></div>}>
+              <KendraLocator />
+            </Suspense>
+          </Layout>
         } />
         <Route path="/contact" element={
           <Layout status={status}><ContactUs /></Layout>

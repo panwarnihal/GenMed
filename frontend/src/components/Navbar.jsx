@@ -6,6 +6,7 @@ import GooeyNav from './GooeyNav';
 const NAV_ITEMS = [
   { label: 'MediMatch', href: '/' },
   { label: 'BillSense', href: '/auditor' },
+  { label: 'Locate Kendra', href: '/locator' },
   { label: 'About Us',  href: '/about' },
   { label: 'Contact',   href: '/contact' },
 ];
@@ -148,6 +149,7 @@ export default function Navbar({ status }) {
         <div className="border-t border-border px-4 py-3 flex flex-col gap-1">
           <NavLink to="/" end className={mobileNavClass} onClick={() => setMenuOpen(false)}>MediMatch</NavLink>
           <NavLink to="/auditor" className={mobileNavClass} onClick={() => setMenuOpen(false)}>BillSense</NavLink>
+          <NavLink to="/locator" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Locate Kendra</NavLink>
           <NavLink to="/about"   className={mobileNavClass} onClick={() => setMenuOpen(false)}>About Us</NavLink>
           <NavLink to="/contact" className={mobileNavClass} onClick={() => setMenuOpen(false)}>Contact</NavLink>
         </div>
