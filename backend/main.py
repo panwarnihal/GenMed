@@ -1,13 +1,13 @@
 import os
 from typing import List, Optional
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # type: ignore[import]
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from pymongo import MongoClient
-from slowapi import Limiter, _rate_limit_exceeded_handler
-from slowapi.util import get_remote_address
-from slowapi.errors import RateLimitExceeded
+from pymongo import MongoClient  # type: ignore[import]
+from slowapi import Limiter, _rate_limit_exceeded_handler  # type: ignore[import]
+from slowapi.util import get_remote_address  # type: ignore[import]
+from slowapi.errors import RateLimitExceeded  # type: ignore[import]
 
 # Load environment variables and initialize the FastAPI application
 load_dotenv()

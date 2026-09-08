@@ -1,5 +1,5 @@
 import os
-from pymongo import MongoClient
+from pymongo import MongoClient  # type: ignore[import]
 
 def ensure_indexes():
     MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
