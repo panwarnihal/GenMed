@@ -258,14 +258,14 @@ export default function BillAuditor() {
   const [fileName, setFileName]     = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
   const [manualItems, setManualItems] = useState([
-    { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }
+    { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1', batch_number: '' }
   ]);
   // Per-row batch verification state: { [rowIndex]: { loading, result, error } }
   const [batchVerify, setBatchVerify] = useState({});
   const fileInputRef = useRef(null);
 
   const addManualItemField = () => {
-    setManualItems(prev => [...prev, { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }]);
+    setManualItems(prev => [...prev, { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1', batch_number: '' }]);
   };
 
   const removeManualItem = (index) => {
@@ -289,6 +289,7 @@ export default function BillAuditor() {
         paid_price: parseFloat(i.paid_price) || 0,
         printed_mrp: i.printed_mrp ? parseFloat(i.printed_mrp) : undefined,
         quantity_units: parseInt(i.quantity_units, 10) || 1,
+        batch_number: (i.batch_number || '').trim() || undefined,
       }));
 
     if (validItems.length === 0) {
@@ -371,7 +372,7 @@ export default function BillAuditor() {
 
   const handleFullReset = () => {
     handleReset();
-    setManualItems([{ brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1' }]);
+    setManualItems([{ brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1', batch_number: '' }]);
   };
 
   /* ── Derived data ── */
@@ -562,7 +563,7 @@ export default function BillAuditor() {
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                             <div>
                               <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
                                 Paid Price (₹) <span className="text-emerald-400">*</span>
@@ -597,7 +598,7 @@ export default function BillAuditor() {
                               />
                             </div>
 
-                            <div className="col-span-2 sm:col-span-1">
+                            <div>
                               <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
                                 Qty (Units)
                               </label>
@@ -607,6 +608,19 @@ export default function BillAuditor() {
                                 placeholder="1"
                                 value={item.quantity_units}
                                 onChange={(e) => updateManualItem(idx, 'quantity_units', e.target.value)}
+                                className="w-full bg-muted/90 border border-border/70 rounded-lg px-2.5 py-1.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
+                                Batch No.
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="Optional"
+                                value={item.batch_number || ''}
+                                onChange={(e) => updateManualItem(idx, 'batch_number', e.target.value)}
                                 className="w-full bg-muted/90 border border-border/70 rounded-lg px-2.5 py-1.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                               />
                             </div>
