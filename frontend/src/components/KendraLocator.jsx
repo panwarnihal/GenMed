@@ -184,28 +184,27 @@ export default function KendraLocator() {
           )}
 
           {kendras.map((kendra, idx) => {
-            const pos = [kendra.location.coordinates[1], kendra.location.coordinates[0]];
+            const pos = [kendra.lat, kendra.lon];
             return (
               <Marker key={idx} position={pos} icon={KendraIcon}>
                 <Popup className="kendra-popup">
                   <div className="flex flex-col gap-2 min-w-[200px]">
                     <h3 className="font-bold text-base text-primary flex items-start gap-1">
                       <Store className="w-4 h-4 mt-1 flex-shrink-0" />
-                      {kendra.store_name}
+                      {kendra.name}
                     </h3>
-                    <div className="text-sm text-foreground/80 flex items-start gap-1 border-t border-border/50 pt-2">
-                      <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
-                      <span>{kendra.address}</span>
-                    </div>
+                    {kendra.address && (
+                      <div className="text-sm text-foreground/80 flex items-start gap-1 border-t border-border/50 pt-2">
+                        <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                        <span>{kendra.address}</span>
+                      </div>
+                    )}
                     {kendra.contact_number && (
                       <div className="text-sm font-medium flex items-center gap-1">
                         <Phone className="w-4 h-4 text-muted-foreground" />
                         {kendra.contact_number}
                       </div>
                     )}
-                    <div className="mt-1 inline-block bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-full text-center">
-                      {(kendra.distance / 1000).toFixed(2)} km away
-                    </div>
                   </div>
                 </Popup>
               </Marker>
