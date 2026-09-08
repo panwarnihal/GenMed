@@ -70,6 +70,26 @@ def health_check():
     return {"status": "ONLINE", "message": "GenMed Deterministic Engine is running."}
 
 
+@app.get("/api/v1/autocomplete", tags=["Search"])
+def get_autocomplete(
+    q: str = Query(..., min_length=2, description="Prefix to search brand names")
+):
+    """
+    Predictive search for medicine brand names.
+    Returns up to 8 brand name suggestions as a JSON array of strings.
+    """
+    try:
+        escaped = re.escape(q.strip())
+        results = branded_collection.find(
+            {"brand_name": {"$regex": f"^{escaped}", "$options": "i"}},
+            {"_id": 0, "brand_name": 1}
+        ).limit(8)
+        
+        return [doc["brand_name"] for doc in results if "brand_name" in doc]
+    except Exception as e:
+        return []
+
+
 @app.get("/api/v1/substitute", tags=["Substitution Engine"])
 def get_generic_substitute(
     brand: str = Query(..., description="Name of the branded drug (e.g., 'Brilinta 90mg')")

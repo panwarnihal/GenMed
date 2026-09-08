@@ -7,7 +7,7 @@ import {
   HeartPulse, Scale, FileWarning, Ban, Eye, ArrowRight,
   Clock, ShieldCheck, Cpu, FlaskConical,
 } from 'lucide-react';
-import { uploadInvoice, uploadInvoiceImage, auditManualInvoice, verifyBatch } from '../api';
+import { uploadInvoice, uploadInvoiceImage, auditManualInvoice, verifyBatch, fetchAutocomplete } from '../api';
 
 
 
@@ -263,6 +263,59 @@ export default function BillAuditor() {
   // Per-row batch verification state: { [rowIndex]: { loading, result, error } }
   const [batchVerify, setBatchVerify] = useState({});
   const fileInputRef = useRef(null);
+
+  // Autocomplete state
+  const [acSuggestions, setAcSuggestions] = useState([]);
+  const [activeAcRow, setActiveAcRow] = useState(null);
+  const [acLoading, setAcLoading] = useState(false);
+  const acDropdownRef = useRef(null);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (acDropdownRef.current && !acDropdownRef.current.contains(e.target)) {
+        setActiveAcRow(null);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Debounced autocomplete fetch
+  useEffect(() => {
+    if (activeAcRow === null) {
+      setAcSuggestions([]);
+      return;
+    }
+    const currentName = manualItems[activeAcRow]?.brand_name || '';
+    if (currentName.trim().length < 2) {
+      setAcSuggestions([]);
+      return;
+    }
+
+    setAcLoading(true);
+    const timer = setTimeout(async () => {
+      try {
+        const results = await fetchAutocomplete(currentName);
+        setAcSuggestions(results);
+      } catch (err) {
+        setAcSuggestions([]);
+      } finally {
+        setAcLoading(false);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      setAcLoading(false);
+    };
+  }, [manualItems, activeAcRow]);
+
+  const selectAcSuggestion = (suggestion, rowIndex) => {
+    updateManualItem(rowIndex, 'brand_name', suggestion);
+    setActiveAcRow(null);
+    setAcSuggestions([]);
+  };
 
   const addManualItemField = () => {
     setManualItems(prev => [...prev, { brand_name: '', paid_price: '', printed_mrp: '', quantity_units: '1', batch_number: '' }]);
@@ -532,7 +585,7 @@ export default function BillAuditor() {
                   </div>
 
                   <form onSubmit={handleManualSubmit} id="manual-audit-form" className="space-y-4">
-                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                    <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 pb-20" ref={acDropdownRef}>
                       {manualItems.map((item, idx) => (
                         <div key={idx} className="p-3.5 rounded-xl bg-card/90 border border-border space-y-3 relative">
                           {manualItems.length > 1 && (
@@ -557,9 +610,33 @@ export default function BillAuditor() {
                                 required
                                 placeholder="e.g. Augmentin 625 Duo / Calpol 500"
                                 value={item.brand_name}
-                                onChange={(e) => updateManualItem(idx, 'brand_name', e.target.value)}
+                                onChange={(e) => {
+                                  updateManualItem(idx, 'brand_name', e.target.value);
+                                  setActiveAcRow(idx);
+                                }}
+                                onFocus={() => setActiveAcRow(idx)}
+                                autoComplete="off"
                                 className="w-full bg-muted/90 border border-border/70 rounded-lg pl-9 pr-3 py-2 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                               />
+                              {activeAcRow === idx && acLoading && (
+                                <Loader2 className="w-4 h-4 text-emerald-400 animate-spin absolute right-3 top-1/2 -translate-y-1/2" />
+                              )}
+                              
+                              {/* Autocomplete Dropdown */}
+                              {activeAcRow === idx && acSuggestions.length > 0 && (
+                                <div className="absolute top-full left-0 w-full mt-1 bg-card border border-border/80 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto flex flex-col p-1">
+                                  {acSuggestions.map((sugg) => (
+                                    <button
+                                      key={sugg}
+                                      type="button"
+                                      onMouseDown={() => selectAcSuggestion(sugg, idx)}
+                                      className="text-left px-3 py-2 text-xs text-foreground hover:bg-muted/80 rounded-md transition-colors truncate"
+                                    >
+                                      {sugg}
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
 

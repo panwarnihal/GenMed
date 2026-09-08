@@ -219,32 +219,6 @@ def _find_generic_by_salt_key(canonical_salt_key: str, db) -> Optional[dict]:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# AUTOCOMPLETE ENDPOINT
-# ─────────────────────────────────────────────────────────────────────────────
-@router.get("/autocomplete", status_code=status.HTTP_200_OK, tags=["Search"])
-def autocomplete_brand(
-    q: str = Query(..., min_length=2, description="Prefix to search brand names"),
-):
-    """
-    Returns up to 8 brand name suggestions for the typeahead UI.
-    Performs a case-insensitive prefix search against the Branded_Drugs collection.
-    """
-    db = _get_db()
-    branded_col = db["Branded_Drugs"]
-    try:
-        escaped = re.escape(q.strip())
-        results = branded_col.find(
-            {"brand_name": {"$regex": f"^{escaped}", "$options": "i"}},
-            {"_id": 0, "brand_name": 1},
-        ).limit(8)
-        suggestions = [doc["brand_name"] for doc in results if "brand_name" in doc]
-        return {"suggestions": suggestions}
-    except Exception as exc:
-        logger.warning("Autocomplete error: %s", exc)
-        return {"suggestions": []}
-
-
-# ─────────────────────────────────────────────────────────────────────────────
 # MAPPING ENDPOINT
 # ─────────────────────────────────────────────────────────────────────────────
 @router.post("/match", response_model=MappingResponse, status_code=status.HTTP_200_OK)

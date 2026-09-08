@@ -6,7 +6,7 @@ import {
   CalendarDays, Sparkles, TrendingDown, Database, Award,
   ArrowDownRight, ExternalLink, Dna, Hexagon, Activity
 } from 'lucide-react';
-import { searchGeneric, autocomplete } from '../api';
+import { searchGeneric, fetchAutocomplete } from '../api';
 
 /* ── Demo presets ── */
 const DEMO_CASES = [
@@ -417,7 +417,7 @@ export default function GenericFinder({ status }) {
     }
     setAcLoading(true);
     const timer = setTimeout(async () => {
-      const results = await autocomplete(query);
+      const results = await fetchAutocomplete(query);
       setSuggestions(results);
       setShowDropdown(results.length > 0);
       setAcLoading(false);
@@ -539,8 +539,8 @@ export default function GenericFinder({ status }) {
             HERO SEARCH BAR
         ═══════════════════════════════════ */}
         <form onSubmit={handleSearch} className="mt-6 mb-6 animate-[gfSlideUp_0.55s_ease-out]" id="search-form">
-          <div className="gf-search-container" ref={dropdownRef}>
-            <div className="gf-search-bar">
+          <div className="gf-search-container relative" ref={dropdownRef}>
+            <div className="gf-search-bar relative z-10">
               <Search className="w-5 h-5 text-muted-foreground flex-shrink-0 ml-1" />
               <input
                 id="brand-query"
@@ -583,16 +583,18 @@ export default function GenericFinder({ status }) {
 
             {/* Autocomplete dropdown */}
             {showDropdown && suggestions.length > 0 && (
-              <div className="gf-dropdown">
+              <div className="absolute top-full left-0 w-full mt-2 bg-card border border-border/80 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto overflow-x-hidden flex flex-col p-1 animate-in fade-in slide-in-from-top-2 duration-200">
                 {suggestions.map((s, i) => (
                   <button
                     key={s}
                     type="button"
                     onMouseDown={() => selectSuggestion(s)}
-                    className={`gf-dropdown-item ${i === selectedSuggIdx ? 'gf-dropdown-item--active' : ''}`}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-left transition-colors group ${
+                      i === selectedSuggIdx ? 'bg-primary/10 text-primary font-medium' : 'text-foreground hover:bg-muted/80'
+                    }`}
                   >
                     <Pill className="w-3.5 h-3.5 text-emerald-500/60 flex-shrink-0" />
-                    <span>{s}</span>
+                    <span className="truncate flex-1">{s}</span>
                     <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
@@ -601,8 +603,8 @@ export default function GenericFinder({ status }) {
 
             {/* Search history dropdown */}
             {showHistory && !showDropdown && history.length > 0 && (
-              <div className="gf-dropdown">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-border/80">
+              <div className="absolute top-full left-0 w-full mt-2 bg-card border border-border/80 rounded-xl shadow-2xl z-[100] max-h-60 overflow-y-auto flex flex-col p-1 animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center justify-between px-3 py-2 border-b border-border/80 mb-1">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 flex items-center gap-1.5">
                     <Clock className="w-3 h-3" /> Recent
                   </span>
@@ -617,10 +619,10 @@ export default function GenericFinder({ status }) {
                     key={h}
                     type="button"
                     onMouseDown={() => { setQuery(h); setShowHistory(false); performSearch(h, salt); }}
-                    className="gf-dropdown-item"
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left text-foreground hover:bg-muted/80 transition-colors"
                   >
-                    <Clock className="w-3 h-3 text-slate-600 flex-shrink-0" />
-                    {h}
+                    <Clock className="w-3.5 h-3.5 text-slate-600 flex-shrink-0" />
+                    <span className="truncate">{h}</span>
                   </button>
                 ))}
               </div>

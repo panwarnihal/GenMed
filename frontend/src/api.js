@@ -127,24 +127,32 @@ export async function auditManualInvoice(lineItems) {
 }
 
 /**
- * GET /api/v1/mapping/autocomplete?q=<prefix>
+ * GET /api/v1/autocomplete?q=<prefix>
  * Returns up to 8 brand name suggestions for typeahead UI
  * @param {string} q - At least 2 characters
  * @returns {Promise<string[]>} Array of matching brand names
  */
-export async function autocomplete(q) {
+export async function fetchAutocomplete(q) {
   if (!q || q.trim().length < 2) return [];
   try {
     const response = await fetchWithFallback(
-      `/api/v1/mapping/autocomplete?q=${encodeURIComponent(q.trim())}`,
+      `/api/v1/autocomplete?q=${encodeURIComponent(q.trim())}`,
       { method: 'GET' }
     );
     if (!response.ok) return [];
     const data = await response.json();
-    return data.suggestions || [];
+    // Return data directly since the endpoint returns a simple array
+    return Array.isArray(data) ? data : [];
   } catch {
     return [];
   }
+}
+
+/**
+ * Backwards compatibility for old autocomplete calls
+ */
+export async function autocomplete(q) {
+  return fetchAutocomplete(q);
 }
 
 /**
