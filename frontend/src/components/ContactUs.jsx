@@ -23,7 +23,7 @@ function StarRating({ value, onChange }) {
             className={`w-8 h-8 transition-colors duration-150 ${
               n <= (hovered || value)
                 ? 'text-amber-400 fill-amber-400'
-                : 'text-slate-600'
+                : 'text-muted-foreground'
             }`}
           />
         </button>
@@ -47,24 +47,24 @@ function ReviewCard({ review }) {
   const colour = colours[review.name.charCodeAt(0) % colours.length];
 
   return (
-    <div className="glass-card rounded-2xl p-5 border border-slate-700/40 space-y-3 hover:border-slate-600/60 transition-all duration-200">
+    <div className="glass-card rounded-2xl p-5 border border-border/40 space-y-3 hover:border-border/60 transition-all duration-200">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl bg-gradient-to-br ${colour} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+            className={`w-9 h-9 rounded-xl bg-gradient-to-br ${colour} flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0`}
           >
             {initials}
           </div>
           <div>
-            <p className="text-sm font-semibold text-white">{review.name || 'Anonymous'}</p>
-            <p className="text-[11px] text-slate-500">{review.date}</p>
+            <p className="text-sm font-semibold text-foreground">{review.name || 'Anonymous'}</p>
+            <p className="text-[11px] text-muted-foreground">{review.date}</p>
           </div>
         </div>
         <div className="flex gap-0.5 flex-shrink-0">
           {[1, 2, 3, 4, 5].map((n) => (
             <Star
               key={n}
-              className={`w-4 h-4 ${n <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-700'}`}
+              className={`w-4 h-4 ${n <= review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`}
             />
           ))}
         </div>
@@ -74,7 +74,7 @@ function ReviewCard({ review }) {
           {review.category}
         </span>
       )}
-      <p className="text-sm text-slate-400 leading-relaxed">{review.message}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">{review.message}</p>
     </div>
   );
 }
@@ -204,7 +204,7 @@ export default function ContactUs() {
             We&apos;d Love to Hear{' '}
             <span className="gradient-text-blue">From You</span>
           </h2>
-          <p className="text-slate-400 text-lg max-w-xl mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto leading-relaxed">
             Leave a review, report a bug or just say hi. Every piece of feedback helps us make
             GenMed better for millions of Indians.
           </p>
@@ -217,19 +217,19 @@ export default function ContactUs() {
             <form
               id="review-form"
               onSubmit={handleSubmit}
-              className="glass-card rounded-2xl p-7 border border-slate-700/50 space-y-6"
+              className="glass-card rounded-2xl p-7 border border-border/50 space-y-6"
             >
               <div className="flex items-center gap-3 mb-1">
                 <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-900/30">
-                  <MessageSquare className="w-4 h-4 text-white" />
+                  <MessageSquare className="w-4 h-4 text-foreground" />
                 </div>
-                <h3 className="text-lg font-bold text-white">Leave a Review</h3>
+                <h3 className="text-lg font-bold text-foreground">Leave a Review</h3>
               </div>
 
               {/* Name + Email */}
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label htmlFor="reviewer-name" className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  <label htmlFor="reviewer-name" className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                     Your Name
                   </label>
                   <input
@@ -242,7 +242,7 @@ export default function ContactUs() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <label htmlFor="reviewer-email" className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                  <label htmlFor="reviewer-email" className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                     Email (optional)
                   </label>
                   <input
@@ -258,7 +258,7 @@ export default function ContactUs() {
 
               {/* Category */}
               <div className="space-y-1.5">
-                <label htmlFor="review-category" className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                <label htmlFor="review-category" className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                   Category
                 </label>
                 <select
@@ -275,12 +275,12 @@ export default function ContactUs() {
 
               {/* Star rating */}
               <div className="space-y-2">
-                <label className="text-xs font-semibold text-slate-400 uppercase tracking-widest block">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-widest block">
                   Your Rating <span className="text-red-400">*</span>
                 </label>
                 <StarRating value={form.rating} onChange={(v) => setForm((f) => ({ ...f, rating: v }))} />
                 {form.rating > 0 && (
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-foreground">
                     {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][form.rating]}
                   </p>
                 )}
@@ -288,7 +288,7 @@ export default function ContactUs() {
 
               {/* Message */}
               <div className="space-y-1.5">
-                <label htmlFor="review-message" className="text-xs font-semibold text-slate-400 uppercase tracking-widest">
+                <label htmlFor="review-message" className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
                   Message <span className="text-red-400">*</span>
                 </label>
                 <textarea
@@ -306,7 +306,7 @@ export default function ContactUs() {
                 id="submit-review-btn"
                 type="submit"
                 disabled={submitting || !form.rating}
-                className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2"
+                className="btn-primary w-full py-3 rounded-xl text-sm font-semibold text-foreground flex items-center justify-center gap-2"
               >
                 {submitting ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</>
@@ -317,11 +317,11 @@ export default function ContactUs() {
             </form>
 
             {/* Contact links */}
-            <div className="mt-6 glass-card rounded-2xl p-5 border border-slate-700/40 flex flex-wrap gap-4 items-center">
-              <p className="text-sm text-slate-400 flex-1 min-w-fit">Other ways to reach us:</p>
+            <div className="mt-6 glass-card rounded-2xl p-5 border border-border/40 flex flex-wrap gap-4 items-center">
+              <p className="text-sm text-muted-foreground flex-1 min-w-fit">Other ways to reach us:</p>
               <a
                 href="mailto:genmed@example.com"
-                className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-emerald-400 transition-colors"
               >
                 <Mail className="w-4 h-4" /> genmed@example.com
               </a>
@@ -329,7 +329,7 @@ export default function ContactUs() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-emerald-400 transition-colors"
               >
                 <GitBranch className="w-4 h-4" /> GitHub
               </a>
@@ -337,7 +337,7 @@ export default function ContactUs() {
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs font-medium text-slate-300 hover:text-emerald-400 transition-colors"
+                className="flex items-center gap-2 text-xs font-medium text-foreground hover:text-emerald-400 transition-colors"
               >
                 <Globe className="w-4 h-4" /> Twitter / X
               </a>
@@ -347,18 +347,18 @@ export default function ContactUs() {
           {/* ── Right: Reviews feed ── */}
           <div className="lg:col-span-2 space-y-5">
             {/* Rating summary */}
-            <div className="glass-card rounded-2xl p-5 border border-slate-700/40 flex items-center gap-5">
+            <div className="glass-card rounded-2xl p-5 border border-border/40 flex items-center gap-5">
               <div className="text-center">
                 <p className="text-5xl font-extrabold gradient-text-amber">{avgRating}</p>
                 <div className="flex gap-0.5 mt-1 justify-center">
                   {[1, 2, 3, 4, 5].map((n) => (
                     <Star
                       key={n}
-                      className={`w-4 h-4 ${n <= Math.round(Number(avgRating)) ? 'text-amber-400 fill-amber-400' : 'text-slate-600'}`}
+                      className={`w-4 h-4 ${n <= Math.round(Number(avgRating)) ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground'}`}
                     />
                   ))}
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
+                <p className="text-[11px] text-muted-foreground mt-1">{reviews.length} review{reviews.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="flex-1 space-y-1.5">
                 {[5, 4, 3, 2, 1].map((star) => {
@@ -366,14 +366,14 @@ export default function ContactUs() {
                   const pct = reviews.length ? (count / reviews.length) * 100 : 0;
                   return (
                     <div key={star} className="flex items-center gap-2">
-                      <span className="text-[11px] text-slate-500 w-4">{star}</span>
-                      <div className="flex-1 bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <span className="text-[11px] text-muted-foreground w-4">{star}</span>
+                      <div className="flex-1 bg-muted rounded-full h-1.5 overflow-hidden">
                         <div
                           className="h-1.5 rounded-full bg-amber-400 transition-all duration-700"
                           style={{ width: `${pct}%` }}
                         />
                       </div>
-                      <span className="text-[11px] text-slate-500 w-4">{count}</span>
+                      <span className="text-[11px] text-muted-foreground w-4">{count}</span>
                     </div>
                   );
                 })}
@@ -391,7 +391,7 @@ export default function ContactUs() {
               <button
                 id="toggle-reviews-btn"
                 onClick={() => setShowAll((v) => !v)}
-                className="w-full py-2.5 text-xs font-semibold text-slate-400 hover:text-slate-200 flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
               >
                 {showAll ? (
                   <><ChevronUp className="w-4 h-4" /> Show less</>

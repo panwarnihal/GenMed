@@ -74,7 +74,7 @@ function StatBadges() {
             <Icon className={`w-4 h-4 ${c.icon} flex-shrink-0`} />
             <div className="flex items-baseline gap-1.5">
               <span className={`text-sm font-extrabold ${c.text}`}>{s.value}</span>
-              <span className="text-[11px] text-slate-500 hidden sm:inline">{s.label}</span>
+              <span className="text-[11px] text-muted-foreground hidden sm:inline">{s.label}</span>
             </div>
           </div>
         );
@@ -112,7 +112,7 @@ function ScoreRing({ score }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-xl font-bold" style={{ color: colour }}>{score.toFixed(1)}</span>
-        <span className="text-[9px] text-slate-500 font-medium">/ {maxScore}</span>
+        <span className="text-[9px] text-muted-foreground font-medium">/ {maxScore}</span>
         <span className="text-[9px] font-semibold mt-0.5" style={{ color: colour }}>{label}</span>
       </div>
     </div>
@@ -152,14 +152,14 @@ function NoMatchCard({ query }) {
         <AlertTriangle className="w-10 h-10 text-amber-400" />
       </div>
       <div>
-        <h3 className="text-2xl font-bold text-white mb-2">No Generic Match Found</h3>
-        <p className="text-slate-400 text-sm max-w-md mx-auto leading-relaxed">
+        <h3 className="text-2xl font-bold text-foreground mb-2">No Generic Match Found</h3>
+        <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
           We couldn't locate a Jan Aushadhi equivalent for{' '}
-          <strong className="text-white">{query}</strong>. Try adding the chemical salt composition for a more precise lookup.
+          <strong className="text-foreground">{query}</strong>. Try adding the chemical salt composition for a more precise lookup.
         </p>
       </div>
       <div className="flex justify-center">
-        <span className="flex items-center gap-1.5 text-xs text-slate-500 bg-slate-800/50 px-3 py-1.5 rounded-full">
+        <span className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-full">
           <Info className="w-3.5 h-3.5" /> Tip: add salt composition for better results
         </span>
       </div>
@@ -203,17 +203,17 @@ function ResultCard({ result, billedPrice, query }) {
         <div className="gf-result-card gf-result-card--branded rounded-2xl p-6 space-y-3 relative overflow-hidden group">
           <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-500/60 to-orange-500/30 rounded-l-2xl" />
           <span className="gf-card-label text-red-400 bg-red-500/10">Commercial Brand</span>
-          <h3 className="text-lg font-bold text-white leading-snug">{query}</h3>
-          <p className="text-[11px] text-slate-500">Branded / Retail Pharmacy</p>
+          <h3 className="text-lg font-bold text-foreground leading-snug">{query}</h3>
+          <p className="text-[11px] text-muted-foreground">Branded / Retail Pharmacy</p>
           <div className="flex items-baseline gap-1 mt-1">
             <span className="text-sm text-red-400/80">₹</span>
             {billed > 0 ? (
               <span className="text-4xl font-black text-red-300 tracking-tight">{billed.toFixed(2)}</span>
             ) : (
-              <span className="text-slate-500 text-sm italic">No price entered</span>
+              <span className="text-muted-foreground text-sm italic">No price entered</span>
             )}
           </div>
-          {billed > 0 && <span className="text-[10px] text-slate-600">Retail / Billed Price</span>}
+          {billed > 0 && <span className="text-[10px] text-muted-foreground">Retail / Billed Price</span>}
         </div>
 
         {/* Jan Aushadhi Generic */}
@@ -225,7 +225,7 @@ function ResultCard({ result, billedPrice, query }) {
             <BadgeCheck className="w-5 h-5 text-emerald-400/60" />
           </div>
           <div className="relative">
-            <h3 className="text-base font-bold text-white leading-snug">{alt?.generic_name}</h3>
+            <h3 className="text-base font-bold text-foreground leading-snug">{alt?.generic_name}</h3>
             <p className="text-[11px] text-emerald-400/70 mt-0.5">PM Jan Aushadhi Kendra</p>
           </div>
           <div className="relative flex items-baseline gap-1 mt-1">
@@ -261,7 +261,7 @@ function ResultCard({ result, billedPrice, query }) {
           <div className="relative flex flex-col sm:flex-row items-center gap-6">
             <ScoreRing score={score} />
             <div className="flex-1 space-y-3 w-full">
-              <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold">Potential Savings</p>
+              <p className="text-[11px] text-muted-foreground uppercase tracking-widest font-semibold">Potential Savings</p>
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="gf-savings-number">₹{savings.toFixed(2)}</span>
                 <span className="text-lg font-medium text-emerald-400/60">saved per purchase</span>
@@ -269,13 +269,13 @@ function ResultCard({ result, billedPrice, query }) {
 
               {/* Savings bar */}
               <div className="space-y-1.5">
-                <div className="w-full bg-slate-800/80 rounded-full h-2.5 overflow-hidden">
+                <div className="w-full bg-muted/80 rounded-full h-2.5 overflow-hidden">
                   <div
                     className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 ease-out"
                     style={{ width: `${Math.min(savingsPct, 100)}%` }}
                   />
                 </div>
-                <div className="flex items-center justify-between text-[10px] text-slate-600">
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                   <span>Jan Aushadhi ₹{jaPrice.toFixed(2)}</span>
                   <span className="text-emerald-500 font-semibold">{savingsPct.toFixed(1)}% cheaper</span>
                   <span>Brand ₹{billed.toFixed(2)}</span>
@@ -293,7 +293,7 @@ function ResultCard({ result, billedPrice, query }) {
                 </div>
               )}
 
-              <p className="text-[11px] text-slate-500 flex items-center gap-1.5">
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                 <ChevronRight className="w-3 h-3 text-emerald-500" />
                 Available at any PM Jan Aushadhi Kendra across India
               </p>
@@ -305,7 +305,7 @@ function ResultCard({ result, billedPrice, query }) {
       {savings !== null && savings <= 0 && billed > 0 && (
         <div className="gf-result-card rounded-2xl p-5 flex items-center gap-3 max-w-xl mx-auto">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
-          <p className="text-sm text-slate-400">You're already paying at or below the Jan Aushadhi price. Great value!</p>
+          <p className="text-sm text-muted-foreground">You're already paying at or below the Jan Aushadhi price. Great value!</p>
         </div>
       )}
 
@@ -313,7 +313,7 @@ function ResultCard({ result, billedPrice, query }) {
         <div className="gf-result-card rounded-2xl p-5 flex items-start gap-3 max-w-xl mx-auto"
              style={{ '--gf-card-accent': 'rgba(59,130,246,0.1)' }}>
           <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-slate-400">
+          <p className="text-sm text-muted-foreground">
             Enter the billed price to see how much you could save by switching to the Jan Aushadhi generic.
           </p>
         </div>
@@ -342,7 +342,7 @@ function HowItWorks() {
 
   return (
     <div className="max-w-2xl mx-auto mt-8 animate-[gfSlideUp_0.6s_ease-out]">
-      <h2 className="text-center text-lg font-bold text-white mb-8 flex items-center justify-center gap-2">
+      <h2 className="text-center text-lg font-bold text-foreground mb-8 flex items-center justify-center gap-2">
         <Sparkles className="w-5 h-5 text-purple-400" />
         How MediMatch Works
       </h2>
@@ -357,10 +357,10 @@ function HowItWorks() {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-600 font-bold">{String(i + 1).padStart(2, '0')}</span>
-                  <p className="text-sm font-semibold text-slate-200">{step.title}</p>
+                  <span className="text-[10px] text-muted-foreground font-bold">{String(i + 1).padStart(2, '0')}</span>
+                  <p className="text-sm font-semibold text-foreground">{step.title}</p>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed mt-1">{step.desc}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-1">{step.desc}</p>
               </div>
             </div>
           );
@@ -506,16 +506,16 @@ export default function GenericFinder({ status }) {
         <div className="text-center mb-8 animate-[gfSlideUp_0.4s_ease-out]">
           <div className="inline-flex items-center justify-center mb-6 relative">
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-teal-400 to-purple-500 rounded-full blur-[20px] opacity-40 animate-pulse" />
-            <div className="relative w-16 h-16 rounded-2xl bg-slate-900/90 border border-slate-700/50 flex items-center justify-center backdrop-blur-xl shadow-2xl overflow-hidden group">
+            <div className="relative w-16 h-16 rounded-2xl bg-card/90 border border-border/50 flex items-center justify-center backdrop-blur-xl shadow-2xl overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-purple-500/10" />
-              <Hexagon className="absolute w-12 h-12 text-slate-700/50 stroke-[1] group-hover:rotate-90 transition-transform duration-700" />
+              <Hexagon className="absolute w-12 h-12 text-muted-foreground/50 stroke-[1] group-hover:rotate-90 transition-transform duration-700" />
               <Dna className="relative w-7 h-7 text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" strokeWidth={2.5} />
             </div>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-foreground tracking-tight mb-2">
             Medi<span className="gf-gradient-text">Match</span>
           </h1>
-          <p className="text-slate-400 text-sm sm:text-base max-w-md mx-auto">
+          <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
             Find affordable Jan Aushadhi generics for any branded medicine — instantly.
           </p>
         </div>
@@ -541,7 +541,7 @@ export default function GenericFinder({ status }) {
         <form onSubmit={handleSearch} className="mt-6 mb-6 animate-[gfSlideUp_0.55s_ease-out]" id="search-form">
           <div className="gf-search-container" ref={dropdownRef}>
             <div className="gf-search-bar">
-              <Search className="w-5 h-5 text-slate-500 flex-shrink-0 ml-1" />
+              <Search className="w-5 h-5 text-muted-foreground flex-shrink-0 ml-1" />
               <input
                 id="brand-query"
                 ref={queryRef}
@@ -593,7 +593,7 @@ export default function GenericFinder({ status }) {
                   >
                     <Pill className="w-3.5 h-3.5 text-emerald-500/60 flex-shrink-0" />
                     <span>{s}</span>
-                    <ArrowRight className="w-3 h-3 text-slate-600 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                   </button>
                 ))}
               </div>
@@ -602,7 +602,7 @@ export default function GenericFinder({ status }) {
             {/* Search history dropdown */}
             {showHistory && !showDropdown && history.length > 0 && (
               <div className="gf-dropdown">
-                <div className="flex items-center justify-between px-4 py-2 border-b border-slate-800/80">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-border/80">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 flex items-center gap-1.5">
                     <Clock className="w-3 h-3" /> Recent
                   </span>
@@ -701,7 +701,7 @@ export default function GenericFinder({ status }) {
               <button
                 key={h}
                 onClick={() => { setQuery(h); performSearch(h, salt); }}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/60 border border-slate-800/80 text-slate-600 hover:border-purple-500/30 hover:text-slate-400 transition-all"
+                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/60 border border-border/80 text-slate-600 hover:border-purple-500/30 hover:text-slate-400 transition-all"
               >
                 {h}
               </button>

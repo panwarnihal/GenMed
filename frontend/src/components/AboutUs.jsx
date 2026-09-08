@@ -18,7 +18,7 @@ const features = [
   },
   {
     Icon: TrendingDown,
-    color: 'text-blue-400',
+    color: 'text-muted-foreground',
     glow: 'shadow-blue-900/40',
     gradient: 'from-blue-500 to-indigo-600',
     title: 'Maximum Savings',
@@ -74,7 +74,7 @@ export default function AboutUs() {
             Making Healthcare{' '}
             <span className="gradient-text">Affordable</span> for All
           </h2>
-          <p className="text-slate-400 text-lg max-w-2xl mx-auto leading-relaxed">
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
             GenMed is India's open pharmaceutical transparency platform — helping millions find
             government-approved Jan Aushadhi generic alternatives and reclaim fair medicine pricing.
           </p>
@@ -85,11 +85,11 @@ export default function AboutUs() {
           {stats.map(({ value, label, icon }) => (
             <div
               key={label}
-              className="glass-card rounded-2xl p-6 text-center border border-slate-700/50 bg-slate-900/40 backdrop-blur-md hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-900/20"
+              className="glass-card rounded-2xl p-6 text-center border border-border/50 bg-card/40 backdrop-blur-md hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-emerald-900/20"
             >
               <div className="text-3xl mb-2">{icon}</div>
               <div className="text-3xl font-extrabold gradient-text mb-1">{value}</div>
-              <div className="text-xs text-slate-500 font-medium uppercase tracking-wider">{label}</div>
+              <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{label}</div>
             </div>
           ))}
         </div>
@@ -99,15 +99,15 @@ export default function AboutUs() {
           {features.map(({ Icon, color, glow, gradient, title, desc }) => (
             <div
               key={title}
-              className="glass-card rounded-2xl p-6 border border-slate-700/40 hover:border-slate-600/60 transition-all duration-300 hover:-translate-y-1 group"
+              className="glass-card rounded-2xl p-6 border border-border/40 hover:bordtext-muted-foreground/60 transition-all duration-300 hover:-translate-y-1 group"
             >
               <div
                 className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-lg ${glow} mb-4 group-hover:scale-110 transition-transform duration-300`}
               >
-                <Icon className="w-5 h-5 text-white" strokeWidth={2} />
+                <Icon className="w-5 h-5 text-foreground" strokeWidth={2} />
               </div>
               <h3 className={`text-base font-bold mb-2 ${color}`}>{title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{desc}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
             </div>
           ))}
         </div>
@@ -119,9 +119,9 @@ export default function AboutUs() {
             <p className="text-sm font-semibold text-emerald-300 mb-1">
               Powered by Government Open Data
             </p>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               GenMed leverages the{' '}
-              <strong className="text-slate-300">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong>{' '}
+              <strong className="text-foreground">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong>{' '}
               dataset to provide free, transparent access to generic medicine pricing across India.
               We are not affiliated with any pharmaceutical company.
             </p>

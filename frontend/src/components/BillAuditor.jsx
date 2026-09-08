@@ -98,14 +98,14 @@ function PremiumMetricCard({ icon: Icon, label, value, sub, colour, glowColour, 
           <div className="space-y-3 flex-1">
             <div className="flex items-center gap-2">
               <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${glowColour} flex items-center justify-center shadow-lg`}>
-                <Icon className="w-4.5 h-4.5 text-white" strokeWidth={2.5} />
+                <Icon className="w-4.5 h-4.5 text-foreground" strokeWidth={2.5} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500">{label}</span>
+              <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">{label}</span>
             </div>
             <div className={`text-3xl font-black tracking-tight ${colour}`}>
               <AnimatedNumber value={value} prefix="₹" />
             </div>
-            <p className="text-[11px] text-slate-500 leading-relaxed">{sub}</p>
+            <p className="text-[11px] text-muted-foreground leading-relaxed">{sub}</p>
           </div>
 
           {/* Donut */}
@@ -159,15 +159,15 @@ function ScannerLoader({ fileName }) {
         <div className="flex items-center gap-5">
           <div className="relative">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-xl shadow-blue-900/50">
-              <Cpu className="w-8 h-8 text-white" strokeWidth={1.5} />
+              <Cpu className="w-8 h-8 text-foreground" strokeWidth={1.5} />
             </div>
             <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-emerald-400 rounded-full animate-ping" />
             </div>
           </div>
           <div className="flex-1">
-            <h3 className="text-xl font-bold text-white tracking-tight">Vision AI Processing</h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <h3 className="text-xl font-bold text-foreground tracking-tight">Vision AI Processing</h3>
+            <p className="text-sm text-muted-foreground mt-1">
               Analyzing <span className="text-blue-300 font-medium">{fileName}</span>
             </p>
           </div>
@@ -188,7 +188,7 @@ function ScannerLoader({ fileName }) {
                 key={label}
                 className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-500 ${
                   isActive
-                    ? 'bg-slate-800/80 border border-blue-500/30 shadow-lg shadow-blue-900/20'
+                    ? 'bg-muted/80 border border-blue-500/30 shadow-lg shadow-blue-900/20'
                     : isDone
                     ? 'bg-emerald-500/5 border border-emerald-500/10'
                     : 'bg-transparent border border-transparent opacity-40'
@@ -199,7 +199,7 @@ function ScannerLoader({ fileName }) {
                     ? 'bg-emerald-500/20'
                     : isActive
                     ? 'bg-blue-500/20 animate-pulse'
-                    : 'bg-slate-800/50'
+                    : 'bg-muted/50'
                 }`}>
                   {isDone ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -208,7 +208,7 @@ function ScannerLoader({ fileName }) {
                   )}
                 </div>
                 <span className={`text-sm font-medium transition-colors duration-300 ${
-                  isDone ? 'text-emerald-300' : isActive ? 'text-white' : 'text-slate-600'
+                  isDone ? 'text-emerald-300' : isActive ? 'text-foreground' : 'text-slate-600'
                 }`}>
                   {label}
                 </span>
@@ -229,7 +229,7 @@ function ScannerLoader({ fileName }) {
 
         {/* Progress bar */}
         <div className="space-y-2">
-          <div className="w-full bg-slate-800/80 rounded-full h-2 overflow-hidden">
+          <div className="w-full bg-muted/80 rounded-full h-2 overflow-hidden">
             <div
               className="h-2 rounded-full bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-500 transition-all duration-1000 ease-out"
               style={{ width: `${((activeStep + 1) / steps.length) * 100}%` }}
@@ -405,12 +405,12 @@ export default function BillAuditor() {
 
         {/* Headline */}
         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight">
-          <span className="text-white">Scan Your Bill.</span>
+          <span className="text-foreground">Scan Your Bill.</span>
           <br />
           <span className="gradient-text">Save Thousands.</span>
         </h1>
 
-        <p className="text-slate-400 text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
+        <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Upload a photo of your pharmacy invoice. Our Vision AI extracts every medicine,
           audits for illegal MRP overcharges, and maps affordable{' '}
           <span className="text-emerald-400 font-medium">Jan Aushadhi</span> generic alternatives — instantly.
@@ -441,7 +441,7 @@ export default function BillAuditor() {
                   ? 'bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 opacity-100'
                   : 'bg-gradient-to-br from-purple-500/40 via-indigo-500/20 to-blue-500/40 opacity-60 group-hover:opacity-100'
               }`}>
-                <div className="w-full h-full rounded-2xl bg-[#09090b]" />
+                <div className="w-full h-full rounded-2xl bg-background" />
               </div>
 
               <div className="relative glass-card rounded-2xl border-0 p-6 sm:p-8 flex-1 flex flex-col justify-between">
@@ -453,7 +453,7 @@ export default function BillAuditor() {
                   className="hidden"
                   onChange={handleFileSelect}
                 />
-                <label htmlFor="bill-upload-input" className="cursor-pointer flex-1 flex flex-col items-center justify-center gap-5 text-center p-4 rounded-xl hover:bg-slate-800/20 transition-colors">
+                <label htmlFor="bill-upload-input" className="cursor-pointer flex-1 flex flex-col items-center justify-center gap-5 text-center p-4 rounded-xl hover:bg-muted/20 transition-colors">
                   <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 font-bold text-[11px] uppercase tracking-wider mb-1">
                     <Upload className="w-3.5 h-3.5" /> Option 01: Image Scan
                   </div>
@@ -465,31 +465,31 @@ export default function BillAuditor() {
                     <div className={`relative w-20 h-20 rounded-3xl flex items-center justify-center transition-all duration-300 ${
                       isDragOver
                         ? 'bg-emerald-500/15 border-2 border-emerald-400/50 shadow-2xl shadow-emerald-500/20'
-                        : 'bg-slate-800/80 border-2 border-slate-700/50 group-hover:border-purple-500/40 group-hover:bg-purple-500/5'
+                        : 'bg-muted/80 border-2 border-border/50 group-hover:border-purple-500/40 group-hover:bg-purple-500/5'
                     }`}>
                       <Upload className={`w-9 h-9 transition-all duration-300 ${
-                        isDragOver ? 'text-emerald-400 scale-110' : 'text-slate-400 group-hover:text-purple-400'
+                        isDragOver ? 'text-emerald-400 scale-110' : 'text-muted-foreground group-hover:text-purple-400'
                       }`} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <p className="text-xl font-bold text-white">
+                    <p className="text-xl font-bold text-foreground">
                       {isDragOver ? 'Release to upload!' : 'Drop Pharmacy Bill Image'}
                     </p>
-                    <p className="text-xs text-slate-400 max-w-xs mx-auto leading-relaxed">
+                    <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
                       Upload invoice photo or receipt. Gemini Vision AI auto-extracts every medicine, price &amp; batch.
                     </p>
                   </div>
 
                   <div className="pt-2">
-                    <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-xl shadow-purple-900/30 group-hover:shadow-purple-900/50 group-hover:scale-[1.02] transition-all duration-200">
+                    <span className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-foreground text-xs font-semibold shadow-xl shadow-purple-900/30 group-hover:shadow-purple-900/50 group-hover:scale-[1.02] transition-all duration-200">
                       <Upload className="w-4 h-4" />
                       Browse Files
                     </span>
                   </div>
 
-                  <p className="text-[10px] text-slate-500 mt-1">
+                  <p className="text-[10px] text-muted-foreground mt-1">
                     Supports JPG, PNG, WebP, BMP (Max 10 MB)
                   </p>
                 </label>
@@ -498,7 +498,7 @@ export default function BillAuditor() {
 
             {/* OR DIVIDER */}
             <div className="lg:absolute lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 z-20 flex items-center justify-center my-2 lg:my-0 pointer-events-none">
-              <div className="w-11 h-11 rounded-full bg-slate-950 border-2 border-purple-500/40 shadow-2xl shadow-purple-950 flex items-center justify-center">
+              <div className="w-11 h-11 rounded-full bg-background border-2 border-purple-500/40 shadow-2xl shadow-purple-950 flex items-center justify-center">
                 <span className="text-xs font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-emerald-400">
                   OR
                 </span>
@@ -509,7 +509,7 @@ export default function BillAuditor() {
             <div className="relative group rounded-2xl flex flex-col">
               {/* Border glow */}
               <div className="absolute inset-0 rounded-2xl p-[1px] bg-gradient-to-br from-emerald-500/40 via-teal-500/20 to-cyan-500/40 opacity-60 group-hover:opacity-100 transition-opacity duration-300">
-                <div className="w-full h-full rounded-2xl bg-[#09090b]" />
+                <div className="w-full h-full rounded-2xl bg-background" />
               </div>
 
               <div className="relative glass-card rounded-2xl border-0 p-6 sm:p-8 flex-1 flex flex-col justify-between">
@@ -524,8 +524,8 @@ export default function BillAuditor() {
                   </div>
 
                   <div className="space-y-1 mb-5">
-                    <h3 className="text-xl font-bold text-white">Enter Medicine &amp; Paid Price</h3>
-                    <p className="text-xs text-slate-400">
+                    <h3 className="text-xl font-bold text-foreground">Enter Medicine &amp; Paid Price</h3>
+                    <p className="text-xs text-muted-foreground">
                       Type the medicine name and amount paid to check MRP compliance &amp; Jan Aushadhi generic savings.
                     </p>
                   </div>
@@ -533,12 +533,12 @@ export default function BillAuditor() {
                   <form onSubmit={handleManualSubmit} id="manual-audit-form" className="space-y-4">
                     <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                       {manualItems.map((item, idx) => (
-                        <div key={idx} className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 space-y-3 relative">
+                        <div key={idx} className="p-3.5 rounded-xl bg-card/90 border border-border space-y-3 relative">
                           {manualItems.length > 1 && (
                             <button
                               type="button"
                               onClick={() => removeManualItem(idx)}
-                              className="absolute top-2 right-2 text-slate-500 hover:text-red-400 transition-colors p-1"
+                              className="absolute top-2 right-2 text-muted-foreground hover:text-red-400 transition-colors p-1"
                               title="Remove medicine"
                             >
                               <X className="w-3.5 h-3.5" />
@@ -546,29 +546,29 @@ export default function BillAuditor() {
                           )}
 
                           <div>
-                            <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                            <label className="block text-[11px] font-semibold text-muted-foreground mb-1">
                               Medicine Name <span className="text-emerald-400">*</span>
                             </label>
                             <div className="relative">
-                              <FlaskConical className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                              <FlaskConical className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
                               <input
                                 type="text"
                                 required
                                 placeholder="e.g. Augmentin 625 Duo / Calpol 500"
                                 value={item.brand_name}
                                 onChange={(e) => updateManualItem(idx, 'brand_name', e.target.value)}
-                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg pl-9 pr-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                                className="w-full bg-muted/90 border border-border/70 rounded-lg pl-9 pr-3 py-2 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                               />
                             </div>
                           </div>
 
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                             <div>
-                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                              <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
                                 Paid Price (₹) <span className="text-emerald-400">*</span>
                               </label>
                               <div className="relative">
-                                <IndianRupee className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                                <IndianRupee className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
                                 <input
                                   type="number"
                                   step="0.01"
@@ -577,13 +577,13 @@ export default function BillAuditor() {
                                   placeholder="e.g. 223"
                                   value={item.paid_price}
                                   onChange={(e) => updateManualItem(idx, 'paid_price', e.target.value)}
-                                  className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg pl-7 pr-2 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                                  className="w-full bg-muted/90 border border-border/70 rounded-lg pl-7 pr-2 py-1.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                                 />
                               </div>
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                              <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
                                 Printed MRP (₹)
                               </label>
                               <input
@@ -593,12 +593,12 @@ export default function BillAuditor() {
                                 placeholder="Optional"
                                 value={item.printed_mrp}
                                 onChange={(e) => updateManualItem(idx, 'printed_mrp', e.target.value)}
-                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                                className="w-full bg-muted/90 border border-border/70 rounded-lg px-2.5 py-1.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                               />
                             </div>
 
                             <div className="col-span-2 sm:col-span-1">
-                              <label className="block text-[10px] font-semibold text-slate-400 mb-1">
+                              <label className="block text-[10px] font-semibold text-muted-foreground mb-1">
                                 Qty (Units)
                               </label>
                               <input
@@ -607,7 +607,7 @@ export default function BillAuditor() {
                                 placeholder="1"
                                 value={item.quantity_units}
                                 onChange={(e) => updateManualItem(idx, 'quantity_units', e.target.value)}
-                                className="w-full bg-slate-800/90 border border-slate-700/70 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
+                                className="w-full bg-muted/90 border border-border/70 rounded-lg px-2.5 py-1.5 text-xs text-foreground placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
                               />
                             </div>
                           </div>
@@ -617,7 +617,7 @@ export default function BillAuditor() {
                   </form>
                 </div>
 
-                <div className="space-y-3 pt-4 border-t border-slate-800/80 mt-4">
+                <div className="space-y-3 pt-4 border-t border-border/80 mt-4">
                   <div className="flex items-center justify-between">
                     <button
                       type="button"
@@ -626,7 +626,7 @@ export default function BillAuditor() {
                     >
                       + Add Another Medicine
                     </button>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-muted-foreground">
                       {manualItems.length} item{manualItems.length > 1 ? 's' : ''}
                     </span>
                   </div>
@@ -634,7 +634,7 @@ export default function BillAuditor() {
                   <button
                     type="submit"
                     form="manual-audit-form"
-                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 transition-all duration-200 flex items-center justify-center gap-2"
+                    className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-foreground text-xs font-bold shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 transition-all duration-200 flex items-center justify-center gap-2"
                   >
                     <Sparkles className="w-4 h-4 text-emerald-200" />
                     Audit Medicine &amp; Calculate Savings
@@ -664,19 +664,19 @@ export default function BillAuditor() {
             ].map(({ step, icon: StepIcon, colour, title, desc }, idx) => (
               <div
                 key={step}
-                className="relative group glass-card rounded-2xl p-6 border border-slate-700/40 hover:border-slate-600/60 transition-all duration-300 hover:-translate-y-1 opacity-0 animate-[slideUp_0.5s_ease-out_forwards]"
+                className="relative group glass-card rounded-2xl p-6 border border-border/40 hover:border-slate-600/60 transition-all duration-300 hover:-translate-y-1 opacity-0 animate-[slideUp_0.5s_ease-out_forwards]"
                 style={{ animationDelay: `${0.1 + idx * 0.15}s` }}
               >
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${colour} flex items-center justify-center shadow-lg`}>
-                      <StepIcon className="w-5 h-5 text-white" strokeWidth={2} />
+                      <StepIcon className="w-5 h-5 text-foreground" strokeWidth={2} />
                     </div>
                     <span className="text-3xl font-black text-slate-800/80">{step}</span>
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white">{title}</h3>
-                    <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">{desc}</p>
+                    <h3 className="text-sm font-bold text-foreground">{title}</h3>
+                    <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">{desc}</p>
                   </div>
                 </div>
                 {idx < 2 && (
@@ -697,7 +697,7 @@ export default function BillAuditor() {
               { icon: HeartPulse,  text: 'DDI Safety Engine' },
               { icon: Scale,       text: 'MRP Audit Engine' },
             ].map(({ icon: Icon, text }) => (
-              <span key={text} className="inline-flex items-center gap-2 text-[11px] font-medium text-slate-500 bg-slate-800/40 border border-slate-700/30 px-4 py-2 rounded-full hover:border-purple-500/30 hover:text-slate-400 transition-colors duration-200">
+              <span key={text} className="inline-flex items-center gap-2 text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/30 px-4 py-2 rounded-full hover:border-purple-500/30 hover:text-muted-foreground transition-colors duration-200">
                 <Icon className="w-3.5 h-3.5 text-purple-400/60" />{text}
               </span>
             ))}
@@ -746,28 +746,28 @@ export default function BillAuditor() {
         <div className="space-y-8 animate-[fadeIn_0.5s_ease-out]">
 
           {/* ── Report header ── */}
-          <div className="flex items-center justify-between flex-wrap gap-4 glass-card rounded-2xl p-5 border border-slate-700/50">
+          <div className="flex items-center justify-between flex-wrap gap-4 glass-card rounded-2xl p-5 border border-border/50">
             <div className="flex items-center gap-4">
               {previewUrl && (
                 <div className="relative">
                   <img
                     src={previewUrl}
                     alt="Uploaded invoice"
-                    className="w-14 h-14 rounded-xl object-cover border-2 border-slate-700/50 shadow-lg"
+                    className="w-14 h-14 rounded-xl object-cover border-2 border-border/50 shadow-lg"
                   />
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center">
-                    <CheckCircle2 className="w-3 h-3 text-white" />
+                    <CheckCircle2 className="w-3 h-3 text-foreground" />
                   </div>
                 </div>
               )}
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-white">{fileName}</h2>
+                  <h2 className="text-lg font-bold text-foreground">{fileName}</h2>
                   <span className="text-[9px] font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full">
                     Audited
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-muted-foreground mt-0.5">
                   Invoice #{report.invoice_id} &nbsp;·&nbsp; {report.audited_items?.length ?? 0} medicines scanned
                 </p>
               </div>
@@ -775,7 +775,7 @@ export default function BillAuditor() {
             <button
               id="scan-new-bill-btn"
               onClick={handleReset}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-[1.02] transition-all duration-200"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-foreground text-xs font-semibold shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-[1.02] transition-all duration-200"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Scan Another Bill
             </button>
@@ -798,7 +798,7 @@ export default function BillAuditor() {
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-3 flex-wrap">
                           <h3 className="text-lg font-black text-red-300">BANNED SUBSTANCE DETECTED</h3>
-                          <span className="text-[9px] font-bold uppercase tracking-wider text-white bg-red-500 px-2.5 py-1 rounded-full animate-pulse">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-foreground bg-red-500 px-2.5 py-1 rounded-full animate-pulse">
                             CRITICAL ALERT
                           </span>
                         </div>
@@ -838,7 +838,7 @@ export default function BillAuditor() {
                           </h3>
                           <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
                             report.ddi_summary?.has_critical_interactions
-                              ? 'text-white bg-red-500'
+                              ? 'text-foreground bg-red-500'
                               : 'text-amber-300 bg-amber-500/20'
                           }`}>
                             {report.ddi_summary?.has_critical_interactions ? 'HIGH SEVERITY' : 'WARNING'}
@@ -859,7 +859,7 @@ export default function BillAuditor() {
                               ? 'border-red-500/30 bg-red-500/5'
                               : alert.severity === 'MODERATE'
                               ? 'border-amber-500/25 bg-amber-500/5'
-                              : 'border-slate-700/50 bg-slate-800/30'
+                              : 'border-border/50 bg-muted/30'
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -868,17 +868,17 @@ export default function BillAuditor() {
                                 ? 'text-red-300 bg-red-500/20 border border-red-500/30'
                                 : alert.severity === 'MODERATE'
                                 ? 'text-amber-300 bg-amber-500/15 border border-amber-500/25'
-                                : 'text-slate-400 bg-slate-700/50'
+                                : 'text-muted-foreground bg-slate-700/50'
                             }`}>
                               {alert.severity}
                             </span>
-                            <span className="text-sm font-bold text-white">
+                            <span className="text-sm font-bold text-foreground">
                               {alert.drug_a}
-                              <span className="text-slate-500 mx-2">↔</span>
+                              <span className="text-muted-foreground mx-2">↔</span>
                               {alert.drug_b}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 leading-relaxed pl-0.5">
+                          <p className="text-xs text-muted-foreground leading-relaxed pl-0.5">
                             {alert.description}
                           </p>
                         </div>
@@ -955,7 +955,7 @@ export default function BillAuditor() {
           {(totalSavings > 0 || totalOvercharges > 0) && (
             <div className="glass-card rounded-2xl p-6 border border-emerald-500/20 space-y-4">
               <div className="flex items-center justify-between flex-wrap gap-3">
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   <BarChart3 className="w-5 h-5 text-emerald-400" />
                   Savings Breakdown
                 </h3>
@@ -966,17 +966,17 @@ export default function BillAuditor() {
                 )}
               </div>
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-500">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
                   <span>₹0</span>
                   <span>₹{totalBilled.toFixed(2)} total billed</span>
                 </div>
-                <div className="w-full bg-slate-800/80 rounded-full h-5 overflow-hidden flex shadow-inner">
+                <div className="w-full bg-muted/80 rounded-full h-5 overflow-hidden flex shadow-inner">
                   {totalOvercharges > 0 && (
                     <div
                       className="h-5 bg-gradient-to-r from-amber-500 to-orange-400 rounded-l-full transition-all duration-1000 relative group"
                       style={{ width: `${Math.max(overchargePct * 100, 2)}%` }}
                     >
-                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-amber-500 text-white text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
+                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-amber-500 text-foreground text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
                         ₹{totalOvercharges.toFixed(2)}
                       </div>
                     </div>
@@ -986,7 +986,7 @@ export default function BillAuditor() {
                       className="h-5 bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-1000 relative group"
                       style={{ width: `${Math.max(savingsPct * 100, 2)}%` }}
                     >
-                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
+                      <div className="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-emerald-500 text-foreground text-[10px] font-bold px-2 py-1 rounded-md whitespace-nowrap transition-opacity">
                         ₹{totalSavings.toFixed(2)}
                       </div>
                     </div>
@@ -1005,7 +1005,7 @@ export default function BillAuditor() {
                       Generic savings ₹{totalSavings.toFixed(2)}
                     </span>
                   )}
-                  <span className="flex items-center gap-2 text-slate-500">
+                  <span className="flex items-center gap-2 text-muted-foreground">
                     <span className="w-3 h-3 rounded-full bg-slate-700" />
                     Fair price ₹{Math.max(totalBilled - totalOvercharges - totalSavings, 0).toFixed(2)}
                   </span>
@@ -1018,14 +1018,14 @@ export default function BillAuditor() {
           {/* ── ITEMIZED AUDIT TABLE ── */}
           <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-slate-600/30 to-transparent">
             <div className="glass-card rounded-2xl overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3">
+              <div className="px-6 py-5 border-b border-border flex items-center justify-between flex-wrap gap-3">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-indigo-500/15 flex items-center justify-center">
                     <ReceiptText className="w-4.5 h-4.5 text-indigo-400" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-white">Itemized Audit Report</h3>
-                    <p className="text-[11px] text-slate-500">{report.audited_items?.length ?? 0} medicines · Invoice #{report.invoice_id}</p>
+                    <h3 className="text-base font-bold text-foreground">Itemized Audit Report</h3>
+                    <p className="text-[11px] text-muted-foreground">{report.audited_items?.length ?? 0} medicines · Invoice #{report.invoice_id}</p>
                   </div>
                 </div>
               </div>
@@ -1033,7 +1033,7 @@ export default function BillAuditor() {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-900/80 border-b border-slate-800 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <tr className="bg-card/80 border-b border-border text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       <th className="py-4 px-5">Medicine</th>
                       <th className="py-4 px-3 text-center">Qty</th>
                       <th className="py-4 px-4 text-right">Paid</th>
@@ -1067,19 +1067,19 @@ export default function BillAuditor() {
                       return (
                         <tr key={idx} className="audit-row group/row">
                           <td className="py-5 px-5">
-                            <span className="font-semibold text-white group-hover/row:text-purple-300 transition-colors duration-200">
+                            <span className="font-semibold text-foreground group-hover/row:text-purple-300 transition-colors duration-200">
                               {item.brand_name}
                             </span>
                           </td>
                           <td className="py-5 px-3 text-center">
-                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-800/80 text-slate-300 text-xs font-bold border border-slate-700/50">
+                            <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-muted/80 text-slate-300 text-xs font-bold border border-border/50">
                               {item.quantity_units}
                             </span>
                           </td>
                           <td className={`py-5 px-4 text-right font-bold ${hasOvercharge ? 'text-amber-300' : 'text-slate-200'}`}>
                             ₹{item.paid_price?.toFixed(2)}
                           </td>
-                          <td className="py-5 px-4 text-right text-slate-500">
+                          <td className="py-5 px-4 text-right text-muted-foreground">
                             ₹{item.printed_mrp?.toFixed(2)}
                           </td>
                           <td className="py-5 px-4 text-center">
@@ -1123,11 +1123,11 @@ export default function BillAuditor() {
                           <td className="py-5 px-4 text-center">
                             {batchNum ? (
                               <div className="space-y-1.5">
-                                <span className="block text-[10px] text-slate-500 font-mono">{batchNum}</span>
+                                <span className="block text-[10px] text-muted-foreground font-mono">{batchNum}</span>
                                 {!bv.result && !bv.loading && !bv.error && (
                                   <button
                                     onClick={handleBatchVerify}
-                                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-slate-800 border border-slate-700/60 text-slate-400 hover:border-blue-500/50 hover:text-blue-300 transition-all duration-150"
+                                    className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg bg-muted border border-border/60 text-muted-foreground hover:border-blue-500/50 hover:text-blue-300 transition-all duration-150"
                                     title="Check CDSCO blacklist"
                                   >
                                     <ScanLine className="w-2.5 h-2.5" /> Verify
@@ -1178,8 +1178,8 @@ export default function BillAuditor() {
               </div>
 
               {/* Table footer */}
-              <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/50 flex flex-wrap items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-xs text-slate-500">
+              <div className="px-6 py-4 border-t border-border bg-card/50 flex flex-wrap items-center justify-between gap-3">
+                <span className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Info className="w-3.5 h-3.5" />
                   Generic alternatives sourced from PMBJP government database
                 </span>
@@ -1194,26 +1194,26 @@ export default function BillAuditor() {
 
           {/* ── DDI SUMMARY GRID ── */}
           {report.ddi_summary && report.ddi_summary.interaction_count > 0 && (
-            <div className="glass-card rounded-2xl p-6 border border-slate-700/50 space-y-4">
+            <div className="glass-card rounded-2xl p-6 border border-border/50 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
                   <HeartPulse className="w-4.5 h-4.5 text-amber-400" />
                 </div>
-                <h3 className="text-base font-bold text-white">DDI Analysis Summary</h3>
+                <h3 className="text-base font-bold text-foreground">DDI Analysis Summary</h3>
               </div>
               <div className="grid grid-cols-3 gap-4">
                 {Object.entries(report.ddi_summary.severity_breakdown || {}).map(([severity, count]) => (
                   <div key={severity} className={`rounded-xl py-4 px-5 border text-center ${
                     severity === 'HIGH'   ? 'border-red-500/25 bg-red-500/5' :
                     severity === 'MODERATE' ? 'border-amber-500/20 bg-amber-500/5' :
-                    'border-slate-700/50 bg-slate-800/30'
+                    'border-border/50 bg-muted/30'
                   }`}>
                     <div className={`text-3xl font-black ${
-                      severity === 'HIGH' ? 'text-red-400' : severity === 'MODERATE' ? 'text-amber-400' : 'text-slate-400'
+                      severity === 'HIGH' ? 'text-red-400' : severity === 'MODERATE' ? 'text-amber-400' : 'text-muted-foreground'
                     }`}>
                       {count}
                     </div>
-                    <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-1">{severity}</div>
+                    <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mt-1">{severity}</div>
                   </div>
                 ))}
               </div>
@@ -1225,30 +1225,30 @@ export default function BillAuditor() {
           <div className="relative rounded-2xl p-[1px] bg-gradient-to-b from-slate-700/30 to-transparent">
             <div className="glass-card rounded-2xl p-6 space-y-4">
               <div className="flex items-center gap-2.5">
-                <Scale className="w-4.5 h-4.5 text-slate-500" />
-                <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-slate-400">
+                <Scale className="w-4.5 h-4.5 text-muted-foreground" />
+                <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-muted-foreground">
                   Statutory Medical Disclaimer
                 </h3>
               </div>
-              <div className="text-xs text-slate-500 leading-relaxed space-y-3 pl-0.5">
+              <div className="text-xs text-muted-foreground leading-relaxed space-y-3 pl-0.5">
                 <p>
-                  <strong className="text-slate-400">GenMed is an informational tool only.</strong> The audit results, generic alternative suggestions,
-                  and safety alerts provided are computed algorithmically and are <strong className="text-slate-400">not a substitute for professional medical advice</strong>,
+                  <strong className="text-muted-foreground">GenMed is an informational tool only.</strong> The audit results, generic alternative suggestions,
+                  and safety alerts provided are computed algorithmically and are <strong className="text-muted-foreground">not a substitute for professional medical advice</strong>,
                   diagnosis, or treatment.
                 </p>
                 <p>
-                  Generic alternatives are sourced from the <strong className="text-slate-400">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong> database
+                  Generic alternatives are sourced from the <strong className="text-muted-foreground">Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP)</strong> database
                   and matched using deterministic chemical composition hashing. Pharmacological equivalence does not guarantee therapeutic interchangeability.
                 </p>
                 <p>
-                  DDI alerts are based on a curated rule matrix and <strong className="text-slate-400">do not represent an exhaustive clinical database</strong>.
+                  DDI alerts are based on a curated rule matrix and <strong className="text-muted-foreground">do not represent an exhaustive clinical database</strong>.
                   CDSCO regulatory data may not reflect the most recent amendments.
                 </p>
                 <p className="text-red-400/70">
                   <strong>Always consult a qualified physician or pharmacist</strong> before making any changes to your medication.
                   Do not discontinue, substitute, or alter dosage based solely on this report.
                 </p>
-                <div className="pt-2 border-t border-slate-800/60 text-[10px] text-slate-600 flex flex-wrap gap-3">
+                <div className="pt-2 border-t border-border/60 text-[10px] text-slate-600 flex flex-wrap gap-3">
                   <span>GenMed Platform</span>
                   <span>·</span>
                   <span>Not affiliated with any pharmaceutical company</span>

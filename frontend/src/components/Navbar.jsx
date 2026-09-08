@@ -54,13 +54,13 @@ export default function Navbar({ status }) {
   const mobileNavClass = ({ isActive }) =>
     `w-full text-left px-4 py-2.5 text-sm font-medium rounded-lg transition-colors ${
       isActive
-        ? 'text-emerald-400 bg-emerald-500/10'
-        : 'text-slate-300 hover:text-emerald-400 hover:bg-emerald-500/8'
+        ? 'text-primary bg-primary/10'
+        : 'text-muted-foreground hover:text-foreground hover:bg-muted'
     }`;
 
   return (
     <header
-      className={`sticky top-0 z-50 transition-all duration-300 glass-card border-b border-slate-800/80 ${
+      className={`sticky top-0 z-50 transition-all duration-300 glass-card border-b border-border ${
         scrolled ? 'shadow-xl shadow-black/30' : ''
       }`}
     >
@@ -77,9 +77,9 @@ export default function Navbar({ status }) {
               {/* Live status dot */}
               <div
                 title={status === 'online' ? 'API Online' : status === 'offline' ? 'API Offline' : 'Checking API…'}
-                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 transition-colors duration-500 ${
+                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background transition-colors duration-500 ${
                   status === 'online'   ? 'bg-emerald-400' :
-                  status === 'offline'  ? 'bg-red-500'     :
+                  status === 'offline'  ? 'bg-destructive' :
                   'bg-amber-400'
                 }`}
               >
@@ -90,7 +90,7 @@ export default function Navbar({ status }) {
             </div>
             <div>
               <span className="text-xl font-bold tracking-tight gradient-text">GenMed</span>
-              <p className="text-[10px] text-slate-500 font-medium -mt-0.5 hidden sm:block">
+              <p className="text-[10px] text-muted-foreground font-medium -mt-0.5 hidden sm:block">
                 Indian Pharmaceutical Verification Platform
               </p>
             </div>
@@ -111,20 +111,26 @@ export default function Navbar({ status }) {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
+            
+            {/* Animated Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800/50 transition-colors"
+              className="relative flex items-center justify-between w-12 h-6 p-1 bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
               aria-label="Toggle theme"
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              <Moon className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400 z-10" />
+              <Sun className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 z-10" />
+              <div 
+                className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transform transition-transform duration-300 ease-in-out ${theme === 'dark' ? 'translate-x-0' : 'translate-x-6'}`}
+              />
             </button>
 
             {/* Hamburger (mobile only) */}
             <button
               id="nav-hamburger"
               onClick={() => setMenuOpen((v) => !v)}
-              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -139,7 +145,7 @@ export default function Navbar({ status }) {
           menuOpen ? 'max-h-64 opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="border-t border-slate-800/60 px-4 py-3 flex flex-col gap-1">
+        <div className="border-t border-border px-4 py-3 flex flex-col gap-1">
           <NavLink to="/" end className={mobileNavClass} onClick={() => setMenuOpen(false)}>MediMatch</NavLink>
           <NavLink to="/auditor" className={mobileNavClass} onClick={() => setMenuOpen(false)}>BillSense</NavLink>
           <NavLink to="/about"   className={mobileNavClass} onClick={() => setMenuOpen(false)}>About Us</NavLink>

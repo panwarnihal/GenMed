@@ -19,8 +19,8 @@ function ScrollToTop() {
 /* Minimal fallback shown while BillAuditor chunk loads */
 function AuditorFallback() {
   return (
-    <div className="flex items-center justify-center min-h-[40vh] gap-3 text-slate-500">
-      <div className="w-6 h-6 rounded-full border-2 border-purple-500/40 border-t-purple-400 animate-spin" />
+    <div className="flex items-center justify-center min-h-[40vh] gap-3 text-muted-foreground">
+      <div className="w-6 h-6 rounded-full border-2 border-primary/40 border-t-primary animate-spin" />
       <span className="text-sm">Loading BillSense…</span>
     </div>
   );
@@ -29,24 +29,24 @@ function AuditorFallback() {
 /* Page shell: Navbar + content + footer */
 function Layout({ status, children }) {
   return (
-    <div className="min-h-screen text-slate-100 flex flex-col font-sans selection:bg-purple-500 selection:text-white relative bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-[#0a0a0c] to-black">
+    <div className="min-h-screen text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground relative bg-background">
       <Navbar status={status} />
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-10 relative z-10">
         {children}
       </main>
-      <footer className="border-t border-slate-800/80 bg-slate-900/40 py-8 relative z-10 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+      <footer className="border-t border-border/80 bg-card/40 py-8 relative z-10 mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="space-y-1 text-center sm:text-left">
             <p>
-              <strong className="text-slate-400">GenMed Platform</strong> — Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP) Mapping &amp; Price Transparency
+              <strong className="text-foreground">GenMed Platform</strong> — Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP) Mapping &amp; Price Transparency
             </p>
-            <p className="text-[11px] text-slate-600">
+            <p className="text-[11px] text-muted-foreground">
               Not affiliated with any pharmaceutical company. Open-source &amp; free to use.
             </p>
           </div>
-          <p className="text-[11px] text-slate-600 flex-shrink-0">
+          <p className="text-[11px] text-muted-foreground flex-shrink-0">
             API at{' '}
-            <code className="text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">
+            <code className="text-foreground bg-muted px-1.5 py-0.5 rounded">
               {import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}
             </code>
           </p>
