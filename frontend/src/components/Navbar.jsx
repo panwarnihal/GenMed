@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
-import { Pill, Menu, X } from 'lucide-react';
+import { Pill, Menu, X, Sun, Moon } from 'lucide-react';
 import GooeyNav from './GooeyNav';
 
 const NAV_ITEMS = [
@@ -17,6 +17,23 @@ export default function Navbar({ status }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
+
+  const [theme, setTheme] = useState(
+    localStorage.getItem('theme') || 'dark'
+  );
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Derive which nav item is active based on the current route
   const activeIndex = (() => {
@@ -93,15 +110,26 @@ export default function Navbar({ status }) {
             />
           </div>
 
-          {/* Hamburger (mobile only) */}
-          <button
-            id="nav-hamburger"
-            onClick={() => setMenuOpen((v) => !v)}
-            className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {/* Controls */}
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800/50 transition-colors"
+              aria-label="Toggle theme"
+            >
+              {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+
+            {/* Hamburger (mobile only) */}
+            <button
+              id="nav-hamburger"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="md:hidden p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </div>
 
