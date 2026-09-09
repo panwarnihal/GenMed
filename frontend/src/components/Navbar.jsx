@@ -71,15 +71,15 @@ export default function Navbar({ status }) {
         <div className="flex items-center justify-between h-16 gap-4">
 
           {/* Logo → home */}
-          <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
-            <div className="relative w-9 h-9">
-              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
-                <img src={logoImg} alt="GenMed Logo" className="w-full h-full object-cover" />
+          <Link to="/" className="flex items-center gap-4 flex-shrink-0 group">
+            <div className="relative">
+              <div className="h-12 md:h-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                <img src={logoImg} alt="GenMed Logo" className="h-full w-auto object-contain drop-shadow-lg" />
               </div>
               {/* Live status dot */}
               <div
                 title={status === 'online' ? 'API Online' : status === 'offline' ? 'API Offline' : 'Checking API…'}
-                className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background transition-colors duration-500 ${
+                className={`absolute bottom-0 -right-2 w-3.5 h-3.5 rounded-full border-2 border-background transition-colors duration-500 shadow-sm ${
                   status === 'online'   ? 'bg-emerald-400' :
                   status === 'offline'  ? 'bg-destructive' :
                   'bg-amber-400'
