@@ -32,7 +32,7 @@ function AuditorFallback() {
 function Layout({ status, children }) {
   return (
     <div className="min-h-screen text-foreground flex flex-col font-sans selection:bg-primary selection:text-primary-foreground relative bg-background">
-      <Navbar status={status} />
+      <Navbar />
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-10 relative z-10">
         {children}
       </main>

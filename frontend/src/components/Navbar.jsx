@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 /**
  * Sticky top nav — GooeyNav for desktop, slide-down for mobile.
  */
-export default function Navbar({ status }) {
+export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
@@ -76,26 +76,6 @@ export default function Navbar({ status }) {
               <div className="h-12 md:h-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
                 <img src={logoImg} alt="GenMed Logo" className="h-full w-auto object-contain drop-shadow-lg" />
               </div>
-              {/* Live status dot */}
-              <div
-                title={status === 'online' ? 'API Online' : status === 'offline' ? 'API Offline' : 'Checking API…'}
-                className={`absolute bottom-0 -right-2 w-3.5 h-3.5 rounded-full border-2 border-background transition-colors duration-500 shadow-sm ${
-                  status === 'online'   ? 'bg-emerald-400' :
-                  status === 'offline'  ? 'bg-destructive' :
-                  'bg-amber-400'
-                }`}
-              >
-                {status === 'online' && (
-                  <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
-                )}
-              </div>
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight gradient-text">GenMed</span>
-              <p className="text-[10px] text-muted-foreground font-medium -mt-0.5 hidden sm:block">
-                Indian Pharmaceutical Verification Platform
-              </p>
-            </div>
           </Link>
 
           {/* Desktop GooeyNav */}
