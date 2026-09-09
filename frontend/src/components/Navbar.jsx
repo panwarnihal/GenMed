@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, Link, useLocation } from 'react-router-dom';
 import { Pill, Menu, X, Sun, Moon } from 'lucide-react';
 import GooeyNav from './GooeyNav';
+import logoImg from '../assets/GenMed.png';
 
 const NAV_ITEMS = [
   { label: 'MediMatch', href: '/' },
@@ -72,8 +73,8 @@ export default function Navbar({ status }) {
           {/* Logo → home */}
           <Link to="/" className="flex items-center gap-3 flex-shrink-0 group">
             <div className="relative w-9 h-9">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
-                <Pill className="w-5 h-5 text-white" strokeWidth={2} />
+              <div className="w-9 h-9 rounded-xl overflow-hidden shadow-lg shadow-emerald-900/40 group-hover:scale-105 transition-transform duration-200">
+                <img src={logoImg} alt="GenMed Logo" className="w-full h-full object-cover" />
               </div>
               {/* Live status dot */}
               <div
