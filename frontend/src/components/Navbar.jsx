@@ -72,10 +72,9 @@ export default function Navbar() {
 
           {/* Logo → home */}
           <Link to="/" className="flex items-center gap-4 flex-shrink-0 group">
-            <div className="relative">
-              <div className="h-12 md:h-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-                <img src={logoImg} alt="GenMed Logo" className="h-full w-auto object-contain drop-shadow-lg" />
-              </div>
+            <div className="h-12 md:h-16 flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+              <img src={logoImg} alt="GenMed Logo" className="h-full w-auto object-contain drop-shadow-lg" />
+            </div>
           </Link>
 
           {/* Desktop GooeyNav */}
