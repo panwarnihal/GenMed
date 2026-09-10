@@ -14,13 +14,13 @@ async function fetchWithFallback(endpoint, options = {}) {
         if (fallbackRes.ok) return fallbackRes;
         return fallbackRes;
       } catch {
-        // fallback also failed — return original gateway response
+        // fallback also failed - return original gateway response
         return res;
       }
     }
     return res;
   } catch {
-    // Gateway is completely unreachable — try FastAPI directly
+    // Gateway is completely unreachable - try FastAPI directly
     try {
       const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
       return fallbackRes;
@@ -208,6 +208,39 @@ export async function getNearbyKendras(lat, lng, radius = 5000) {
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     throw new Error(err.detail || `Failed to fetch nearby kendras with status ${response.status}`);
+  }
+  return response.json();
+}
+
+/**
+ * GET /api/v1/reviews
+ * Fetch user reviews from MongoDB backend
+ * @returns {Promise<object>} { status, count, reviews }
+ */
+export async function fetchReviews() {
+  const response = await fetchWithFallback('/api/v1/reviews', { method: 'GET' });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to fetch reviews with status ${response.status}`);
+  }
+  return response.json();
+}
+
+/**
+ * POST /api/v1/reviews
+ * Submit a new user review to MongoDB backend
+ * @param {object} reviewData { name, email, rating, category, message }
+ * @returns {Promise<object>} { status, message, review }
+ */
+export async function submitReview(reviewData) {
+  const response = await fetchWithFallback('/api/v1/reviews', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(reviewData),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Failed to submit review with status ${response.status}`);
   }
   return response.json();
 }

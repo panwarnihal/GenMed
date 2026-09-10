@@ -33,10 +33,11 @@ app.add_middleware(
 )
 
 # Include Modular Routers
-from app.routes import mapping, scanner, kendras
+from app.routes import mapping, scanner, kendras, reviews
 app.include_router(mapping.router)
 app.include_router(scanner.router)
 app.include_router(kendras.router)
+app.include_router(reviews.router)
 
 # Establish connection to MongoDB Atlas database
 MONGO_URI = os.getenv("MONGO_URI")

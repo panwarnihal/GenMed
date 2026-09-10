@@ -12,7 +12,7 @@ import { uploadInvoice, uploadInvoiceImage, auditManualInvoice, verifyBatch, fet
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ANIMATED BACKGROUND GRID — subtle dot grid with floating glow orbs
+   ANIMATED BACKGROUND GRID - subtle dot grid with floating glow orbs
    ═══════════════════════════════════════════════════════════════════════════ */
 function AnimatedBackground() {
   return (
@@ -34,7 +34,7 @@ function AnimatedBackground() {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ANIMATED COUNTER — counts up from 0 to target
+   ANIMATED COUNTER - counts up from 0 to target
    ═══════════════════════════════════════════════════════════════════════════ */
 function AnimatedNumber({ value, prefix = '', decimals = 2 }) {
   const [displayed, setDisplayed] = useState(0);
@@ -56,7 +56,7 @@ function AnimatedNumber({ value, prefix = '', decimals = 2 }) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DONUT RING — animated SVG circle
+   DONUT RING - animated SVG circle
    ═══════════════════════════════════════════════════════════════════════════ */
 function DonutRing({ pct, colour, bgColour = '#1e293b', size = 80, strokeWidth = 8 }) {
   const r = (size - strokeWidth * 2) / 2;
@@ -78,7 +78,7 @@ function DonutRing({ pct, colour, bgColour = '#1e293b', size = 80, strokeWidth =
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PREMIUM METRIC CARD — with donut ring + animated counter
+   PREMIUM METRIC CARD - with donut ring + animated counter
    ═══════════════════════════════════════════════════════════════════════════ */
 function PremiumMetricCard({ icon: Icon, label, value, sub, colour, glowColour, donutPct, ringColour, delay = '0s' }) {
   return (
@@ -127,7 +127,7 @@ function PremiumMetricCard({ icon: Icon, label, value, sub, colour, glowColour, 
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   PROCESSING LOADER — cinematic AI pipeline animation
+   PROCESSING LOADER - cinematic AI pipeline animation
    ═══════════════════════════════════════════════════════════════════════════ */
 function ScannerLoader({ fileName }) {
   const [activeStep, setActiveStep] = useState(0);
@@ -467,7 +467,7 @@ export default function BillAuditor() {
         <p className="text-muted-foreground text-base sm:text-lg max-w-2xl mx-auto leading-relaxed">
           Upload a photo of your pharmacy invoice. Our Vision AI extracts every medicine,
           audits for illegal MRP overcharges, and maps affordable{' '}
-          <span className="text-emerald-400 font-medium">Jan Aushadhi</span> generic alternatives — instantly.
+          <span className="text-emerald-400 font-medium">Jan Aushadhi</span> generic alternatives - instantly.
         </p>
       </div>
 
@@ -895,7 +895,7 @@ export default function BillAuditor() {
                         </div>
                         <p className="text-sm text-red-400/80 leading-relaxed">
                           One or more medicines contain ingredients <strong className="text-red-300">banned by CDSCO</strong> (Central Drugs Standard Control Organisation).
-                          <strong className="text-red-200"> DO NOT CONSUME</strong> — consult a licensed physician immediately.
+                          <strong className="text-red-200"> DO NOT CONSUME</strong> - consult a licensed physician immediately.
                         </p>
                         <div className="space-y-2 pt-2">
                           {regulatoryWarnings.filter(w => w.is_banned).map((w, i) => (
@@ -992,7 +992,7 @@ export default function BillAuditor() {
                         {regulatoryWarnings.filter(w => !w.is_banned).map((w, i) => (
                           <div key={i} className="flex items-start gap-2 text-xs text-yellow-400/80">
                             <Siren className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-yellow-500" />
-                            <span><strong className="text-yellow-300">{w.brand_name}</strong> — {w.warning_message}</span>
+                            <span><strong className="text-yellow-300">{w.brand_name}</strong> - {w.warning_message}</span>
                           </div>
                         ))}
                       </div>
@@ -1207,7 +1207,7 @@ export default function BillAuditor() {
                                 +₹{audit.potential_savings.toFixed(2)}
                               </span>
                             ) : (
-                              <span className="text-slate-700">—</span>
+                              <span className="text-slate-700">-</span>
                             )}
                           </td>
                           {/* Inline Batch Verifier */}
@@ -1243,7 +1243,7 @@ export default function BillAuditor() {
                                 )}
                               </div>
                             ) : (
-                              <span className="text-slate-700 text-[10px]">—</span>
+                              <span className="text-slate-700 text-[10px]">-</span>
                             )}
                           </td>
                           <td className="py-5 px-4 text-center">

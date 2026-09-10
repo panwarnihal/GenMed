@@ -168,7 +168,7 @@ function NoMatchCard({ query }) {
 }
 
 /* ═══════════════════════════════════════
-   Result Card — premium comparison
+   Result Card - premium comparison
 ═══════════════════════════════════════ */
 function ResultCard({ result, billedPrice, query }) {
   if (!result.match_found) return <NoMatchCard query={query} />;
@@ -323,7 +323,7 @@ function ResultCard({ result, billedPrice, query }) {
 }
 
 /* ═══════════════════════════════════════
-   How it Works — Empty State
+   How it Works - Empty State
 ═══════════════════════════════════════ */
 const HOW_STEPS = [
   { icon: Search,       title: 'Search',        desc: 'Enter the brand name from your prescription or pharmacy bill.', color: 'purple' },
@@ -516,7 +516,7 @@ export default function GenericFinder({ status }) {
             Medi<span className="gf-gradient-text">Match</span>
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base max-w-md mx-auto">
-            Find affordable Jan Aushadhi generics for any branded medicine — instantly.
+            Find affordable Jan Aushadhi generics for any branded medicine - instantly.
           </p>
         </div>
 
@@ -530,7 +530,7 @@ export default function GenericFinder({ status }) {
           <div className="flex items-start gap-3 px-4 py-3 rounded-xl bg-red-500/8 border border-red-500/25 animate-[fadeIn_0.3s_ease-out] mt-4 max-w-xl mx-auto">
             <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-red-400 leading-relaxed">
-              <strong>Backend offline</strong> — Run <code className="bg-red-500/10 px-1 rounded">start-all.ps1</code> to start GenMed servers.
+              <strong>Backend offline</strong> - Run <code className="bg-red-500/10 px-1 rounded">start-all.ps1</code> to start GenMed servers.
             </p>
           </div>
         )}

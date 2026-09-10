@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 ];
 
 /**
- * Sticky top nav — GooeyNav for desktop, slide-down for mobile.
+ * Sticky top nav - GooeyNav for desktop, slide-down for mobile.
  */
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);

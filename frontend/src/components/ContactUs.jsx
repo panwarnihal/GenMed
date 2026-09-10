@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   Star, Send, MessageSquare, Mail, GitBranch, Globe,
-  CheckCircle2, Loader2, ChevronDown, ChevronUp,
+  CheckCircle2, Loader2, ChevronDown, ChevronUp, AlertCircle,
 } from 'lucide-react';
+import { fetchReviews, submitReview } from '../api';
 
 /* ── Star rating widget ── */
 function StarRating({ value, onChange }) {
@@ -44,7 +45,7 @@ function ReviewCard({ review }) {
     'from-amber-500 to-orange-500',
     'from-rose-500 to-pink-600',
   ];
-  const colour = colours[review.name.charCodeAt(0) % colours.length];
+  const colour = colours[(review.name || 'Anonymous').charCodeAt(0) % colours.length];
 
   return (
     <div className="glass-card rounded-2xl p-5 border border-border/40 space-y-3 hover:border-border/60 transition-all duration-200">
@@ -96,7 +97,7 @@ function Toast({ show, onHide }) {
     >
       <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
       <div>
-        <p className="text-sm font-semibold">Review submitted!</p>
+        <p className="text-sm font-semibold">Review saved to MongoDB!</p>
         <p className="text-xs text-emerald-400/80">Thank you for your feedback 🙏</p>
       </div>
     </div>
@@ -105,89 +106,70 @@ function Toast({ show, onHide }) {
 
 const CATEGORIES = ['General Feedback', 'Bug Report', 'Feature Request', 'Medicine Data', 'Praise'];
 
-const SEED_REVIEWS = [
-  {
-    id: 'seed-1',
-    name: 'Dr. Priya Sharma',
-    rating: 5,
-    category: 'Praise',
-    message:
-      'Absolutely brilliant tool! I recommend this to all my patients who are on long-term medications. The savings are incredible — up to 85% in some cases.',
-    date: 'Aug 2026',
-  },
-  {
-    id: 'seed-2',
-    name: 'Rahul Verma',
-    rating: 4,
-    category: 'General Feedback',
-    message:
-      'Very useful platform. Found the Jan Aushadhi equivalent for my mother\'s BP medicines in seconds. Would love an offline mode or a mobile app.',
-    date: 'Jul 2026',
-  },
-  {
-    id: 'seed-3',
-    name: 'Ananya Iyer',
-    rating: 5,
-    category: 'Praise',
-    message:
-      'The Bill Auditor caught an overcharge of ₹120 at our local pharmacy! This tool is doing something really important for India.',
-    date: 'Jul 2026',
-  },
-];
-
 /* ══════════════════════════════════
    Main ContactUs Section
 ══════════════════════════════════ */
 export default function ContactUs() {
   const [form, setForm] = useState({ name: '', email: '', category: 'General Feedback', rating: 0, message: '' });
   const [submitting, setSubmitting] = useState(false);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [reviewsError, setReviewsError] = useState('');
   const [toast, setToast] = useState(false);
-  const [reviews, setReviews] = useState(() => {
-    try {
-      const saved = JSON.parse(localStorage.getItem('gm_reviews') || '[]');
-      return [...SEED_REVIEWS, ...saved];
-    } catch {
-      return SEED_REVIEWS;
-    }
-  });
+  const [reviews, setReviews] = useState([]);
   const [showAll, setShowAll] = useState(false);
+
+  const loadReviewsFromDb = async () => {
+    setLoadingReviews(true);
+    setReviewsError('');
+    try {
+      const data = await fetchReviews();
+      setReviews(data.reviews || []);
+    } catch (err) {
+      setReviewsError(err.message || 'Failed to load reviews from database.');
+    } finally {
+      setLoadingReviews(false);
+    }
+  };
+
+  useEffect(() => {
+    loadReviewsFromDb();
+  }, []);
 
   const handleChange = (field) => (e) =>
     setForm((f) => ({ ...f, [field]: e.target.value }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.rating) return;
+    if (!form.rating || !form.message.trim()) return;
 
     setSubmitting(true);
-    // Simulate a brief network delay
-    await new Promise((r) => setTimeout(r, 900));
+    try {
+      const res = await submitReview({
+        name: form.name.trim() || 'Anonymous',
+        email: form.email.trim(),
+        rating: form.rating,
+        category: form.category,
+        message: form.message.trim(),
+      });
 
-    const newReview = {
-      id: `user-${Date.now()}`,
-      name: form.name.trim() || 'Anonymous',
-      email: form.email,
-      rating: form.rating,
-      category: form.category,
-      message: form.message.trim(),
-      date: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-    };
+      if (res.review) {
+        setReviews((prev) => [res.review, ...prev]);
+      } else {
+        await loadReviewsFromDb();
+      }
 
-    const updatedReviews = [newReview, ...reviews];
-    setReviews(updatedReviews);
-
-    // Persist only user reviews (not seeds) to localStorage
-    const userReviews = updatedReviews.filter((r) => r.id.startsWith('user-'));
-    localStorage.setItem('gm_reviews', JSON.stringify(userReviews));
-
-    setForm({ name: '', email: '', category: 'General Feedback', rating: 0, message: '' });
-    setSubmitting(false);
-    setToast(true);
+      setForm({ name: '', email: '', category: 'General Feedback', rating: 0, message: '' });
+      setToast(true);
+    } catch (err) {
+      alert(err.message || 'Failed to save review to database.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const avgRating = reviews.length
     ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
-    : '—';
+    : '-';
 
   const visibleReviews = showAll ? reviews : reviews.slice(0, 3);
 
@@ -382,8 +364,28 @@ export default function ContactUs() {
 
             {/* Review cards */}
             <div className="space-y-3">
-              {visibleReviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
+              {loadingReviews && (
+                <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground flex flex-col items-center gap-2">
+                  <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                  <p className="text-xs">Loading live reviews from database…</p>
+                </div>
+              )}
+
+              {reviewsError && !loadingReviews && (
+                <div className="glass-card rounded-2xl p-4 text-xs text-red-400 border border-red-500/20 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  <span>{reviewsError}</span>
+                </div>
+              )}
+
+              {!loadingReviews && !reviewsError && reviews.length === 0 && (
+                <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground text-xs">
+                  No reviews in database yet. Be the first to submit feedback!
+                </div>
+              )}
+
+              {!loadingReviews && visibleReviews.map((r, i) => (
+                <ReviewCard key={r._id || r.created_at || i} review={r} />
               ))}
             </div>
 

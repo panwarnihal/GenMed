@@ -111,6 +111,36 @@ app.post("/api/v1/mapping/match", async (req, res) => {
   }
 });
 
+/**
+ * GET /api/v1/reviews
+ * Forwards review retrieval queries to FastAPI.
+ */
+app.get("/api/v1/reviews", async (req, res) => {
+  try {
+    const response = await axios.get(`${FASTAPI_URL}/api/v1/reviews`, { params: req.query });
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    const statusCode = error.response?.status || 500;
+    const errorData = error.response?.data || { detail: "FastAPI microservice unreachable." };
+    return res.status(statusCode).json(errorData);
+  }
+});
+
+/**
+ * POST /api/v1/reviews
+ * Forwards review submissions to FastAPI.
+ */
+app.post("/api/v1/reviews", async (req, res) => {
+  try {
+    const response = await axios.post(`${FASTAPI_URL}/api/v1/reviews`, req.body);
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    const statusCode = error.response?.status || 500;
+    const errorData = error.response?.data || { detail: "FastAPI microservice unreachable." };
+    return res.status(statusCode).json(errorData);
+  }
+});
+
 // Serve frontend static files
 const path = require("path");
 app.use(express.static(path.join(__dirname, "dist")));

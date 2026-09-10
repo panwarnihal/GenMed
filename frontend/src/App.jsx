@@ -6,7 +6,7 @@ import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
 import { checkHealth } from './api';
 
-// Lazy-load the heavy BillAuditor (65 KB) — only fetched when user navigates to /auditor
+// Lazy-load the heavy BillAuditor (65 KB) - only fetched when user navigates to /auditor
 const BillAuditor = lazy(() => import('./components/BillAuditor'));
 // Lazy-load KendraLocator
 const KendraLocator = lazy(() => import('./components/KendraLocator'));
@@ -40,7 +40,7 @@ function Layout({ status, children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div className="space-y-1 text-center sm:text-left">
             <p>
-              <strong className="text-foreground">GenMed Platform</strong> — Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP) Mapping &amp; Price Transparency
+              <strong className="text-foreground">GenMed Platform</strong> - Pradhan Mantri Bhartiya Janaushadhi Pariyojana (PMBJP) Mapping &amp; Price Transparency
             </p>
             <p className="text-[11px] text-muted-foreground">
               Not affiliated with any pharmaceutical company. Open-source &amp; free to use.

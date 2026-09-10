@@ -14,7 +14,7 @@ const features = [
     glow: 'shadow-emerald-900/40',
     gradient: 'from-emerald-500 to-teal-600',
     title: 'Verified Data',
-    desc: 'Our database is sourced directly from PMBJP and government pharmaceutical records — always accurate, always updated.',
+    desc: 'Our database is sourced directly from PMBJP and government pharmaceutical records - always accurate, always updated.',
   },
   {
     Icon: TrendingDown,
@@ -75,7 +75,7 @@ export default function AboutUs() {
             <span className="gradient-text">Affordable</span> for All
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            GenMed is India's open pharmaceutical transparency platform — helping millions find
+            GenMed is India's open pharmaceutical transparency platform - helping millions find
             government-approved Jan Aushadhi generic alternatives and reclaim fair medicine pricing.
           </p>
         </div>
