@@ -465,18 +465,6 @@ export default function GenericFinder({ status }) {
     performSearch(suggestion, salt);
   };
 
-  const loadDemo = (demo) => {
-    setQuery(demo.query);
-    setSalt(demo.salt);
-    setPrice(String(demo.price));
-    setResult(null);
-    setError(null);
-    setShowDropdown(false);
-    setSuggestions([]);
-    setShowExtraFields(true);
-    setTimeout(() => performSearch(demo.query, demo.salt), 0);
-  };
-
   const handleQueryKeyDown = (e) => {
     if (!showDropdown || suggestions.length === 0) return;
     if (e.key === 'ArrowDown') {
@@ -677,42 +665,27 @@ export default function GenericFinder({ status }) {
           )}
         </form>
 
-        {/* ── Demo pills ── */}
-        <div className="flex flex-wrap justify-center items-center gap-2 mb-8 animate-[gfSlideUp_0.6s_ease-out]">
-          <span className="text-[11px] text-slate-600 mr-1">Try:</span>
-          {DEMO_CASES.map((d) => (
-            <button
-              key={d.query}
-              id={`demo-${d.query.replace(/\s+/g, '-').toLowerCase()}`}
-              onClick={() => loadDemo(d)}
-              className="gf-demo-pill"
-            >
-              <Pill className="w-3 h-3 text-emerald-500/60" />
-              {d.query}
-            </button>
-          ))}
-        </div>
-
         {/* ── Recent history pills ── */}
         {history.length > 0 && (
-          <div className="flex flex-wrap justify-center items-center gap-2 -mt-4 mb-6">
-            <span className="text-[10px] text-slate-700 flex items-center gap-1">
-              <Clock className="w-2.5 h-2.5" /> Recent:
+          <div className="flex flex-wrap justify-center items-center gap-2 mt-4 mb-6">
+            <span className="text-[11px] font-medium text-muted-foreground flex items-center gap-1.5">
+              <Clock className="w-3 h-3 text-purple-400" /> Recent:
             </span>
             {history.map((h) => (
               <button
                 key={h}
                 onClick={() => { setQuery(h); performSearch(h, salt); }}
-                className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-900/60 border border-border/80 text-slate-600 hover:border-purple-500/30 hover:text-slate-400 transition-all"
+                className="text-[11px] font-medium px-3 py-1 rounded-full bg-muted/80 hover:bg-muted border border-border text-foreground hover:border-purple-500/40 hover:text-primary transition-all shadow-sm"
               >
                 {h}
               </button>
             ))}
             <button
               onClick={() => { clearHistory(); setHistory([]); }}
-              className="text-[10px] text-slate-700 hover:text-red-400 transition-colors"
+              className="p-1 rounded-full text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors"
+              title="Clear search history"
             >
-              <X className="w-2.5 h-2.5" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
