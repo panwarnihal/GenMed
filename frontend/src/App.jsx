@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import GenericFinder from './components/GenericFinder';
 import AboutUs from './components/AboutUs';
 import ContactUs from './components/ContactUs';
+import AgentCopilot from './components/AgentCopilot';
 import { checkHealth } from './api';
 
 // Lazy-load the heavy BillAuditor (65 KB) - only fetched when user navigates to /auditor
@@ -104,6 +105,7 @@ export default function App() {
           <Layout status={status}><ContactUs /></Layout>
         } />
       </Routes>
+      <AgentCopilot />
     </BrowserRouter>
   );
 }

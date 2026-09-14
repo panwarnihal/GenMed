@@ -56,3 +56,4 @@ rapidfuzz
 opencv-python-headless
 cachetools==5.5.2
 slowapi==0.1.9
+openai
