@@ -186,7 +186,7 @@ function AutocompleteInput({ onAdd }) {
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
           onFocus={() => suggestions.length > 0 && setShowDropdown(true)}
-          className="w-full pl-10 pr-4 py-3 bg-muted/50 border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+          className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl text-sm text-foreground caret-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
           id="medicheck-search-input"
           autoComplete="off"
         />
@@ -194,7 +194,7 @@ function AutocompleteInput({ onAdd }) {
       {showDropdown && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute z-50 top-full mt-1.5 left-0 right-0 bg-card border border-border rounded-xl shadow-2xl shadow-black/30 overflow-hidden animate-fade-in"
+          className="absolute z-[100] top-full mt-1.5 left-0 right-0 bg-popover border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden animate-fade-in"
         >
           {suggestions.map((name, i) => (
             <button
@@ -646,7 +646,7 @@ export default function MediCheck() {
         <HeroSection />
 
         {/* ── Input Section ── */}
-        <div className="glass-card rounded-2xl border border-border/60 p-5 sm:p-6 mb-6 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+        <div className="glass-card rounded-2xl border border-border/60 p-5 sm:p-6 mb-6 animate-slide-up relative z-20" style={{ animationDelay: '0.05s' }}>
           <div className="flex items-center gap-2.5 mb-4">
             <ScanLine className="w-4 h-4 text-purple-400" />
             <h2 className="text-sm font-semibold text-foreground">Add Medicines</h2>

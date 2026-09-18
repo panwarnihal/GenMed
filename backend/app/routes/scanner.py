@@ -393,8 +393,18 @@ async def _process_audit_pipeline(
         )
 
         canonical_salt = generate_canonical_salt_key(item.extracted_salt if item.extracted_salt else item.brand_name)
-        reg_status_dict = check_regulatory_status(canonical_salt)
-        reg_status = RegulatoryStatus(**reg_status_dict)
+        reg_results = check_regulatory_status(canonical_salt, medicine_name=item.brand_name, batch_number=item.batch_number)
+        
+        # Consolidate multiple warnings into the worst-case status for the frontend
+        status_priority = {"BANNED": 1, "NSQ_FLAGGED": 2, "SCHEDULE_H1": 3, "APPROVED": 4}
+        worst_result = min(reg_results, key=lambda r: status_priority.get(r.get("status"), 4))
+        
+        # If there are multiple warnings, join their messages
+        warnings = [r.get("warning_message") for r in reg_results if r.get("warning_message")]
+        if len(warnings) > 1:
+            worst_result["warning_message"] = " | ".join(warnings)
+
+        reg_status = RegulatoryStatus(**worst_result)
 
         audited_line = AuditedLineItem(
             brand_name=item.brand_name,

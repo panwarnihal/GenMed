@@ -229,7 +229,8 @@ class MilestoneAuditor:
     # -------------------------------------------------------------------------
     def audit_clinical_safety_and_regulatory(self):
         # Claim 4.1: Banned combination flagged with is_banned: True
-        banned_res = check_regulatory_status("nimesulide|pioglitazone")
+        banned_results = check_regulatory_status("nimesulide|pioglitazone")
+        banned_res = banned_results[0] if banned_results else {}
         banned_passed = (banned_res.get("status") == "BANNED" and banned_res.get("is_banned") is True)
 
         self.log_result(
@@ -241,7 +242,8 @@ class MilestoneAuditor:
         )
 
         # Claim 4.2: Schedule H1 prescription warning
-        h1_res = check_regulatory_status("tramadol")
+        h1_results = check_regulatory_status("tramadol")
+        h1_res = h1_results[0] if h1_results else {}
         h1_passed = (h1_res.get("status") == "SCHEDULE_H1" and h1_res.get("is_banned") is False and h1_res.get("warning_message") is not None)
 
         self.log_result(

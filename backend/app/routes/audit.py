@@ -280,16 +280,18 @@ async def run_comprehensive_audit(
                 alt.drug_code = generic_doc.get("drug_code", "")
 
             # ── Stage 3: Regulatory / NSQ check ──────────────────────────
-            reg_result = check_regulatory_status(canonical_key)
-            if reg_result.get("is_banned") or reg_result.get("status") == "SCHEDULE_H1":
-                nsq_warnings.append(NSQWarning(
-                    medicine=clean_name,
-                    status=reg_result.get("status", "FLAGGED"),
-                    warning_message=reg_result.get(
-                        "warning_message",
-                        f"{clean_name} has been flagged by CDSCO regulations."
-                    ),
-                ))
+            reg_results = check_regulatory_status(canonical_key, medicine_name=clean_name)
+            for reg_result in reg_results:
+                reg_status = reg_result.get("status", "APPROVED")
+                if reg_result.get("is_banned") or reg_status in ("SCHEDULE_H1", "NSQ_FLAGGED"):
+                    nsq_warnings.append(NSQWarning(
+                        medicine=clean_name,
+                        status=reg_status,
+                        warning_message=reg_result.get(
+                            "warning_message",
+                            f"{clean_name} has been flagged by CDSCO regulations."
+                        ),
+                    ))
 
             # ── Stage 4: Therapeutic class tracking ──────────────────────
             tc = _classify_therapeutic(canonical_key)

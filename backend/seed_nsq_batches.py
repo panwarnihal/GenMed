@@ -36,18 +36,18 @@ else:
             for _, row in df.iterrows():
                 batch_number = str(row.get("batch_number", "")).strip()
                 manufacturer = str(row.get("manufacturer", "")).strip()
-                drug_name = str(row.get("drug_name", "")).strip()
-                reason_for_recall = str(row.get("reason_for_recall", "")).strip()
+                medicine_name = str(row.get("medicine_name", "")).strip()
+                failure_reason = str(row.get("failure_reason", "")).strip()
                 
                 if pd.notna(row.get("batch_number")) and batch_number and batch_number != "nan":
                     doc = {
                         "batch_number": batch_number,
                         "manufacturer": manufacturer,
                     }
-                    if drug_name and drug_name != "nan":
-                        doc["drug_name"] = drug_name
-                    if reason_for_recall and reason_for_recall != "nan":
-                        doc["reason_for_recall"] = reason_for_recall
+                    if medicine_name and medicine_name != "nan":
+                        doc["medicine_name"] = medicine_name
+                    if failure_reason and failure_reason != "nan":
+                        doc["failure_reason"] = failure_reason
                     
                     operations.append(
                         UpdateOne(
