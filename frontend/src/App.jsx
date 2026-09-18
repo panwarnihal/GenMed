@@ -11,6 +11,8 @@ import { checkHealth } from './api';
 const BillAuditor = lazy(() => import('./components/BillAuditor'));
 // Lazy-load KendraLocator
 const KendraLocator = lazy(() => import('./components/KendraLocator'));
+// Lazy-load MediCheck prescription analyzer
+const MediCheck = lazy(() => import('./components/MediCheck'));
 
 /* Scroll to top whenever the route changes */
 function ScrollToTop() {
@@ -88,6 +90,13 @@ export default function App() {
           <Layout status={status}>
             <Suspense fallback={<AuditorFallback />}>
               <BillAuditor />
+            </Suspense>
+          </Layout>
+        } />
+        <Route path="/medicheck" element={
+          <Layout status={status}>
+            <Suspense fallback={<div className="flex items-center justify-center min-h-[40vh] gap-3 text-muted-foreground"><div className="w-6 h-6 rounded-full border-2 border-primary/40 border-t-primary animate-spin" /><span className="text-sm">Loading MediCheck…</span></div>}>
+              <MediCheck />
             </Suspense>
           </Layout>
         } />

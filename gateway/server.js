@@ -141,6 +141,25 @@ app.post("/api/v1/reviews", async (req, res) => {
   }
 });
 
+/**
+ * POST /api/v1/audit/comprehensive
+ * Forwards MediCheck comprehensive prescription audit requests to FastAPI.
+ */
+app.post("/api/v1/audit/comprehensive", async (req, res) => {
+  try {
+    console.log(`[Gateway] Routing MediCheck comprehensive audit to FastAPI`);
+    const response = await axios.post(
+      `${FASTAPI_URL}/api/v1/audit/comprehensive`,
+      req.body
+    );
+    return res.status(response.status).json(response.data);
+  } catch (error) {
+    const statusCode = error.response?.status || 500;
+    const errorData = error.response?.data || { detail: "FastAPI microservice unreachable." };
+    return res.status(statusCode).json(errorData);
+  }
+});
+
 // Serve frontend static files
 const path = require("path");
 app.use(express.static(path.join(__dirname, "dist")));

@@ -244,3 +244,25 @@ export async function submitReview(reviewData) {
   }
   return response.json();
 }
+
+/**
+ * POST /api/v1/audit/comprehensive
+ * MediCheck: Run a comprehensive audit on a list of medicine names
+ * @param {string[]} medicines - Array of medicine brand names
+ * @returns {Promise<object>} ComprehensiveAuditResponse JSON
+ */
+export async function runComprehensiveAudit(medicines) {
+  if (!medicines || !medicines.length) {
+    throw new Error('At least one medicine name is required');
+  }
+  const response = await fetchWithFallback('/api/v1/audit/comprehensive', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ medicines }),
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.detail || `Comprehensive audit failed with status ${response.status}`);
+  }
+  return response.json();
+}
