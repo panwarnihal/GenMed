@@ -145,9 +145,15 @@ app.post("/api/v1/reviews", async (req, res) => {
 const path = require("path");
 app.use(express.static(path.join(__dirname, "dist")));
 
-// Catch-all to route to React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "dist", "index.html"));
+// Catch-all to route to React app if dist exists
+app.use((req, res) => {
+  const fs = require("fs");
+  const indexPath = path.join(__dirname, "dist", "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: "Not Found", message: `Route ${req.originalUrl} not recognized.` });
+  }
 });
 
 // Start Gateway Server

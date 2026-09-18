@@ -17,6 +17,8 @@ print(f"Seeding CDSCO Regulations into database: '{db_name}'...")
 # -------------------------------------------------------------------------
 # 2. READ CDSCO REGULATIONS FROM CSV
 # -------------------------------------------------------------------------
+from utils_hasher import generate_canonical_salt_key
+
 csv_path = "data/raw/cdsco_master_list.csv"
 
 operations = []
@@ -28,9 +30,12 @@ if os.path.exists(csv_path):
         rule_type = str(row.get("rule_type", "")).strip()
         status = str(row.get("status", "")).strip()
         message = str(row.get("message", "")).strip()
+        drug_name = str(row.get("drug_name", "")).strip()
         
         if rule_type == "BANNED_FDC":
             csk = str(row.get("canonical_salt_key", "")).strip()
+            if not csk or csk == "nan":
+                csk = generate_canonical_salt_key(drug_name)
             if csk and csk != "nan":
                 operations.append(
                     UpdateOne(
@@ -38,8 +43,9 @@ if os.path.exists(csv_path):
                         {"$set": {
                             "rule_type": rule_type,
                             "canonical_salt_key": csk,
-                            "status": status,
-                            "message": message
+                            "drug_name": drug_name,
+                            "status": status or "BANNED",
+                            "message": message or f"Banned Fixed Dose Combination: {drug_name}"
                         }},
                         upsert=True
                     )
