@@ -25,7 +25,7 @@ def locate_nearby_kendra(location_name: str) -> str:
     """
     return f"Nearby Kendra in {location_name} is located at Main Market, {location_name}."
 
-@router.post("/chat")
+@router.post("/api/v1/agent/chat")
 async def chat_with_agent(request: ChatRequest):
     provider = get_llm_provider()
     tools = [search_generic_medicine, locate_nearby_kendra]

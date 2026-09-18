@@ -21,7 +21,7 @@ def get_nearby_kendras(
     """
     Finds nearby PMBJK stores using OpenStreetMap Overpass API. Falls back to MongoDB.
     """
-    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_url = "https://overpass-api.de/api/interpreter"
     query = f"""
     [out:json];
     node["amenity"="pharmacy"]["name"~"Jan Aushadhi|Janaushadhi|PMBJK", i](around:{radius},{lat},{lng});
@@ -36,8 +36,8 @@ def get_nearby_kendras(
             "User-Agent": "GenMed-App/1.0 (contact@example.com)",
             "Accept": "*/*"
         }
-        # Short timeout so the user isn't waiting forever if API is blocked
-        response = requests.get(overpass_url, params={'data': query.strip()}, headers=headers, timeout=5)
+        # Increased timeout to 15s to allow for slower public API responses
+        response = requests.get(overpass_url, params={'data': query.strip()}, headers=headers, timeout=15)
         response.raise_for_status()
         data = response.json()
         
