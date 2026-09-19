@@ -27,10 +27,9 @@ def locate_nearby_kendra(location_name: str) -> str:
 
 @router.post("/api/v1/agent/chat")
 async def chat_with_agent(request: ChatRequest):
-    provider = get_llm_provider()
-    tools = [search_generic_medicine, locate_nearby_kendra]
-    
     try:
+        provider = get_llm_provider()
+        tools = [search_generic_medicine, locate_nearby_kendra]
         response = await provider.generate_tool_response(request.prompt, tools)
         return response
     except Exception as e:

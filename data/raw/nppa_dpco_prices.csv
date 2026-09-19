@@ -1,0 +1,931 @@
+salt_composition,ceiling_price
+halothane inhalation 1 ml 6|1,6.5
+isoflurane inhalation 1 ml 11|1,11.61
+ketamine injection 10 mg/ml 1 ml 11|10,11.76
+ketamine injection 10 mg/ml 1 ml 11|50,11.61
+nitrous oxide inhalation cubic meter 259|cubic meter 259.43,259.43
+propofol injection 10 mg/ml 1 ml 8|10,8.02
+sevoflurane inhalation 1 ml 33|1,33.21
+thiopentone powder for injection 0|0.5,45.23
+thiopentone powder for injection 0|1,54.87
+bupivacaine injection 0|0.25%,2.72
+bupivacaine injection 0|0.5%,4.35
+bupivacaine injection 0|0.5%,6.89
+lignocaine topical forms 2-5,1.20
+lignocaine topical forms 2-5|1%,8.82
+lignocaine topical forms 2-5|2%,1.10
+lignocaine topical forms 2-5|5%,4.09
+lignocaine (a) + injection 1|1%,0.50
+lignocaine (a) + injection 1|2%,1.02
+prilocaine (a) + lignocaine cream 2|2.5%,22.71
+atropine injection 0|0.6,4.65
+glycopyrrolate injection 0|0.2,13.65
+midazolam tablet 7|7.5,24.92
+midazolam tablet 7|1,6.56
+midazolam tablet 7|5,16.12
+morphine injection 10 mg/ml 1 ml 26|10,26.37
+morphine injection 10 mg/ml 1 ml 26|15,32.91
+acetylsalicylic acid tablet 300 mg to 500 mg|0.20,0.20
+acetylsalicylic acid tablet 300 mg to 500 mg|1.34,1.34
+acetylsalicylic acid tablet 300 mg to 500 mg|1.36,1.36
+acetylsalicylic acid tablet 300 mg to 500 mg|100,0.19
+acetylsalicylic acid tablet 300 mg to 500 mg|150,0.45
+acetylsalicylic acid tablet 300 mg to 500 mg|325mg,0.61
+acetylsalicylic acid tablet 300 mg to 500 mg|350mg,0.34
+acetylsalicylic acid tablet 300 mg to 500 mg|75,0.34
+diclofenac tablet 50 mg 1 tablet 2|50,2.13
+diclofenac tablet 50 mg 1 tablet 2|50,0.68
+diclofenac tablet 50 mg 1 tablet 2|25,1.63
+ibuprofen tablet 200 mg 1 tablet 0|200,0.65
+ibuprofen tablet 200 mg 1 tablet 0|200,2.97
+ibuprofen tablet 200 mg 1 tablet 0|400,1.15
+ibuprofen tablet 200 mg 1 tablet 0|400,1.17
+ibuprofen tablet 200 mg 1 tablet 0|100,0.21
+mefenamic acid capsule 250 mg|250,2.15
+mefenamic acid capsule 250 mg|500,2.72
+mefenamic acid capsule 250 mg|100,0.58
+paracetamol tablet 500 mg 1 tablet 1|500,1.01
+paracetamol tablet 500 mg 1 tablet 1|650,2.04
+paracetamol tablet 500 mg 1 tablet 1|100,0.56
+paracetamol tablet 500 mg 1 tablet 1|120,0.59
+paracetamol tablet 500 mg 1 tablet 1|125,0.38
+paracetamol tablet 500 mg 1 tablet 1|150,0.64
+paracetamol tablet 500 mg 1 tablet 1|250,0.66
+paracetamol tablet 500 mg 1 tablet 1|500,0.71
+paracetamol tablet 500 mg 1 tablet 1|650,0.58
+paracetamol tablet 500 mg 1 tablet 1,1.79
+paracetamol tablet 500 mg 1 tablet 1|150,3.41
+ml)|150,4.66
+ml)|150,7.16
+ml)|150,9.67
+ml)|150,12.17
+ml)|150,14.68
+ml)|150,19.68
+ml)|80,7.22
+ml)|170,8.54
+fentanyl injection 50 mcg/ml 1 ml 25|50,25.21
+morphine tablet 10 mg 1 tablet 5|10,5.91
+morphine tablet 10 mg 1 tablet 5|30,6.05
+morphine tablet 10 mg 1 tablet 5|10,26.37
+morphine tablet 10 mg 1 tablet 5|15,32.91
+tramadol capsule 50 mg 1 capsule 5|50,5.01
+tramadol capsule 50 mg 1 capsule 5|100,10.66
+tramadol capsule 50 mg 1 capsule 5|100,21.84
+tramadol capsule 50 mg 1 capsule 5|50,8.95
+tramadol capsule 50 mg 1 capsule 5|50,1.38
+tramadol capsule 50 mg 1 capsule 5|50,11.63
+allopurinol tablet 100 mg 1 tablet 2|100,2.12
+allopurinol tablet 100 mg 1 tablet 2|300,8.31
+colchicine tablet 0|0.5,3.46
+azathioprine tablet 50 mg 1 tablet 11|50,11.26
+hydroxychloroquine tablet 200 mg 1 tablet 6|200,6.58
+hydroxychloroquine tablet 200 mg 1 tablet 6|400,13.26
+leflunomide tablet 10 mg 1 tablet 11|10,11.11
+leflunomide tablet 10 mg 1 tablet 11|20,21.69
+methotrexate injection 25 mg/ml 1 ml 53|25,53.41
+methotrexate injection 25 mg/ml 1 ml 53|50,44.47
+methotrexate injection 25 mg/ml 1 ml 53|10,13.48
+methotrexate injection 25 mg/ml 1 ml 53|2.5,5.32
+methotrexate injection 25 mg/ml 1 ml 53|7.5,12.86
+methotrexate injection 25 mg/ml 1 ml 53|5,9.29
+sulfasalazine tablet 500 mg 1 tablet 4|500,4.42
+adrenaline injection 1 mg/ml 1 ml 17|1,17.38
+cetirizine tablet 10 mg 1 tablet 1|10,1.84
+cetirizine tablet 10 mg 1 tablet 1|10,2.64
+cetirizine tablet 10 mg 1 tablet 1|5,0.65
+chlorpheniramine tablet 4 mg 1 tablet 0|4,0.1
+dexamethasone tablet 0|0.5,0.21
+dexamethasone tablet 0|4,15.29
+dexamethasone tablet 0|4,10.35
+dexamethasone tablet 0|4,29.31
+dexamethasone tablet 0|4,39.17
+hydrocortisone powder for injection 100 mg each pack 43|100,43.21
+pheniramine injection 22|22.75,2.54
+pheniramine injection 22|22.75,1.89
+prednisolone drops 1|1%,5.58
+prednisolone drops 1|20,3.98
+prednisolone drops 1|15,0.83
+prednisolone drops 1|5,0.48
+prednisolone drops 1|10,1.09
+prednisolone drops 1|20,2.17
+prednisolone drops 1|40,3.12
+prednisolone drops 1|5,0.62
+atropine ointment 1|1%,4.20
+atropine ointment 1|0.6,4.65
+atropine ointment 1|1%,3.81
+calcium gluconate injection 100 mg/ml 1 ml 0|100,0.61
+desferrioxamine powder for injection 500 mg each pack 178|500,178.55
+dimercaprol injection 50 mg/ml 1 ml 222|50,222.22
+methylthioninium injection 10 mg/ml 1 ml 24|10,24.20
+n-acetylcysteine sachet 200 mg 1 gm 9|200,9.99
+n-acetylcysteine sachet 200 mg 1 gm 9|200,24.88
+naloxone injection 0|0.4,96.32
+neostigmine injection 0|0.5,4.83
+neostigmine injection 0|15,5.18
+penicillamine capsule 250 mg 1 capsule 16|250,16.50
+pralidoxime chloride (2- injection 25 mg/ml 1 ml 4|25,4.14
+snake venom antiserum|each pack (10,480.46
+snake venom antiserum|10,618.71
+sodium nitrite injection 30 mg/ml 1 ml 28|30,28.85
+carbamazepine tablet 100 mg 1 tablet 1|100,1.13
+carbamazepine tablet 100 mg 1 tablet 1|200,1.55
+carbamazepine tablet 100 mg 1 tablet 1|200,2.59
+carbamazepine tablet 100 mg 1 tablet 1|400,3.67
+carbamazepine tablet 100 mg 1 tablet 1|400,5.11
+carbamazepine tablet 100 mg 1 tablet 1|100,0.32
+clobazam tablet 5 mg 1 tablet 5|5,5.70
+clobazam tablet 5 mg 1 tablet 5|10,10.04
+diazepam injection 5 mg/ml 1 ml 6|5,6.72
+diazepam injection 5 mg/ml 1 ml 6|2,3.03
+diazepam injection 5 mg/ml 1 ml 6|5,6.63
+diazepam injection 5 mg/ml 1 ml 6|2,1.67
+diazepam injection 5 mg/ml 1 ml 6|5,1.58
+levetiracetam tablet 250 mg 1 tablet 6|250,6.49
+levetiracetam tablet 250 mg 1 tablet 6|500,13.13
+levetiracetam tablet 250 mg 1 tablet 6|750,20.19
+levetiracetam tablet 250 mg 1 tablet 6|750,19.31
+levetiracetam tablet 250 mg 1 tablet 6|100,4.05
+levetiracetam tablet 250 mg 1 tablet 6|100,24.22
+lorazepam tablet 1 mg 1 tablet 2|1,2.29
+lorazepam tablet 1 mg 1 tablet 2|2,2.79
+lorazepam tablet 1 mg 1 tablet 2|2,8.63
+magnesium sulphate injection 500 mg/ml 1 ml 5|500,5.31
+phenobarbitone tablet 30 mg 1 tablet 1|30,1.36
+phenobarbitone tablet 30 mg 1 tablet 1|60,1.96
+phenobarbitone tablet 30 mg 1 tablet 1|20,0.49
+phenobarbitone tablet 30 mg 1 tablet 1|200,21.28
+phenytoin capsule 100 mg 1 capsule 1|100,1.69
+phenytoin capsule 100 mg 1 capsule 1|300,4.23
+phenytoin capsule 100 mg 1 capsule 1|25,2.79
+phenytoin capsule 100 mg 1 capsule 1|50,5.97
+phenytoin capsule 100 mg 1 capsule 1|125,1.00
+phenytoin capsule 100 mg 1 capsule 1|30,0.34
+phenytoin capsule 100 mg 1 capsule 1|300,6.45
+phenytoin capsule 100 mg 1 capsule 1|100,1.73
+phenytoin capsule 100 mg 1 capsule 1|300,5.27
+phenytoin capsule 100 mg 1 capsule 1|50,0.82
+sodium valproate tablet 200 mg 1 tablet 3|200,3.44
+sodium valproate tablet 200 mg 1 tablet 3|300,4.41
+sodium valproate tablet 200 mg 1 tablet 3|300,6.99
+sodium valproate tablet 200 mg 1 tablet 3|500,7.71
+sodium valproate tablet 200 mg 1 tablet 3|500,10.82
+sodium valproate tablet 200 mg 1 tablet 3|200,0.64
+sodium valproate tablet 200 mg 1 tablet 3|100,6.40
+albendazole tablet 400 mg 1 tablet 8|400,8.55
+albendazole tablet 400 mg 1 tablet 8|200,1.77
+mebendazole tablet 100 mg 1 tablet 3|100,3.26
+mebendazole tablet 100 mg 1 tablet 3|100,0.85
+diethylcarbamazine tablet 50 mg 1 tablet 0|50,0.62
+diethylcarbamazine tablet 50 mg 1 tablet 0|100,1.57
+diethylcarbamazine tablet 50 mg 1 tablet 0|120,0.54
+praziquantel tablet 600 mg 1 tablet 38|600,38.57
+amoxicillin capsule 250 mg 1 capsule 2|250,2.45
+amoxicillin capsule 250 mg 1 capsule 2|500,7.17
+amoxicillin capsule 250 mg 1 capsule 2|250,1.50
+amoxicillin (a) + tablet 500 mg (a) + 125 mg 1 tablet 19|500,19.95
+amoxicillin (a) + tablet 500 mg (a) + 125 mg 1 tablet 19|200,2.00
+amoxicillin (a) + tablet 500 mg (a) + 125 mg 1 tablet 19,2.40
+amoxicillin (a) + tablet 500 mg (a) + 125 mg 1 tablet 19|500,99.96
+amoxicillin (a) + tablet 500 mg (a) + 125 mg 1 tablet 19|1,139.44
+ampicillin powder for injection 500 mg each pack 14|500,14.60
+ampicillin powder for injection 500 mg each pack 14|1,23.69
+benzathine powder for injection 6 lac each pack 13|6,13.39
+benzathine powder for injection 6 lac each pack 13|12,20.25
+benzyl penicillin powder for injection 10 lac each pack 8|10,8.66
+cefadroxil tablet 500 mg 1 tablet 4|500,4.47
+cefadroxil tablet 500 mg 1 tablet 4|1,6.98
+cefadroxil tablet 500 mg 1 tablet 4|125,0.70
+cefadroxil tablet 500 mg 1 tablet 4|500,7.94
+cefazolin powder for injection 500 mg each pack 17|500,17.28
+cefazolin powder for injection 500 mg each pack 17|1,27.26
+cefixime capsule 200 mg 1 capsule 16|200,16.03
+cefixime capsule 200 mg 1 capsule 16|400,32.47
+cefixime capsule 200 mg 1 capsule 16|100,2.39
+cefixime capsule 200 mg 1 capsule 16|50,1.62
+cefixime capsule 200 mg 1 capsule 16|400,24.50
+cefixime capsule 200 mg 1 capsule 16|200mg,10.66
+cefotaxime powder for injection 250 mg each pack 17|250,17.32
+cefotaxime powder for injection 250 mg each pack 17|500,22.78
+cefotaxime powder for injection 250 mg each pack 17|1,38.10
+ceftazidime powder for injection 250 mg each pack 72|250,72.27
+ceftazidime powder for injection 250 mg each pack 72|1,232.39
+ceftriaxone powder for injection 250 mg each pack 27|250,27.40
+ceftriaxone powder for injection 250 mg each pack 27|500,50.06
+ceftriaxone powder for injection 250 mg each pack 27|1,59.86
+ceftriaxone powder for injection 250 mg each pack 27|2,142.29
+cloxacillin capsule 250mg 1 capsule 1|250mg,1.26
+cloxacillin capsule 250mg 1 capsule 1|500mg,2.12
+cloxacillin capsule 250mg 1 capsule 1|250mg,1.92
+cloxacillin capsule 250mg 1 capsule 1,4.93
+piperacillin (a) + powder for injection 1 g (a) each pack 98|1,98.15
+piperacillin (a) + powder for injection 1 g (a) each pack 98|2,232.20
+piperacillin (a) + powder for injection 1 g (a) each pack 98|4,487.76
+azithromycin capsule 250 mg 1 capsule 11|250,11.66
+azithromycin capsule 250 mg 1 capsule 11|500,18.41
+azithromycin capsule 250 mg 1 capsule 11|200,3.42
+azithromycin capsule 250 mg 1 capsule 11|250mg,11.72
+azithromycin capsule 250 mg 1 capsule 11|500mg,23.64
+azithromycin capsule 250 mg 1 capsule 11|500mg,213.48
+ciprofloxacin ointment 0|0.3%,1.26
+ciprofloxacin ointment 0|0.30%,1.69
+ciprofloxacin ointment 0|200,0.19
+ciprofloxacin ointment 0|250,0.70
+ciprofloxacin ointment 0|250mg,2.30
+ciprofloxacin ointment 0|500mg,4.05
+clarithromycin tablet 250 mg 1 tablet 31|250,31.09
+clarithromycin tablet 250 mg 1 tablet 31|500,54.80
+clarithromycin tablet 250 mg 1 tablet 31|125mg/5,4.79
+co-trimoxazole tablet 400 mg (a) + 80 mg (b) 1 tablet 0|400,0.86
+co-trimoxazole tablet 400 mg (a) + 80 mg (b) 1 tablet 0|800,2.25
+co-trimoxazole tablet 400 mg (a) + 80 mg (b) 1 tablet 0|200,0.37
+doxycycline capsule 100 mg 1 capsule 2|100,2.78
+doxycycline capsule 100 mg 1 capsule 2|100,1.09
+gentamicin injection 10 mg/ml 1 ml 3|10,3.53
+gentamicin injection 10 mg/ml 1 ml 3|40,19.95
+gentamicin injection 10 mg/ml 1 ml 3|40,9.35
+gentamicin injection 10 mg/ml 1 ml 3|40,30.24
+gentamicin injection 10 mg/ml 1 ml 3|40,33.10
+gentamicin injection 10 mg/ml 1 ml 3|0.3%,1.01
+metronidazole tablet 200 mg 1 tablet 0|200,0.76
+metronidazole tablet 200 mg 1 tablet 0|400,1.42
+metronidazole tablet 200 mg 1 tablet 0|200,0.50
+metronidazole tablet 200 mg 1 tablet 0|500,0.22
+nitrofurantoin oral liquid 25 mg/5ml 1 ml 0|25,0.91
+nitrofurantoin oral liquid 25 mg/5ml 1 ml 0|100,8.03
+nitrofurantoin oral liquid 25 mg/5ml 1 ml 0|100mg,8.72
+vancomycin powder for injection 1 gm each pack 528|1,528.43
+vancomycin powder for injection 1 gm each pack 528|250,246.21
+vancomycin powder for injection 1 gm each pack 528|500,317.83
+clofazimine capsule 50 mg 1 capsule 2|50,2.41
+clofazimine capsule 50 mg 1 capsule 2|100,4.12
+dapsone tablet 25 mg|100,0.40
+rifampicin capsule 150 mg 1 capsule 2|150,2.23
+rifampicin capsule 150 mg 1 capsule 2|300,4.22
+rifampicin capsule 150 mg 1 capsule 2|450,5.48
+rifampicin capsule 150 mg 1 capsule 2|600,12.87
+rifampicin capsule 150 mg 1 capsule 2|100,0.43
+rifampicin capsule 150 mg 1 capsule 2|150,1.79
+rifampicin capsule 150 mg 1 capsule 2|300,3.26
+capreomycin powder for injection 1 g each pack 384|1,384.60
+cycloserine capsule 250 mg 1 capsule 60|250,60.28
+cycloserine capsule 250 mg 1 capsule 60|250,51.83
+ethambutol tablet 200 mg 1 tablet 1|200,1.17
+ethambutol tablet 200 mg 1 tablet 1|400,2.66
+ethambutol tablet 200 mg 1 tablet 1|600,3.93
+ethambutol tablet 200 mg 1 tablet 1|800,4.70
+ethionamide tablet 125 mg|250,17.52
+isoniazid tablet 50 mg|100,0.75
+isoniazid tablet 50 mg|300,1.33
+kanamycin powder for injection 1 gm each pack 43|1,43.42
+kanamycin powder for injection 1 gm each pack 43|500,23.68
+kanamycin powder for injection 1 gm each pack 43|750,40.46
+levofloxacin tablet 250 mg 1 tablet 4|250,4.90
+levofloxacin tablet 250 mg 1 tablet 4|750,12.14
+levofloxacin tablet 250 mg 1 tablet 4|500mg,8.95
+linezolid tablet 600 mg 1 tablet 36|600,36.69
+moxifloxacin tablet 200 mg|400,28.13
+para-aminosalicylic acid tablet 500 mg granules (as 1 gm 3|500,3.16
+pyrazinamide oral liquid 250 mg/5ml 1 ml 0|250,0.68
+pyrazinamide oral liquid 250 mg/5ml 1 ml 0|1000,10.47
+pyrazinamide oral liquid 250 mg/5ml 1 ml 0|1500,11.60
+pyrazinamide oral liquid 250 mg/5ml 1 ml 0|500,4.70
+pyrazinamide oral liquid 250 mg/5ml 1 ml 0|750,7.14
+rifabutin capsule 150mg 1 capsule 44|150mg,44.04
+rifabutin capsule 150mg 1 capsule 44|150mg,41.13
+streptomycin powder for injection 750 mg each pack 9|750,9.75
+streptomycin powder for injection 750 mg each pack 9|1,11.59
+amphotericin b|50,343.91
+amphotericin b|50,3558.99
+amphotericin b|50,8290.00
+clotrimazole pessary 100 mg 1 pessary 9|100,9.65
+clotrimazole pessary 100 mg 1 pessary 9|1%,3.98
+fluconazole capsule 100 mg 1 capsule 28|100,28.06
+fluconazole capsule 100 mg 1 capsule 28|150,20.59
+fluconazole capsule 100 mg 1 capsule 28|200,40.54
+fluconazole capsule 100 mg 1 capsule 28|50mg/5ml,2.90
+fluconazole capsule 100 mg 1 capsule 28|100,8.86
+fluconazole capsule 100 mg 1 capsule 28|150,13.15
+fluconazole capsule 100 mg 1 capsule 28|200,20.86
+fluconazole capsule 100 mg 1 capsule 28|400,34.69
+fluconazole capsule 100 mg 1 capsule 28|200,118.17
+griseofulvin tablet 125 mg 1 tablet 0|125,0.91
+griseofulvin tablet 125 mg 1 tablet 0|250,1.77
+griseofulvin tablet 125 mg 1 tablet 0|375,4.77
+acyclovir ointment 3|3%,11.56
+acyclovir ointment 3|400,1.41
+acyclovir ointment 3|200,7.52
+acyclovir ointment 3|400,13.67
+acyclovir ointment 3|250,394.52
+acyclovir ointment 3|500,509.56
+ganciclovir capsule 250 mg 1 capsule 133|250,133.48
+ganciclovir capsule 250 mg 1 capsule 133|500,1873.81
+abacavir tablet 60 mg|300,52.36
+abacavir (a) + lamivudine tablet 60 mg (a) +30 mg (b) 1 tablet 22|60,22.30
+abacavir (a) + lamivudine tablet 60 mg (a) +30 mg (b) 1 tablet 22|600,101.18
+lamivudine (a) + dispersible tablet 30 mg (a) + 1 tablet 5|30,5.49
+lamivudine (a) + dispersible tablet 30 mg (a) + 1 tablet 5|150,17.32
+lamivudine (a) + tablet 30 mg (a) + 60 mg (b)|150,22.28
+stavudine (a) + dispersible tablet 6 mg (a) +|30,10.60
+tenofovir (a) + tablet 300 mg (a) +300 mg 1 tablet 49|300,49.84
+tenofovir (a) + tablet 300 mg (a) + 300 mg 1 tablet 114|300,114.44
+zidovudine tablet 300 mg 1 tablet 15|300,15.83
+zidovudine tablet 300 mg 1 tablet 15|300,2.29
+zidovudine (a) + tablet 60 mg (a) + 30 mg (b)|300,22.37
+efavirenz tablet 50 mg|200,26.73
+efavirenz tablet 50 mg|600,69.65
+efavirenz tablet 50 mg|200,25.18
+efavirenz tablet 50 mg|600,78.85
+nevirapine dispersible tablet 50 mg|200,15.89
+nevirapine dispersible tablet 50 mg|50,0.93
+raltegravir tablet 400 mg 1 tablet 173|400,173.77
+atazanavir (a) + ritonavir tablet 300 mg (a) + 100 mg 1 tablet 109|300,109.61
+darunavir tablet 600 mg 1 tablet 185|600,185.33
+lopinavir (a) + ritonavir tablet 100 mg (a) + 25 mg (b) 1 tablet 26|100,26.11
+lopinavir (a) + ritonavir tablet 100 mg (a) + 25 mg (b) 1 tablet 26|200,50.59
+ritonavir capsule 100 mg 1 capsule 31|100,31.34
+ritonavir capsule 100 mg 1 capsule 31|100,32.23
+entecavir tablet 0|0.5,88.59
+entecavir tablet 0|1,140.76
+pegylated interferon alfa injection 180 mcg each pack 8786|180,8786.05
+pegylated interferon alfa injection 180 mcg each pack 8786|100,17371.08
+pegylated interferon alfa injection 180 mcg each pack 8786|120,16177.38
+pegylated interferon alfa injection 180 mcg each pack 8786|80,13887.68
+ribavirin capsule 200 mg 1 capsule 92|200,92.88
+sofosbuvir tablet 400 mg 1 tablet 741|400,741.12
+tenofovir tablet 300 mg 1 tablet 52|300,52.39
+diloxanide furoate tablet 500 mg 1 tablet 1|500,1.17
+metronidazole injection 500mg/100ml 1 ml 0|500mg/100ml,0.22
+metronidazole injection 500mg/100ml 1 ml 0|200,0.50
+metronidazole injection 500mg/100ml 1 ml 0|200,0.76
+metronidazole injection 500mg/100ml 1 ml 0|400,1.42
+artemether (a) + tablet 20 mg (a) + 120 mg (b) 1 tablet 13|20,13.90
+artemether (a) + tablet 20 mg (a) + 120 mg (b) 1 tablet 13|40,17.92
+artemether (a) + tablet 20 mg (a) + 120 mg (b) 1 tablet 13|80,25.72
+artemether (a) + tablet 20 mg (a) + 120 mg (b) 1 tablet 13|80,4.47
+artesunate powder for injection 60 mg each pack 242|60,242.69
+artesunate powder for injection 60 mg each pack 242|120,462.04
+artesunate (a) + combi pack (a+b)|25,21.83
+artesunate (a) + combi pack (a+b)|50,23.56
+artesunate (a) + combi pack (a+b)|100,32.75
+artesunate (a) + combi pack (a+b)|150,44.46
+artesunate (a) + combi pack (a+b)|200,40.54
+chloroquine tablet 150 mg 1 tablet 1|150,1.32
+chloroquine tablet 150 mg 1 tablet 1|50,0.33
+clindamycin capsule 150 mg 1 capsule 16|150,16.07
+clindamycin capsule 150 mg 1 capsule 16|300,26.24
+clindamycin capsule 150 mg 1 capsule 16|300,16.93
+primaquine tablet 15 mg 1 tablet 5|15,5.07
+primaquine tablet 15 mg 1 tablet 5|2.5,1.73
+primaquine tablet 15 mg 1 tablet 5|7.5,2.35
+quinine tablet 300 mg 1 tablet 6|300,6.36
+quinine tablet 300 mg 1 tablet 6|300,11.29
+mefloquine tablet 250 mg 1 tablet 56|250,56.60
+paracetamol oral liquid 100 mg/5ml 1 ml 0|100,0.56
+paracetamol oral liquid 100 mg/5ml 1 ml 0|120,0.59
+paracetamol oral liquid 100 mg/5ml 1 ml 0|125,0.38
+paracetamol oral liquid 100 mg/5ml 1 ml 0|150,0.64
+paracetamol oral liquid 100 mg/5ml 1 ml 0|250,0.66
+paracetamol oral liquid 100 mg/5ml 1 ml 0|500,0.71
+paracetamol oral liquid 100 mg/5ml 1 ml 0|650,0.58
+paracetamol oral liquid 100 mg/5ml 1 ml 0|500,1.01
+paracetamol oral liquid 100 mg/5ml 1 ml 0|650,2.04
+paracetamol oral liquid 100 mg/5ml 1 ml 0|150,3.41
+sumatriptan tablet 25mg 1 tablet 36|25mg,36.96
+sumatriptan tablet 25mg 1 tablet 36|50mg,57.22
+flunarizine tablet 5 mg 1 tablet 3|5,3.06
+flunarizine tablet 5 mg 1 tablet 3|10,5.26
+propranolol capsule 40 mg 1 capsule 4|40,4.22
+propranolol capsule 40 mg 1 capsule 4|80,6.41
+propranolol capsule 40 mg 1 capsule 4|10,1.30
+propranolol capsule 40 mg 1 capsule 4|40,3.06
+propranolol capsule 40 mg 1 capsule 4|80,5.55
+propranolol capsule 40 mg 1 capsule 4|250,2.59
+propranolol capsule 40 mg 1 capsule 4|50mg,7.17
+actinomycin d powder for injection 0|0.5,352.13
+all-trans retinoic acid capsule 10 mg 1 capsule 90|10,90.83
+arsenic trioxide injection 1mg/ml 1 ml 60|1mg/ml,60.29
+bleomycin powder for injection 15 units each pack 689|15,689.25
+bortezomib powder for injection 2mg each pack 13656|2mg,13656.22
+calcium folinate tablet 15 mg 1 tablet 45|15,45.29
+capecitabine tablet 500 mg 1 tablet 140|500,140.33
+carboplatin injection 10 mg/ml 1 ml 59|10,59.08
+chlorambucil tablet 2 mg 1 tablet 40|2,40.98
+chlorambucil tablet 2 mg 1 tablet 40|5,92.09
+cisplatin injection 1mg/ml 1 ml 7|1mg/ml,7.65
+cyclophosphamide tablet 50 mg 1 tablet 4|50,4.50
+cyclophosphamide tablet 50 mg 1 tablet 4|500,88.62
+cytosine arabinoside injection 100 mg/ml each pack 220|100,220.59
+cytosine arabinoside injection 100 mg/ml each pack 220|1000,1189.78
+cytosine arabinoside injection 100 mg/ml each pack 220|500,568.66
+dacarbazine powder for injection 200 mg each pack 487|200,487.79
+dacarbazine powder for injection 200 mg each pack 487|500,1100.41
+daunorubicin injection 5 mg/ml|20,270.01
+docetaxel powder for injection 20 mg each pack 3323|20,3323.65
+docetaxel powder for injection 20 mg each pack 3323|80,12636.74
+doxorubicin injection 2 mg/ml 1 ml 39|2,39.86
+etoposide capsule 50 mg 1 capsule 60|50,60.37
+etoposide capsule 50 mg 1 capsule 60|20,39.81
+gefitinib tablet 250 mg 1 tablet 475|250,475.90
+gemcitabine powder for injection 1 gm each pack 5890|1,5890.65
+gemcitabine powder for injection 1 gm each pack 5890|200mg,1300.95
+ifosfamide powder for injection 1g each pack 401|1g,401.77
+ifosfamide powder for injection 1g each pack 401|2g,1054.59
+imatinib capsule 100 mg 1 capsule 86|100,86.20
+imatinib capsule 100 mg 1 capsule 86|400,283.61
+imatinib capsule 100 mg 1 capsule 86|100,88.18
+imatinib capsule 100 mg 1 capsule 86|400,255.28
+l-asparaginase powder for injection 10000 each pack 1782|10000,1782.47
+l-asparaginase powder for injection 10000 each pack 1782|5000ku,1150.56
+melphalan tablet 2 mg 1 tablet 108|2,108.93
+melphalan tablet 2 mg 1 tablet 108|5,186.83
+mesna injection 100 mg/ml 1 ml 18|100,18.62
+oxaliplatin injection 100mg(as licensed) each pack 4962|100mg(as,4962.10
+oxaliplatin injection 100mg(as licensed) each pack 4962|50mg(as,2885.84
+paclitaxel injection 100 mg/16|100,228.33
+paclitaxel injection 100 mg/16|30,228.33
+procarbazine capsule 50 mg 1 capsule 38|50,38.38
+procarbazine capsule 50 mg 1 capsule 38|50,52.30
+rituximab injection 10 mg/ml 1 ml 842|10,842.18
+temozolomide capsule 100 mg 1 capsule 2313|100,2313.54
+temozolomide capsule 100 mg 1 capsule 2313|20,662.24
+temozolomide capsule 100 mg 1 capsule 2313|250,5203.58
+temozolomide capsule 100 mg 1 capsule 2313|100,1717.31
+temozolomide capsule 100 mg 1 capsule 2313|20,416.06
+temozolomide capsule 100 mg 1 capsule 2313|250,4250.50
+thalidomide capsule 100 mg 1 capsule 67|100,67.84
+thalidomide capsule 100 mg 1 capsule 67|50,39.19
+trastuzumab injection 440 mg/50 ml each pack 66790|440,66790.46
+vinblastine injection 1 mg/ml 1 ml 22|1,22.78
+vincristine injection 1 mg/ml 1 ml 57|1,57.86
+bicalutamide tablet 50 mg 1 tablet 76|50,76.18
+letrozole tablet 2|2.5,45.27
+tamoxifen tablet 10 mg 1 tablet 2|10,2.86
+tamoxifen tablet 10 mg 1 tablet 2|20,3.23
+cyclosporine capsule10 mg|25,30.55
+cyclosporine capsule10 mg|50,58.45
+cyclosporine capsule10 mg|100,113.81
+cyclosporine capsule10 mg|50,299.48
+cyclosporine capsule10 mg|100,104.95
+mycophenolate mofetil tablet 250 mg 1 tablet 46|250,46.10
+mycophenolate mofetil tablet 250 mg 1 tablet 46|500,91.19
+tacrolimus capsule 0|0.5,24.56
+tacrolimus capsule 0|1,43.38
+tacrolimus capsule 0|2,84.97
+tacrolimus capsule 0|0.5,20.80
+tacrolimus capsule 0|1,38.20
+tacrolimus capsule 0|2,75.46
+amitriptyline tablet 10 mg 1 tablet 2|10,2.54
+amitriptyline tablet 10 mg 1 tablet 2|25,2.50
+amitriptyline tablet 10 mg 1 tablet 2|50,6.45
+amitriptyline tablet 10 mg 1 tablet 2|75,6.23
+filgrastim injection 300 mcg each pack 1523|300,1523.73
+fluoxetine capsule 10 mg 1 capsule 3|10,3.30
+fluoxetine capsule 10 mg 1 capsule 3|20,4.05
+fluoxetine capsule 10 mg 1 capsule 3|40,6.15
+fluoxetine capsule 10 mg 1 capsule 3|60,10.87
+fluoxetine capsule 10 mg 1 capsule 3|10,2.77
+fluoxetine capsule 10 mg 1 capsule 3|20,4.40
+fluoxetine capsule 10 mg 1 capsule 3|40,5.93
+fluoxetine capsule 10 mg 1 capsule 3|60,8.22
+haloperidol injection 5 mg/ml 1 ml 6|5,6.47
+haloperidol injection 5 mg/ml 1 ml 6|2,2.28
+haloperidol injection 5 mg/ml 1 ml 6|1.5,1.84
+haloperidol injection 5 mg/ml 1 ml 6|10,4.90
+haloperidol injection 5 mg/ml 1 ml 6|20,5.47
+haloperidol injection 5 mg/ml 1 ml 6|5,3.82
+lactulose oral liquid 10 g/15 ml 1 ml 1|10,1.22
+loperamide capsule 2 mg 1 capsule 3|2,3.98
+loperamide capsule 2 mg 1 capsule 3|2,2.19
+metoclopramide injection 5 mg/ml (10 ml 1 ml 1|5,1.58
+metoclopramide injection 5 mg/ml (10 ml 1 ml 1|5,2.59
+metoclopramide injection 5 mg/ml (10 ml 1 ml 1|5,0.49
+metoclopramide injection 5 mg/ml (10 ml 1 ml 1|10,1.30
+midazolam injection 1 mg/ml 1 ml 6|1,6.56
+midazolam injection 1 mg/ml 1 ml 6|5,16.12
+midazolam injection 1 mg/ml 1 ml 6|7.5mg,24.92
+morphine injection 10 mg/ml 1 ml 26|30,6.05
+morphine injection 10 mg/ml 1 ml 26|10,5.91
+ondansetron injection 2 mg/ml 1 ml 6|2,6.49
+ondansetron injection 2 mg/ml 1 ml 6|2,1.26
+ondansetron injection 2 mg/ml 1 ml 6|4,5.23
+ondansetron injection 2 mg/ml 1 ml 6|8,10.83
+zoledronic acid powder for injection 4 mg each pack 4664|4,4664.74
+levodopa (a) + carbidopa cr tablet 100 mg(a) + 25 1 tablet 3|100,3.70
+levodopa (a) + carbidopa cr tablet 100 mg(a) + 25 1 tablet 3|100,1.73
+levodopa (a) + carbidopa cr tablet 100 mg(a) + 25 1 tablet 3|100,2.50
+levodopa (a) + carbidopa cr tablet 100 mg(a) + 25 1 tablet 3|250,4.15
+levodopa (a) + carbidopa cr tablet 100 mg(a) + 25 1 tablet 3|200,4.56
+trihexyphenidyl tablet 2 mg 1 tablet 1|2,1.35
+erythropoietin injection 10000 iu/ml each pack 2888|10000,2888.54
+erythropoietin injection 10000 iu/ml each pack 2888|2000,684.16
+ferrous salt (a) + folic tablet 45mg elemental iron|100,0.25
+folic acid capsule 5 mg 1 capsule 6|5,6.26
+folic acid capsule 5 mg 1 capsule 6|5,1.55
+hydroxocobalamin injection 1 mg/ml 1 ml 10|1,10.98
+hydroxyurea capsule 500 mg 1 capsule 14|500,14.23
+iron sucrose injection 20 mg/ml 1 ml 59|20,59.68
+enoxaparin injection 40 mg/0|40,112.86
+enoxaparin injection 40 mg/0|60,112.86
+heparin injection 1000 iu/ml 1 ml 18|1000,18.11
+heparin injection 1000 iu/ml 1 ml 18|5000,44.95
+phytomenadione (vitamin tablet 10mg 1 tablet 16|10mg,16.13
+phytomenadione (vitamin tablet 10mg 1 tablet 16|10,53.17
+protamine injection 10 mg/ml 1 ml 10|10,10.27
+tranexamic acid injection 100 mg/ml 1 ml 16|100,16.59
+tranexamic acid injection 100 mg/ml 1 ml 16|500,19.28
+warfarin tablet 1 mg 1 tablet 2|1,2.68
+warfarin tablet 1 mg 1 tablet 2|2,2.96
+warfarin tablet 1 mg 1 tablet 2|3,3.47
+warfarin tablet 1 mg 1 tablet 2|5,2.61
+dextran-40 injection 10|10%,0.94
+coagulation factor ix powder for injection 600 iu each pack 13680|600,13680.58
+coagulation factor viii powder for injection 250 iu each pack 4147|250,4147.18
+coagulation factor viii powder for injection 250 iu each pack 4147|500,10176.88
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|0.20,0.20
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|1.34,1.34
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|1.36,1.36
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|100,0.19
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|150,0.45
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|325mg,0.61
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|350mg,0.34
+acetylsalicylic acid effervescent/ dispersible/ 1 tablet 0|75,0.34
+clopidogrel tablet 75 mg 1 tablet 7|75,7.72
+diltiazem capsule 90 mg 1 capsule 10|90,10.67
+diltiazem capsule 90 mg 1 capsule 10|5,3.51
+diltiazem capsule 90 mg 1 capsule 10|90,10.36
+diltiazem capsule 90 mg 1 capsule 10|30,2.66
+diltiazem capsule 90 mg 1 capsule 10|60,5.43
+glyceryl trinitrate sublingual tablet 0|2.00,2.00
+glyceryl trinitrate sublingual tablet 0|5,7.29
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|30,3.89
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|60,3.87
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|30,5.44
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|60,7.09
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|10,2.18
+isosorbide-5-mononitrate sr capsule 30 mg 1 capsule 3|20,3.64
+isosorbide dinitrate tablet 10 mg 1 tablet 0|10,0.81
+isosorbide dinitrate tablet 10 mg 1 tablet 0|5,0.83
+metoprolol capsule 25 mg 1 capsule 4|25,4.70
+metoprolol capsule 25 mg 1 capsule 4|50,7.16
+metoprolol capsule 25 mg 1 capsule 4|25,4.47
+metoprolol capsule 25 mg 1 capsule 4|50,6.41
+metoprolol capsule 25 mg 1 capsule 4|25,3.46
+metoprolol capsule 25 mg 1 capsule 4|50,5.24
+adenosine injection 3 mg/ml 1 ml 109|3,109.33
+amiodarone injection 50 mg/ml 1 ml 24|50,24.77
+amiodarone injection 50 mg/ml 1 ml 24|100,6.35
+amiodarone injection 50 mg/ml 1 ml 24|200,12.57
+esmolol injection 10 mg/ml 1 ml 24|10,24.06
+lignocaine injection 2|2%,1.10
+lignocaine injection 2|2%(preservative,1.09
+lignocaine injection 2|1%,8.82
+lignocaine injection 2,1.20
+lignocaine injection 2|5%,4.09
+verapamil injection 2|2.5,1.30
+verapamil injection 2|40,0.82
+verapamil injection 2|80,1.55
+amlodipine tablet 10 mg 1 tablet 5|10,5.63
+amlodipine tablet 10 mg 1 tablet 5|2.5,1.84
+amlodipine tablet 10 mg 1 tablet 5|5mg,2.89
+atenolol tablet 100 mg 1 tablet 3|100,3.87
+atenolol tablet 100 mg 1 tablet 3|50,1.98
+enalapril tablet 2|2.5,2.15
+enalapril tablet 2|5,3.57
+hydrochlorothiazide tablet 12|12.5,1.10
+hydrochlorothiazide tablet 12|25,1.87
+hydrochlorothiazide tablet 12|50,0.09
+labetalol injection 5 mg/ml 1 ml 56|5,56.28
+methyldopa tablet 250 mg 1 tablet 2|250,2.71
+methyldopa tablet 250 mg 1 tablet 2|500,5.21
+ramipril capsule 2|2.5,5.26
+ramipril capsule 2|5,8.21
+ramipril capsule 2|2.5,5.53
+ramipril capsule 2|5,8.70
+sodium nitroprusside injection 10 mg/ml 1 ml 28|10,28.67
+telmisartan tablet 20 mg 1 tablet 4|20,4.05
+telmisartan tablet 20 mg 1 tablet 4|40,7.32
+telmisartan tablet 20 mg 1 tablet 4|80,11.15
+digoxin injection 0|0.25,3.70
+digoxin injection 0|0.05,1.41
+digoxin injection 0|0.25,1.33
+dobutamine injection 50 mg/ml each pack 41|50,41.64
+dopamine injection 40 mg/ml 1 ml 6|40,6.27
+noradrenaline injection 2 mg/ml 1 ml 28|2,28.61
+acetylsalicylic acid tablet 75 mg 1 tablet 0|75,0.34
+acetylsalicylic acid tablet 75 mg 1 tablet 0|1.36,1.36
+acetylsalicylic acid tablet 75 mg 1 tablet 0|100,0.19
+acetylsalicylic acid tablet 75 mg 1 tablet 0|0.20,0.20
+acetylsalicylic acid tablet 75 mg 1 tablet 0|150,0.45
+acetylsalicylic acid tablet 75 mg 1 tablet 0|1.34,1.34
+alteplase powder for injection 20 mg each pack 21089|20,21089.89
+alteplase powder for injection 20 mg each pack 21089|50,44033.63
+"streptokinase injection 750,000 iu each pack 1397|750,000",1397.88
+"streptokinase injection 750,000 iu each pack 1397|15,00,000",1987.53
+atorvastatin tablet 10 mg 1 tablet 6|10,6.09
+atorvastatin tablet 10 mg 1 tablet 6|20,14.75
+atorvastatin tablet 10 mg 1 tablet 6|40,21.42
+donepezil tablet 5 mg 1 tablet 12|5,12.48
+donepezil tablet 5 mg 1 tablet 12|10,17.82
+clotrimazole cream 1|1%,3.23
+fusidic acid cream 2|2%,10.14
+methylrosaniliniu m paint 1,0.09
+povidone iodine solution 4,1.78
+povidone iodine solution 4|10%,5.78
+povidone iodine solution 4,1.93
+povidone iodine solution 4,0.85
+povidone iodine solution 4,1.03
+povidone iodine solution 4,0.43
+silver sulphadiazine cream 1|1%,0.56
+betamethasone cream 0|0.05%,0.64
+betamethasone cream 0|0.1%,0.93
+betamethasone cream 0,0.59
+betamethasone cream 0|0.1%,0.91
+betamethasone cream 0|0.5%,0.59
+calamine lotion (as per ip) 1 ml 0|(as per ip) 1,0.94
+benzoyl peroxide gel 2,4.16
+benzoyl peroxide gel 2|2.5%,2.59
+salicylic acid ointment 6|6%,1.99
+permethrin lotion 1|1%,1.01
+permethrin lotion 1|5%,1.93
+permethrin lotion 1|1%,1.78
+permethrin lotion 1,1.63
+permethrin lotion 1|5%,1.09
+glycerin oral liquid 1 ml 0|1,0.17
+white petrolatum jelly 100,0.10
+lignocaine eye drop 4,1.20
+tropicamide eye drop 1,11.17
+gadobenate injection 529 mg/ml 1 ml 121|529,121.01
+iohexol injection 140 to 350 mg|300mgiodine/ml,18.46
+meglumine diatrizoate injection 60|60%,9.17
+meglumine diatrizoate injection 60|76%,10.60
+haemodialysis fluid as licensed 1 ml 0,0.04
+cetrimide solution 20,0.35
+chlorhexidine solution 5,0.17
+ethyl alcohol (denatured) solution 70,0.47
+hydrogen peroxide solution 6,0.04
+glutaraldehyde solution 2,0.07
+potassium permanganate crystals for topical solution 1 gm 0,0.49
+furosemide tablet 40 mg 1 tablet 0|40,0.83
+furosemide tablet 40 mg 1 tablet 0|10,3.07
+furosemide tablet 40 mg 1 tablet 0|10,2.76
+hydrochlorothiazide tablet 25 mg 1 tablet 1|25,1.87
+hydrochlorothiazide tablet 25 mg 1 tablet 1|50,0.09
+hydrochlorothiazide tablet 25 mg 1 tablet 1|12.5,1.10
+mannitol injection 10|10%,0.18
+mannitol injection 10|20%,0.33
+spironolactone tablet 25 mg 1 tablet 2|25,2.13
+spironolactone tablet 25 mg 1 tablet 2|50,4.22
+budesonide nasal spray 50 mcg/dose 1 dose 1,1.13
+budesonide nasal spray 50 mcg/dose 1 dose 1,1.01
+ciprofloxacin drops 0|0.3,1.69
+clotrimazole drops 1|1%,3.37
+xylometazoline nasal drops 0,4.36
+xylometazoline nasal drops 0,5.78
+omeprazole capsule 10 mg 1 capsule 2|10,2.35
+omeprazole capsule 10 mg 1 capsule 2|20,2.77
+omeprazole capsule 10 mg 1 capsule 2|40,5.48
+omeprazole capsule 10 mg 1 capsule 2,1.36
+omeprazole capsule 10 mg 1 capsule 2|10,4.92
+omeprazole capsule 10 mg 1 capsule 2|20,5.47
+omeprazole capsule 10 mg 1 capsule 2|40,9.25
+pantoprazole injection 40 mg each pack 49|40,49.43
+ranitidine tablet 150 mg 1 tablet 1|150,1.22
+ranitidine tablet 150 mg 1 tablet 1|75,1.20
+ranitidine tablet 150 mg 1 tablet 1|25,2.69
+sucralfate oral liquid 1 g 1 ml 0|1,0.78
+domperidone tablet 10 mg 1 tablet 2|10,2.68
+domperidone tablet 10 mg 1 tablet 2|1,1.20
+metoclopramide injection 5 mg/ml|5,1.58
+metoclopramide injection 5 mg/ml|5,2.59
+ondansetron oral liquid 2 mg/5 ml 1 ml 1|2,1.26
+ondansetron oral liquid 2 mg/5 ml 1 ml 1|2,6.49
+ondansetron oral liquid 2 mg/5 ml 1 ml 1|400,8.30
+ondansetron oral liquid 2 mg/5 ml 1 ml 1|500,18.77
+dicyclomine tablet 10 mg 1 tablet 0|10,0.12
+dicyclomine tablet 10 mg 1 tablet 0,0.18
+dicyclomine tablet 10 mg 1 tablet 0|10,2.28
+dicyclomine tablet 10 mg 1 tablet 0|10,3.54
+hyoscine butylbromide tablet 10 mg 1 tablet 3|10,3.30
+hyoscine butylbromide tablet 10 mg 1 tablet 3|20,11.59
+bisacodyl tablet 5 mg 1 tablet 1|5,1.12
+bisacodyl tablet 5 mg 1 tablet 1|5,9.37
+ispaghula granules/ husk/ powder 1 gm 0,0.85
+oral rehydration salts as licensed 1 gm 0,0.99
+oral rehydration salts as licensed 1 gm 0,0.16
+zinc sulphate dispersible tablet 20 mg 1 tablet 3|20,3.49
+somatostatin powder for injection 3 mg each pack 1759|3,1759.69
+human chorionic injection 1000 iu each pack 235|1000,235.98
+human chorionic injection 1000 iu each pack 235|5000,463.41
+hydrocortisone tablet 10 mg 1 tablet 6|10,6.54
+hydrocortisone tablet 10 mg 1 tablet 6|5,3.37
+hydrocortisone tablet 10 mg 1 tablet 6|100,43.21
+hydrocortisone tablet 10 mg 1 tablet 6|200,66.61
+methylprednisolone tablet 8 mg 1 tablet 5|8,5.66
+methylprednisolone tablet 8 mg 1 tablet 5|16,9.90
+methylprednisolone tablet 8 mg 1 tablet 5|40,59.92
+ethinylestradiol(a) + tablet 0|0.03,3.83
+hormone releasing iud contains 52 mg of 1 iud 4295,4295.01
+iud containing copper as licensed 1 iud 319,319.22
+ethinylestradiol tablet 0|0.01,2.60
+ethinylestradiol tablet 0|0.05,4.16
+levonorgestrel tablet 0|0.75,25.55
+glimepiride tablet 1 mg 1 tablet 3|1,3.99
+glimepiride tablet 1 mg 1 tablet 3|2,6.34
+insulin (soluble) injection 40 iu/ml 1 ml 16|40,16.71
+intermediate acting (nph) injection 40 iu/ml 1 ml 16|40,16.71
+metformin tablet 500 mg(controlled 1 tablet 2|500,2.13
+metformin tablet 500 mg(controlled 1 tablet 2|500,1.67
+metformin tablet 500 mg(controlled 1 tablet 2|750,2.66
+metformin tablet 500 mg(controlled 1 tablet 2|750,3.38
+metformin tablet 500 mg(controlled 1 tablet 2|1000,4.00
+metformin tablet 500 mg(controlled 1 tablet 2|1000,4.05
+premix insulin 30|40,16.71
+glucose injection 25|25,0.19
+clomiphene tablet 50 mg 1 tablet 9|50,9.24
+clomiphene tablet 50 mg 1 tablet 9|100,13.57
+clomiphene tablet 50 mg 1 tablet 9|100,61.81
+clomiphene tablet 50 mg 1 tablet 9|50,33.99
+medroxyprogesterone tablet 5 mg|10,5.98
+norethisterone tablet 5 mg 1 tablet 5|5,5.67
+carbimazole tablet 5 mg 1 tablet 2|5,2.12
+carbimazole tablet 5 mg 1 tablet 2|10,4.11
+levothyroxine tablet 12|12.5,1.50
+levothyroxine tablet 12|25,1.45
+levothyroxine tablet 12|37.50,1.31
+levothyroxine tablet 12|50,1.10
+levothyroxine tablet 12|62.5mcg,1.56
+levothyroxine tablet 12|75,1.44
+levothyroxine tablet 12|88,1.71
+levothyroxine tablet 12|100,1.33
+levothyroxine tablet 12|112mcg,1.60
+levothyroxine tablet 12|125,1.71
+levothyroxine tablet 12|150,1.72
+anti-rabies injection 150 iu/ml 1 ml 3080|150,3080.46
+anti-rabies injection 150 iu/ml 1 ml 3080|300,108.60
+anti-tetanus 250iu each pack 1233,1233.92
+anti-d immunoglobulin injection 300mcg each pack 2370|300mcg,2370.03
+anti-d immunoglobulin injection 300mcg each pack 2370|150mcg,1847.36
+diphtheria antitoxin 10000 iu each pack 1455,1455.21
+hepatitis b each pack 6116,6116.13
+human normal solution for infusion 5,171.30
+human normal solution for infusion 5,231.92
+human normal solution for infusion 5,441.03
+bcg vaccine each dose 9,9.92
+dpt + hib + hep b vaccine per 0,89.18
+dpt vaccine per 0,15.73
+hepatitis b vaccine 1 ml 86,86.95
+japanese encephalitis 4mcg to 6mcg each pack 774,774.52
+japanese encephalitis 4mcg to 6mcg each pack 774,590.07
+measles vaccine vaccine each pack 56,56.61
+oral poliomyelitis vaccine 1 ml 113,113.86
+tetanus toxoid injection each pack 12|each pack 12.04,12.04
+tetanus toxoid injection each pack 12|each pack (5,26.03
+rabies vaccine each pack 379,379.43
+atracurium injection 10 mg/ml each pack 58|10,58.21
+baclofen tablet 5 mg 1 tablet 6|5,6.15
+baclofen tablet 5 mg 1 tablet 6|10,11.94
+baclofen tablet 5 mg 1 tablet 6|20,16.43
+neostigmine tablet 15 mg 1 tablet 5|15,5.18
+neostigmine tablet 15 mg 1 tablet 5|0.5,4.83
+succinylcholine injection 50 mg/ml 1 ml 5|50,5.37
+vecuronium powder for injection 4 mg each pack 101|4,101.32
+vecuronium powder for injection 4 mg each pack 101|10,209.93
+alprostadil injection 0|0.5,6288.11
+caffeine oral liquid 20 mg/ml 1 ml 236|20,236.71
+caffeine oral liquid 20 mg/ml 1 ml 236|20,278.70
+surfactant suspension for intratracheal per mg of 74,74.27
+ciprofloxacin drops 0|0.3%,1.26
+gentamicin drops 0|0.3%,1.01
+natamycin drops 5|5%,25.32
+proparacaine drops 0|0.5%,11.07
+acetazolamide tablet 250 mg 1 tablet 4|250,4.07
+acetazolamide tablet 250 mg 1 tablet 4|250,5.02
+pilocarpine drops 2|2%,11.22
+pilocarpine drops 2|4%,12.97
+timolol drops 0|0.25%,5.74
+timolol drops 0|0.5%,13.24
+atropine drops 1|1%,3.81
+atropine drops 1|1%,4.20
+homatropine drops 2|2%,6.89
+phenylephrine drops 5|5%,4.14
+phenylephrine drops 5|10,8.97
+tropicamide drops 1|1%,11.17
+hydroxypropyl injection 2|2%,41.64
+carboxymethylcell ulose drops 0|0.5%,14.19
+carboxymethylcell ulose drops 0|1,19.66
+dinoprostone tablet 0|0.5,55.57
+dinoprostone tablet 0,90.01
+methylergometrine tablet 0|0.125,8.79
+methylergometrine tablet 0|0.2,15.85
+mifepristone tablet 200 mg 1 tablet 357|200,357.21
+misoprostol tablet 100 mcg 1 tablet 9|100,9.67
+misoprostol tablet 100 mcg 1 tablet 9|200,18.54
+oxytocin injection 5 iu/ml 1 ml 19|5,19.59
+oxytocin injection 5 iu/ml 1 ml 19|10,43.74
+betamethasone injection 4 mg/ml 1 ml 4|4,4.66
+nifedipine tablet 10 mg 1 tablet 1|10,1.37
+nifedipine tablet 10 mg 1 tablet 1|10,0.95
+clozapine tablet 25 mg 1 tablet 2|25,2.79
+clozapine tablet 25 mg 1 tablet 2|50,5.34
+clozapine tablet 25 mg 1 tablet 2|100,8.60
+fluphenazine depot injection 25 mg/ml 1 ml 55|25,55.55
+haloperidol tablet 5 mg 1 tablet 3|5,3.82
+haloperidol tablet 5 mg 1 tablet 3|10,4.90
+haloperidol tablet 5 mg 1 tablet 3|20,5.47
+haloperidol tablet 5 mg 1 tablet 3|2,2.28
+risperidone tablet 1 mg 1 tablet 3|1,3.42
+risperidone tablet 1 mg 1 tablet 3|2,5.47
+risperidone tablet 1 mg 1 tablet 3|4,11.10
+risperidone tablet 1 mg 1 tablet 3|1,2.15
+escitalopram tablet 5 mg 1 tablet 5|5,5.06
+escitalopram tablet 5 mg 1 tablet 5|10,8.99
+escitalopram tablet 5 mg 1 tablet 5|20,14.21
+lithium tablet 300 mg 1 tablet 1|300,1.63
+clonazepam tablet 0|0.25,2.03
+clonazepam tablet 0|0.5,3.46
+clonazepam tablet 0|1,4.70
+zolpidem tablet 5 mg 1 tablet 5|5,5.98
+zolpidem tablet 5 mg 1 tablet 5|10,9.38
+zolpidem tablet 5 mg 1 tablet 5|5,8.16
+clomipramine tablet 10 mg 1 tablet 2|10,2.79
+clomipramine tablet 10 mg 1 tablet 2|25,6.16
+clomipramine tablet 10 mg 1 tablet 2|75,15.93
+budesonide inhalation (mdi/dpi) 100 per metered 1|(mdi/dpi) 100,1.41
+budesonide inhalation (mdi/dpi) 100 per metered 1,2.22
+budesonide inhalation (mdi/dpi) 100 per metered 1|(mdi/dpi) 200,1.96
+budesonide inhalation (mdi/dpi) 100 per metered 1,3.21
+budesonide inhalation (mdi/dpi) 100 per metered 1,11.90
+budesonide inhalation (mdi/dpi) 100 per metered 1,14.34
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2|(mdi/dpi) 100,2.09
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2,4.21
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2|(mdi/dpi) 200,2.97
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2,5.59
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2|(mdi/dpi) 400,3.39
+budesonide (a)+ inhalation (mdi/dpi) 100 mcg per metered 2,7.14
+hydrocortisone injection 100 mg each pack 43|100,43.21
+hydrocortisone injection 100 mg each pack 43|200,66.61
+ipratropium inhalation (mdi/dpi) 20 1 dose 0|(mdi/dpi) 20,0.68
+ipratropium inhalation (mdi/dpi) 20 1 dose 0,2.81
+salbutamol tablet 2 mg 1 tablet 0|2,0.18
+salbutamol tablet 2 mg 1 tablet 0|4,0.20
+salbutamol tablet 2 mg 1 tablet 0|2,0.17
+salbutamol tablet 2 mg 1 tablet 0|(mdi/dpi) 100,0.44
+salbutamol tablet 2 mg 1 tablet 0,0.78
+salbutamol tablet 2 mg 1 tablet 0|4,0.66
+tiotropium inhalation (mdi) 9 mcg/dose per metered 2|(mdi) 9,2.67
+tiotropium inhalation (mdi) 9 mcg/dose per metered 2|(dpi) 18,10.31
+glucose injection 5|5%,71.31
+glucose injection 5|5%,57.57
+glucose injection 5|5%,20.02
+glucose injection 5|5%,18.12
+glucose injection 5|5%,27.66
+glucose injection 5|5%,24.99
+glucose injection 5|5%,39.26
+glucose injection 5|5%,33.87
+glucose injection 5|10%,28.68
+glucose injection 5|10%,31.19
+glucose injection 5|25%,0.19
+glucose injection 5|50%,0.54
+glucose (a) + sodium injection 5|5%,71.78
+glucose (a) + sodium injection 5|5%,58.00
+glucose (a) + sodium injection 5|5%,20.07
+glucose (a) + sodium injection 5|5%,18.14
+glucose (a) + sodium injection 5|5%,27.77
+glucose (a) + sodium injection 5|5%,25.08
+glucose (a) + sodium injection 5|5%,39.45
+glucose (a) + sodium injection 5|5%,34.08
+potassium chloride injection 150 mg/ml 1 ml 2|150,2.69
+potassium chloride injection 150 mg/ml 1 ml 2|500,0.32
+ringer lactate injection (as per ip)|1000ml,88.57
+ringer lactate injection (as per ip)|100ml,23.19
+ringer lactate injection (as per ip)|250ml,39.54
+ringer lactate injection (as per ip)|500ml,50.39
+sodium bicarbonate injection (as per ip)|7.5%,1.56
+sodium bicarbonate injection (as per ip)|8.4%,1.43
+sodium chloride injection 0|0.9%,65.89
+sodium chloride injection 0|0.9%,51.97
+sodium chloride injection 0|0.9%,19.48
+sodium chloride injection 0|0.9%,17.55
+sodium chloride injection 0|0.9%,26.28
+sodium chloride injection 0|0.9%,23.59
+sodium chloride injection 0|0.9%,36.54
+sodium chloride injection 0|0.9%,31.10
+water for injection injection each pack (10 2|injection each pack (10,2.58
+water for injection injection each pack (10 2|each pack (5,2.49
+water for injection injection each pack (10 2|per 500,51.19
+water for injection injection each pack (10 2|per 1000,89.84
+ascorbic acid (vitamin c) tablet 100 mg 1 tablet 0|100,0.21
+ascorbic acid (vitamin c) tablet 100 mg 1 tablet 0|500,1.53
+calcium carbonate tablet 250 mg|500,1.92
+"cholecalciferol tablet 1000 iu, 1 tablet 4|1000",4.16
+"cholecalciferol tablet 1000 iu, 1 tablet 4|60000",26.93
+"cholecalciferol tablet 1000 iu, 1 tablet 4|1000",5.31
+"cholecalciferol tablet 1000 iu, 1 tablet 4|60000",32.79
+"cholecalciferol tablet 1000 iu, 1 tablet 4|400",2.60
+pyridoxine tablet 10 mg 1 tablet 0|10,0.12
+pyridoxine tablet 10 mg 1 tablet 0|100,6.20
+thiamine tablet 100 mg 1 tablet 4|100,4.16
+thiamine tablet 100 mg 1 tablet 4|100,27.54
+vitamin a capsule 5000 iu|50000,0.61
+vitamin a capsule 5000 iu|50000,2.13
+vitamin a capsule 5000 iu|50000,0.78

@@ -39,6 +39,10 @@ const AgentCopilot = () => {
                 body: JSON.stringify({ prompt: userMsg })
             });
             const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.detail || 'Error communicating with backend.');
+            }
 
             // Simulate the live analysis logs based on executed tools
             const executedTools = data.executed_tools || [];
@@ -63,12 +67,12 @@ const AgentCopilot = () => {
 
             setTimeout(() => {
                 setIsAnalyzing(false);
-                setMessages(prev => [...prev, { role: 'agent', content: data.text }]);
+                setMessages(prev => [...prev, { role: 'agent', content: data.text || 'Done.' }]);
             }, delay);
 
         } catch (error) {
             setIsAnalyzing(false);
-            setMessages(prev => [...prev, { role: 'agent', content: 'Error communicating with backend.' }]);
+            setMessages(prev => [...prev, { role: 'agent', content: error.message || 'Error communicating with backend.' }]);
         }
     };
 
