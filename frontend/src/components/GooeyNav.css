@@ -52,8 +52,6 @@
   margin: 0;
   position: relative;
   z-index: 3;
-  color: white;
-  text-shadow: 0 1px 1px hsl(205deg 30% 10% / 0.2);
 }
 
 .gooey-nav-container nav ul li {
@@ -65,7 +63,11 @@
     color 0.3s ease,
     box-shadow 0.3s ease;
   box-shadow: 0 0 0.5px 1.5px transparent;
-  color: #94a3b8; /* slate-400 */
+  color: var(--muted-foreground, #94a3b8);
+}
+
+.gooey-nav-container nav ul li:hover {
+  color: var(--foreground, #fff);
 }
 
 .gooey-nav-container nav ul li a {

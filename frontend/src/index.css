@@ -314,7 +314,7 @@ body {
   background: transparent;
   border: none;
   outline: none;
-  color: #e2e8f0;
+  color: var(--foreground);
   font-size: 0.938rem;
   padding: 0.5rem 0;
 }
