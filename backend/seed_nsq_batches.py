@@ -16,10 +16,10 @@ collection = db["Blacklisted_Batches"]
 print(f"Seeding Blacklisted Batches into database: '{db_name}'...")
 
 # 2. Iterate over NSQ CSV files
-nsq_dir = "data/raw/nsq_alerts"
-operations = []
-
+script_dir = os.path.dirname(os.path.abspath(__file__))
+nsq_dir = os.path.abspath(os.path.join(script_dir, "..", "data", "raw", "nsq_alerts"))
 if not os.path.exists(nsq_dir):
+    nsq_dir = "data/raw/nsq_alerts"
     print(f"Warning: Directory '{nsq_dir}' not found. Creating it now.")
     os.makedirs(nsq_dir, exist_ok=True)
 

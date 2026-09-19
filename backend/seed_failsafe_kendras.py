@@ -1,7 +1,10 @@
+import os
+from dotenv import load_dotenv  # type: ignore
 import pymongo  # type: ignore
 
-MONGO_URI = "mongodb://127.0.0.1:27017/"
-DB_NAME = "genmed_db"
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/")
+DB_NAME = os.getenv("DB_NAME", "genmed_db")
 COLLECTION_NAME = "Kendras"
 
 kendras_data = [

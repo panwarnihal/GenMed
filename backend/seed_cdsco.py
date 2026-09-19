@@ -14,12 +14,19 @@ collection = db["cdsco_regulations"]
 
 print(f"Seeding CDSCO Regulations into database: '{db_name}'...")
 
+import sys
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.insert(0, script_dir)
+
 # -------------------------------------------------------------------------
 # 2. READ CDSCO REGULATIONS FROM CSV
 # -------------------------------------------------------------------------
 from utils_hasher import generate_canonical_salt_key
 
-csv_path = "data/raw/cdsco_master_list.csv"
+csv_path = os.path.abspath(os.path.join(script_dir, "..", "data", "raw", "cdsco_master_list.csv"))
+if not os.path.exists(csv_path):
+    csv_path = "data/raw/cdsco_master_list.csv"
 
 operations = []
 if os.path.exists(csv_path):

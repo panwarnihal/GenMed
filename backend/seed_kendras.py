@@ -1,5 +1,8 @@
 import os
+from dotenv import load_dotenv  # type: ignore
 from pymongo import MongoClient, GEOSPHERE
+
+load_dotenv()
 
 # Using realistic coordinates for Delhi NCR / Ghaziabad area
 MOCK_KENDRAS = [
