@@ -18,7 +18,7 @@
 
 import logging
 import os
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel, Field
@@ -185,12 +185,15 @@ def _classify_therapeutic(canonical_salt_key: str) -> Optional[str]:
 # ─────────────────────────────────────────────────────────────────────────────
 # PYDANTIC SCHEMAS
 # ─────────────────────────────────────────────────────────────────────────────
+class MedicineInput(BaseModel):
+    name: str
+    price: Optional[float] = None
+
 class ComprehensiveAuditRequest(BaseModel):
-    medicines: List[str] = Field(
+    medicines: List[Union[MedicineInput, str]] = Field(
         ...,
         min_length=1,
-        description="List of medicine brand names to audit.",
-        examples=[["Pantoprazole", "Rabeprazole", "Augmentin"]],
+        description="List of medicine inputs to audit.",
     )
 
 
@@ -216,12 +219,19 @@ class NSQWarning(BaseModel):
     warning_message: str
 
 
+class DPCOViolation(BaseModel):
+    medicine: str
+    input_price: float
+    ceiling_price: float
+
+
 class ComprehensiveAuditResponse(BaseModel):
     status: str = "AUDIT_COMPLETE"
     medicine_count: int
     alternatives: List[AlternativeResult]
     redundancies: List[RedundancyWarning]
     nsq_warnings: List[NSQWarning]
+    dpco_violations: List[DPCOViolation] = []
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -247,12 +257,19 @@ async def run_comprehensive_audit(
 
     alternatives: List[AlternativeResult] = []
     nsq_warnings: List[NSQWarning] = []
+    dpco_violations: List[DPCOViolation] = []
 
     # Track: medicine_name → (canonical_salt_key, therapeutic_class)
     class_tracker: dict[str, list[str]] = {}  # class → [medicine names]
 
-    for med_name in payload.medicines:
-        clean_name = med_name.strip()
+    for med_input in payload.medicines:
+        if isinstance(med_input, str):
+            clean_name = med_input.strip()
+            input_price = None
+        else:
+            clean_name = med_input.name.strip()
+            input_price = med_input.price
+            
         if not clean_name:
             continue
 
@@ -278,6 +295,18 @@ async def run_comprehensive_audit(
                 alt.generic_name = generic_doc.get("generic_name", "")
                 alt.generic_price = float(generic_doc.get("jan_aushadhi_price", 0.0))
                 alt.drug_code = generic_doc.get("drug_code", "")
+            else:
+                dpco_doc = db["DPCO_Prices"].find_one({"canonical_salt_key": canonical_key})
+                if dpco_doc and input_price is not None:
+                    ceiling_price = dpco_doc.get("ceiling_price", 0.0)
+                    if input_price > ceiling_price:
+                        dpco_violations.append(
+                            DPCOViolation(
+                                medicine=clean_name,
+                                input_price=input_price,
+                                ceiling_price=ceiling_price
+                            )
+                        )
 
             # ── Stage 3: Regulatory / NSQ check ──────────────────────────
             reg_results = check_regulatory_status(canonical_key, medicine_name=clean_name)
@@ -327,4 +356,5 @@ async def run_comprehensive_audit(
         alternatives=alternatives,
         redundancies=redundancies,
         nsq_warnings=nsq_warnings,
+        dpco_violations=dpco_violations,
     )

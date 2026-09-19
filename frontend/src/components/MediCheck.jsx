@@ -220,19 +220,19 @@ function AutocompleteInput({ onAdd }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    STAGING TABLE
    ═══════════════════════════════════════════════════════════════════════════ */
-function StagingTable({ list, onEdit, onDelete }) {
+function StagingTable({ list, onEditName, onEditPrice, onDelete }) {
   const [editingIdx, setEditingIdx] = useState(-1);
   const [editValue, setEditValue] = useState('');
   const editInputRef = useRef(null);
 
   const startEdit = (idx) => {
     setEditingIdx(idx);
-    setEditValue(list[idx]);
+    setEditValue(list[idx].name);
   };
 
   const confirmEdit = () => {
     if (editValue.trim()) {
-      onEdit(editingIdx, editValue.trim());
+      onEditName(editingIdx, editValue.trim());
     }
     setEditingIdx(-1);
     setEditValue('');
@@ -283,6 +283,7 @@ function StagingTable({ list, onEdit, onDelete }) {
             <tr className="border-b border-border/40 bg-muted/30">
               <th className="text-left py-2.5 px-5 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold w-12">#</th>
               <th className="text-left py-2.5 px-5 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">Medicine Name</th>
+              <th className="text-left py-2.5 px-5 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold w-40">Unit Price (₹)<br/><span className="text-[9px] opacity-70 normal-case block mt-0.5">(Per tablet/unit)</span></th>
               <th className="text-right py-2.5 px-5 text-[11px] uppercase tracking-wider text-muted-foreground font-semibold w-32">Actions</th>
             </tr>
           </thead>
@@ -327,9 +328,20 @@ function StagingTable({ list, onEdit, onDelete }) {
                   ) : (
                     <div className="flex items-center gap-2.5">
                       <Pill className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                      <span className="font-medium text-foreground">{med}</span>
+                      <span className="font-medium text-foreground">{med.name}</span>
                     </div>
                   )}
+                </td>
+                <td className="py-3 px-5">
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    value={med.price}
+                    onChange={(e) => onEditPrice(i, e.target.value)}
+                    className="w-full px-3 py-1.5 bg-background border border-border rounded-lg text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
                 </td>
                 <td className="py-3 px-5 text-right">
                   {editingIdx !== i && (
@@ -364,8 +376,10 @@ function StagingTable({ list, onEdit, onDelete }) {
 /* ═══════════════════════════════════════════════════════════════════════════
    RESULTS DASHBOARD — RED ALERT CARD
    ═══════════════════════════════════════════════════════════════════════════ */
-function RedAlertCard({ redundancies, nsqWarnings }) {
-  if ((!redundancies || redundancies.length === 0) && (!nsqWarnings || nsqWarnings.length === 0)) {
+function RedAlertCard({ redundancies, nsqWarnings, dpcoViolations }) {
+  if ((!redundancies || redundancies.length === 0) && 
+      (!nsqWarnings || nsqWarnings.length === 0) &&
+      (!dpcoViolations || dpcoViolations.length === 0)) {
     return null;
   }
 
@@ -432,6 +446,26 @@ function RedAlertCard({ redundancies, nsqWarnings }) {
                   </span>
                 </div>
                 <p className="text-xs text-red-200/70 leading-relaxed">{w.warning_message}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* DPCO Violations */}
+      {dpcoViolations && dpcoViolations.length > 0 && (
+        <div className="space-y-3 mt-5 border-t border-red-500/10 pt-5">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-orange-400/80">
+            <AlertTriangle className="w-3.5 h-3.5" />
+            NPPA DPCO Pricing Violations
+          </div>
+          {dpcoViolations.map((v, i) => (
+            <div key={i} className="bg-orange-500/[0.07] border border-orange-500/20 rounded-xl p-4 flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-orange-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm text-orange-300 font-medium leading-relaxed">
+                  ⚠️ DPCO Pricing Violation: You were charged ₹{v.input_price.toFixed(2)} for {v.medicine}, which exceeds the federal NPPA ceiling price of ₹{v.ceiling_price.toFixed(2)}.
+                </p>
               </div>
             </div>
           ))}
@@ -556,16 +590,26 @@ export default function MediCheck() {
   // ── Add a medicine to the list ──
   const addMedicine = useCallback((name) => {
     if (!name || !name.trim()) return;
-    setMedicineList((prev) => [...prev, name.trim()]);
+    setMedicineList((prev) => [...prev, { name: name.trim(), price: '' }]);
     setAuditResult(null);  // Clear stale results
     setError('');
   }, []);
 
-  // ── Edit a medicine at index ──
-  const editMedicine = useCallback((idx, newName) => {
+  // ── Edit a medicine name at index ──
+  const editMedicineName = useCallback((idx, newName) => {
     setMedicineList((prev) => {
       const copy = [...prev];
-      copy[idx] = newName;
+      copy[idx] = { ...copy[idx], name: newName };
+      return copy;
+    });
+    setAuditResult(null);
+  }, []);
+
+  // ── Edit a medicine price at index ──
+  const editMedicinePrice = useCallback((idx, newPrice) => {
+    setMedicineList((prev) => {
+      const copy = [...prev];
+      copy[idx] = { ...copy[idx], price: newPrice };
       return copy;
     });
     setAuditResult(null);
@@ -596,7 +640,7 @@ export default function MediCheck() {
       if (result?.audited_items?.length) {
         const names = result.audited_items.map((item) => item.brand_name).filter(Boolean);
         if (names.length > 0) {
-          setMedicineList((prev) => [...prev, ...names]);
+          setMedicineList((prev) => [...prev, ...names.map(name => ({ name, price: '' }))]);
           setAuditResult(null);
         } else {
           setError('OCR completed but no medicine names were extracted.');
@@ -620,7 +664,11 @@ export default function MediCheck() {
     setError('');
     setAuditResult(null);
     try {
-      const result = await runComprehensiveAudit(medicineList);
+      const payload = medicineList.map(m => ({
+        name: m.name,
+        price: m.price ? parseFloat(m.price) : null
+      }));
+      const result = await runComprehensiveAudit(payload);
       setAuditResult(result);
       // Scroll to results
       setTimeout(() => {
@@ -634,7 +682,9 @@ export default function MediCheck() {
   };
 
   const hasAlerts = auditResult && (
-    (auditResult.redundancies?.length > 0) || (auditResult.nsq_warnings?.length > 0)
+    (auditResult.redundancies?.length > 0) || 
+    (auditResult.nsq_warnings?.length > 0) ||
+    (auditResult.dpco_violations?.length > 0)
   );
 
   return (
@@ -689,7 +739,8 @@ export default function MediCheck() {
         <div className="mb-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
           <StagingTable
             list={medicineList}
-            onEdit={editMedicine}
+            onEditName={editMedicineName}
+            onEditPrice={editMedicinePrice}
             onDelete={deleteMedicine}
           />
         </div>
@@ -756,6 +807,7 @@ export default function MediCheck() {
               <RedAlertCard
                 redundancies={auditResult.redundancies}
                 nsqWarnings={auditResult.nsq_warnings}
+                dpcoViolations={auditResult.dpco_violations}
               />
             ) : (
               <AllClearCard />
