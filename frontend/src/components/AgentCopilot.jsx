@@ -1,6 +1,94 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, Loader2, Sparkles, Bot, User, Zap } from 'lucide-react';
 
+/**
+ * Lightweight inline markdown renderer.
+ * Handles **bold**, *italic*, and numbered lists.
+ * Returns an array of React elements.
+ */
+function renderMarkdown(text) {
+    if (!text) return text;
+    
+    // Split into paragraphs by double newlines
+    const paragraphs = text.split(/\n{2,}/);
+    
+    return paragraphs.map((para, pIdx) => {
+        // Check if this paragraph contains a numbered list
+        const lines = para.split('\n');
+        const listItems = [];
+        const nonListLines = [];
+        
+        for (const line of lines) {
+            const listMatch = line.match(/^(\d+)\.\s+(.+)/);
+            if (listMatch) {
+                listItems.push(listMatch[2]);
+            } else {
+                nonListLines.push(line);
+            }
+        }
+        
+        const renderInline = (str) => {
+            // Split by **bold** and *italic* markers
+            const parts = [];
+            let remaining = str;
+            let key = 0;
+            
+            while (remaining.length > 0) {
+                // Bold: **text**
+                const boldMatch = remaining.match(/\*\*(.+?)\*\*/);
+                // Italic: *text* (not preceded by another *)
+                const italicMatch = remaining.match(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/);
+                
+                let firstMatch = null;
+                let type = null;
+                
+                if (boldMatch && (!italicMatch || boldMatch.index <= italicMatch.index)) {
+                    firstMatch = boldMatch;
+                    type = 'bold';
+                } else if (italicMatch) {
+                    firstMatch = italicMatch;
+                    type = 'italic';
+                }
+                
+                if (!firstMatch) {
+                    parts.push(remaining);
+                    break;
+                }
+                
+                // Text before the match
+                if (firstMatch.index > 0) {
+                    parts.push(remaining.substring(0, firstMatch.index));
+                }
+                
+                if (type === 'bold') {
+                    parts.push(<strong key={key++} className="font-semibold text-foreground">{firstMatch[1]}</strong>);
+                } else {
+                    parts.push(<em key={key++} className="italic text-foreground/80">{firstMatch[1]}</em>);
+                }
+                
+                remaining = remaining.substring(firstMatch.index + firstMatch[0].length);
+            }
+            
+            return parts;
+        };
+        
+        return (
+            <div key={pIdx} className={pIdx > 0 ? 'mt-2.5' : ''}>
+                {nonListLines.length > 0 && nonListLines.some(l => l.trim()) && (
+                    <p>{renderInline(nonListLines.join(' '))}</p>
+                )}
+                {listItems.length > 0 && (
+                    <ol className="list-decimal list-inside mt-1.5 space-y-1">
+                        {listItems.map((item, i) => (
+                            <li key={i}>{renderInline(item)}</li>
+                        ))}
+                    </ol>
+                )}
+            </div>
+        );
+    });
+}
+
 const AgentCopilot = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([]);
@@ -145,7 +233,7 @@ const AgentCopilot = () => {
                         </div>
                         {/* Suggestion pills */}
                         <div className="flex flex-wrap justify-center gap-2 mt-2">
-                            {['Find generic for Lipitor', 'Nearby Jan Aushadhi'].map((s) => (
+                            {['Find generic for Augmentin 625 Duo', 'Nearby Jan Aushadhi'].map((s) => (
                                 <button
                                     key={s}
                                     onClick={() => { setInput(s); inputRef.current?.focus(); }}
@@ -178,7 +266,9 @@ const AgentCopilot = () => {
                                     ? 'bg-primary/10 border border-primary/20 text-foreground rounded-br-md'
                                     : 'bg-muted/40 border border-border/50 text-foreground rounded-bl-md'
                             }`}>
-                                <div className="whitespace-pre-wrap break-words">{msg.content}</div>
+                                <div className="break-words">
+                                    {msg.role === 'agent' ? renderMarkdown(msg.content) : msg.content}
+                                </div>
                             </div>
                         </div>
                     </div>

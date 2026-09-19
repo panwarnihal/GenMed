@@ -7,14 +7,54 @@ router = APIRouter()
 class ChatRequest(BaseModel):
     prompt: str
 
-def search_generic_medicine(brand_name: str) -> str:
+import os
+from pymongo import MongoClient
+
+def _get_db():
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://127.0.0.1:27017/")
+    client = MongoClient(mongo_uri)
+    return client[os.getenv("DB_NAME", "genmed_db")]
+
+def search_generic_medicine(brand_name: str) -> dict:
     """
-    Search for a generic equivalent of a branded medicine.
+    Search for a generic equivalent of a branded medicine in the Indian PMBJP/CDSCO database.
+    If the database search returns status 'not_found', use your clinical knowledge to explain what the active ingredient is (e.g. Lipitor is Atorvastatin), but clarify that the specific brand is not in the Indian PMBJP/CDSCO database and suggest searching for the Indian equivalent or the generic salt name directly.
     
     Args:
         brand_name (str): The name of the branded medicine.
     """
-    return f"Generic equivalent for {brand_name} is Paracetamol."
+    query = brand_name.strip()
+    if not query:
+        return {"status": "error", "message": "Search query cannot be empty."}
+
+    db = _get_db()
+    
+    # Try exact match first
+    brand_doc = db.Branded_Drugs.find_one({"brand_name": {"$regex": f"^{query}$", "$options": "i"}})
+    
+    if not brand_doc:
+        # Try partial regex
+        brand_doc = db.Branded_Drugs.find_one({"brand_name": {"$regex": query, "$options": "i"}})
+
+    if not brand_doc:
+        return {"status": "not_found", "message": f"No record found for '{query}' in the Indian medicine catalog."}
+    
+    salt_key = brand_doc.get("canonical_salt_key")
+    if not salt_key:
+        return {"status": "not_found", "message": f"No canonical salt key found for '{query}'."}
+        
+    generic_doc = db.Generic_Inventory.find_one({"canonical_salt_key": salt_key})
+    
+    if not generic_doc:
+        return {"status": "not_found", "message": f"Brand '{brand_doc.get('brand_name')}' found, but no generic PMBJP alternative is available for salt '{salt_key}'."}
+        
+    return {
+        "status": "success",
+        "brand_name": brand_doc.get("brand_name"),
+        "generic_match": generic_doc.get("drug_name"),
+        "salt_composition": generic_doc.get("salt_composition"),
+        "unit_price": generic_doc.get("unit_price")
+    }
 
 def locate_nearby_kendra(location_name: str) -> str:
     """
