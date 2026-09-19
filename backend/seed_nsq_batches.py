@@ -24,6 +24,7 @@ if not os.path.exists(nsq_dir):
     os.makedirs(nsq_dir, exist_ok=True)
 
 csv_files = glob.glob(os.path.join(nsq_dir, "*.csv"))
+operations = []
 
 if not csv_files:
     print(f"No CSV files found in {nsq_dir}. Please place monthly NSQ reports here.")
