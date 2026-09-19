@@ -16,7 +16,7 @@ class GeminiProvider(LLMProvider):
     def __init__(self):
         from google import genai
         self.client = genai.Client()
-        self.model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        self.model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
 
     async def generate_tool_response(self, prompt: str, tools: list) -> dict:
         from google.genai import types
