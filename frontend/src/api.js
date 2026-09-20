@@ -1,35 +1,37 @@
 // GenMed API Bridge
-// Express Gateway default at http://localhost:5000, falling back to FastAPI at http://localhost:8000 if needed.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-const BACKEND_FASTAPI_URL = 'http://localhost:8000';
+// Reads dynamic backend URL from environment variables, defaulting to local FastAPI (http://localhost:8000)
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/+$/, '');
+const FALLBACK_GATEWAY_URL = 'http://localhost:5000';
 
 async function fetchWithFallback(endpoint, options = {}) {
   try {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, options);
     if (res.ok) return res;
-    // If gateway returns 404 or connection failure, attempt direct backend fallback
-    if (res.status === 404 || res.status >= 500) {
+    // If running in development and primary endpoint returned 404/5xx, try local fallback
+    if (import.meta.env.DEV && (res.status === 404 || res.status >= 500) && API_BASE_URL.includes('localhost')) {
       try {
-        const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
+        const fallbackRes = await fetch(`${FALLBACK_GATEWAY_URL}${endpoint}`, options);
         if (fallbackRes.ok) return fallbackRes;
-        return fallbackRes;
       } catch {
-        // fallback also failed - return original gateway response
-        return res;
+        // Fallback failed, return original response
       }
     }
     return res;
-  } catch {
-    // Gateway is completely unreachable - try FastAPI directly
-    try {
-      const fallbackRes = await fetch(`${BACKEND_FASTAPI_URL}${endpoint}`, options);
-      return fallbackRes;
-    } catch {
-      throw new Error(
-        'Both the API gateway (port 5000) and backend (port 8000) are unreachable. ' +
-        'Please start the GenMed servers using start-all.ps1 or start-all.bat.'
-      );
+  } catch (err) {
+    // If running in local dev and gateway might be on port 5000, try local fallback
+    if (import.meta.env.DEV && API_BASE_URL.includes('localhost')) {
+      try {
+        const fallbackRes = await fetch(`${FALLBACK_GATEWAY_URL}${endpoint}`, options);
+        return fallbackRes;
+      } catch {
+        throw new Error(
+          'GenMed backend server is unreachable. Please ensure your backend is running.'
+        );
+      }
     }
+    throw new Error(
+      'Unable to connect to GenMed API. Please check your network connection or backend status.'
+    );
   }
 }
 

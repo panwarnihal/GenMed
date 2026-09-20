@@ -52,7 +52,7 @@ function Layout({ status, children }) {
           <p className="text-[11px] text-muted-foreground flex-shrink-0">
             API at{' '}
             <code className="text-foreground bg-muted px-1.5 py-0.5 rounded">
-              {import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}
+              {import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}
             </code>
           </p>
         </div>
