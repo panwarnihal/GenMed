@@ -133,7 +133,7 @@ function ScannerLoader({ fileName }) {
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
     { icon: ImageIcon,   label: 'Image validated & uploaded',             colour: 'text-emerald-400' },
-    { icon: Eye,         label: 'Running Gemini 3.5 Flash Vision OCR',    colour: 'text-blue-400' },
+    { icon: Eye,         label: 'Running Vision OCR',                     colour: 'text-blue-400' },
     { icon: ScanLine,    label: 'Extracting medicines via NER pipeline',  colour: 'text-indigo-400' },
     { icon: FlaskConical,label: 'Matching Jan Aushadhi generics',         colour: 'text-purple-400' },
     { icon: HeartPulse,  label: 'Analyzing Drug-Drug Interactions',       colour: 'text-pink-400' },
@@ -454,7 +454,7 @@ export default function BillAuditor() {
         {/* Pill badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-xs font-semibold">
           <Sparkles className="w-3.5 h-3.5" />
-          Powered by Google Gemini Vision AI
+          Powered by Google Vision AI
         </div>
 
         {/* Headline */}
@@ -532,7 +532,7 @@ export default function BillAuditor() {
                       {isDragOver ? 'Release to upload!' : 'Drop Pharmacy Bill Image'}
                     </p>
                     <p className="text-xs text-muted-foreground max-w-xs mx-auto leading-relaxed">
-                      Upload invoice photo or receipt. Gemini Vision AI auto-extracts every medicine, price &amp; batch.
+                      Upload invoice photo or receipt. Vision AI auto-extracts every medicine, price &amp; batch.
                     </p>
                   </div>
 
@@ -746,7 +746,7 @@ export default function BillAuditor() {
               },
               {
                 step: '02', icon: Cpu, colour: 'from-purple-500 to-pink-500',
-                title: 'AI Analyzes', desc: 'Gemini Vision OCR extracts every medicine, price, and batch number',
+                title: 'AI Analyzes', desc: 'Vision OCR extracts every medicine, price, and batch number',
               },
               {
                 step: '03', icon: BarChart3, colour: 'from-emerald-500 to-teal-500',
@@ -782,7 +782,7 @@ export default function BillAuditor() {
           {/* Trust badges */}
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             {[
-              { icon: Cpu,         text: 'Gemini Vision AI' },
+              { icon: Cpu,         text: 'Vision AI' },
               { icon: BadgeCheck,  text: 'PMBJP Verified' },
               { icon: ShieldCheck, text: 'CDSCO Compliant' },
               { icon: HeartPulse,  text: 'DDI Safety Engine' },

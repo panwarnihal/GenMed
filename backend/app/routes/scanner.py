@@ -395,7 +395,10 @@ async def _process_audit_pipeline(
             legal_cap = item.dpco_ceiling_price * item.quantity_units * 1.12
             ceiling = min(item.printed_mrp, legal_cap)
             
-        overcharge_raw = item.paid_price - ceiling
+        overcharge_raw = 0.0
+        if ceiling > 0:
+            overcharge_raw = item.paid_price - ceiling
+            
         if overcharge_raw > 0:
             is_overcharged = True
             overcharge_amount = round(overcharge_raw, 2)
