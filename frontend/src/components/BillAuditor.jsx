@@ -133,7 +133,7 @@ function ScannerLoader({ fileName }) {
   const [activeStep, setActiveStep] = useState(0);
   const steps = [
     { icon: ImageIcon,   label: 'Image validated & uploaded',             colour: 'text-emerald-400' },
-    { icon: Eye,         label: 'Running Gemini 1.5 Flash Vision OCR',    colour: 'text-blue-400' },
+    { icon: Eye,         label: 'Running Gemini 3.5 Flash Vision OCR',    colour: 'text-blue-400' },
     { icon: ScanLine,    label: 'Extracting medicines via NER pipeline',  colour: 'text-indigo-400' },
     { icon: FlaskConical,label: 'Matching Jan Aushadhi generics',         colour: 'text-purple-400' },
     { icon: HeartPulse,  label: 'Analyzing Drug-Drug Interactions',       colour: 'text-pink-400' },

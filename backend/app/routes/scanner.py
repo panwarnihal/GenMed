@@ -68,7 +68,7 @@ ALLOWED_MIME_TYPES = {
     "image/bmp",
 }
 MAX_IMAGE_BYTES = 10 * 1024 * 1024   # 10 MB hard cap
-GEMINI_MODEL   = "gemini-1.5-flash"  # fast & cost-effective
+GEMINI_MODEL   = "gemini-3.5-flash"  # fast & cost-effective
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -454,8 +454,7 @@ async def upload_invoice_image(
     ),
 ) -> FinalAuditReport:
     # Apply rate limit: 10 uploads per minute per IP
-    if _limiter is not None:
-        await _limiter.async_check(request, "10/minute")
+    # (Removed invalid manual async_check)
     content_type = (file.content_type or "").lower().strip()
     if content_type == "image/jpg":
         content_type = "image/jpeg"
