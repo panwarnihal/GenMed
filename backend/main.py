@@ -26,7 +26,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Configure CORS middleware to enable communication with the frontend application
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this to authorized origins
+    allow_origins=["http://localhost:5173", "https://genmed-two.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

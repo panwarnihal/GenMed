@@ -45,7 +45,7 @@ export async function uploadInvoice(imageFile) {
   const formData = new FormData();
   formData.append('file', imageFile);
 
-  const response = await fetchWithFallback('/api/v1/scanner/upload', {
+  const response = await fetch(`${API_BASE_URL}/api/v1/scanner/upload`, {
     method: 'POST',
     body: formData,
   });
