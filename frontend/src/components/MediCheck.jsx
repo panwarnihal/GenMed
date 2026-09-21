@@ -399,26 +399,26 @@ function RedAlertCard({ redundancies, nsqWarnings, dpcoViolations }) {
       {/* Redundancies */}
       {redundancies && redundancies.length > 0 && (
         <div className="space-y-3 mb-5">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-400/80">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400/80">
             <AlertTriangle className="w-3.5 h-3.5" />
             Therapeutic Redundancy
           </div>
           {redundancies.map((r, i) => (
             <div key={i} className="bg-amber-500/[0.07] border border-amber-500/20 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs font-bold text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-bold text-amber-700 dark:text-amber-400 bg-amber-500/15 px-2 py-0.5 rounded-full">
                   {r.therapeutic_class}
                 </span>
               </div>
               <div className="flex flex-wrap gap-2 mb-2.5">
                 {r.medicines.map((m) => (
-                  <span key={m} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs font-medium text-amber-300">
+                  <span key={m} className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs font-medium text-amber-700 dark:text-amber-300">
                     <Pill className="w-3 h-3" />
                     {m}
                   </span>
                 ))}
               </div>
-              <p className="text-xs text-amber-200/70 leading-relaxed">{r.warning}</p>
+              <p className="text-xs text-amber-900/80 dark:text-amber-200/70 leading-relaxed">{r.warning}</p>
             </div>
           ))}
         </div>

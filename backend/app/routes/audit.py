@@ -338,7 +338,7 @@ async def run_comprehensive_audit(
                 medicines=meds,
                 warning=(
                     f"Multiple {tc} drugs detected: {', '.join(meds)}. "
-                    "Concurrent use is rarely indicated — consult your physician."
+                    "Consult a physician."
                 ),
             ))
 
