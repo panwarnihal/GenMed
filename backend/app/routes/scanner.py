@@ -301,19 +301,35 @@ def _call_gemini_vision(image_bytes: bytes, mime_type: str) -> dict:
             mime_type,
         )
 
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=[
-                _EXTRACTION_PROMPT,
-                genai_types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-            ],
-            config=genai_types.GenerateContentConfig(
-                temperature=0.1,
-                top_p=0.9,
-                max_output_tokens=4096,
-                response_mime_type="application/json",
-            ),
-        )
+        try:
+            response = client.models.generate_content(
+                model=GEMINI_MODEL,
+                contents=[
+                    _EXTRACTION_PROMPT,
+                    genai_types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                ],
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.1,
+                    top_p=0.9,
+                    max_output_tokens=4096,
+                    response_mime_type="application/json",
+                ),
+            )
+        except Exception as primary_exc:
+            logger.warning("Primary model failed, attempting fallback to gemini-3.5-flash-lite. Error: %s", primary_exc)
+            response = client.models.generate_content(
+                model="gemini-3.5-flash-lite",
+                contents=[
+                    _EXTRACTION_PROMPT,
+                    genai_types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                ],
+                config=genai_types.GenerateContentConfig(
+                    temperature=0.1,
+                    top_p=0.9,
+                    max_output_tokens=4096,
+                    response_mime_type="application/json",
+                ),
+            )
 
         raw_text: str = response.text
 
